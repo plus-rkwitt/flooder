@@ -1,6 +1,7 @@
 import torch
 import gudhi
 import fpsample
+import numpy as np
 from math import sqrt
 
 from .triton_kernel_flood_filtered import flood_triton_filtered
@@ -9,9 +10,29 @@ BLOCK_W = 64
 BLOCK_R = 64
 
 
-def generate_landmarks(points, N_l):
-    import numpy as np
+def generate_landmarks(points: torch.Tensor, N_l: int) -> torch.Tensor:
+    """
+    Farthest-Point-Sampling (bucket FPS) from
 
+    @article{han2023quickfps,
+        title={QuickFPS: Architecture and Algorithm Co-Design for Farthest Point Sampling in Large-Scale Point Clouds},
+        author={Han, Meng and Wang, Liang and Xiao, Limin and Zhang, Hao and Zhang, Chenhao and Xu, Xiangrong and Zhu, Jianfeng},
+        journal={IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems},
+        year={2023},
+        publisher={IEEE}}
+
+    Parameters
+    ----------
+    points : torch.Tensor
+        (P, d) point cloud on **any** device / dtype.
+    N_l : int
+        Number of landmarks to sample (<= P).
+
+    Returns
+    -------
+    torch.Tensor
+        (N_l, d) subset of `points` on the *same* device and dtype.
+    """
     index_set = torch.tensor(
         fpsample.bucket_fps_kdline_sampling(points.cpu(), N_l, h=5).astype(np.int64)
     ).to(points.device)
