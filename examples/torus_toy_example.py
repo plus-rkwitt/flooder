@@ -69,8 +69,11 @@ def plot_persistence_diagrams(pdiagram0, pdiagram1, pdiagram2, outfile="diagrams
 
 def main():
 
-    N_w = 1000000  # nr. of points on the torus
-    N_l = 1000  # nr. of landmarks for Flood complex
+    print(f"{YELLOW}Flood PH of a noisy torus sample (1M points)")
+    print(f"{YELLOW}--------------------------------------------")
+
+    N_w = 1000000  # Number of points sampled from torus
+    N_l = 1000  # Number of landmarks for Flood complex
 
     pts = generate_noisy_torus_points(N_w)
 
@@ -97,10 +100,10 @@ def main():
         f"FPS: {t1_fps-t0_fps:6.2f} sec{RESET}"
     )
 
-    # extact persistence diagrams and write to PNG file
-    pdiagram0 = st.persistence_intervals_in_dimension(0)
-    pdiagram1 = st.persistence_intervals_in_dimension(1)
-    pdiagram2 = st.persistence_intervals_in_dimension(2)
+    # UNCOMMENT (next 4 lines) to extact persistence diagrams and write to PNG file
+    # pdiagram0 = st.persistence_intervals_in_dimension(0)
+    # pdiagram1 = st.persistence_intervals_in_dimension(1)
+    # pdiagram2 = st.persistence_intervals_in_dimension(2)
     # plot_persistence_diagrams(pdiagram0, pdiagram1, pdiagram2)
 
 

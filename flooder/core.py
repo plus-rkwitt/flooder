@@ -33,6 +33,7 @@ def generate_landmarks(points: torch.Tensor, N_l: int) -> torch.Tensor:
     torch.Tensor
         (N_l, d) subset of `points` on the *same* device and dtype.
     """
+    assert N_l > 0, "Number of landmarks must be positive."
     index_set = torch.tensor(
         fpsample.bucket_fps_kdline_sampling(points.cpu(), N_l, h=5).astype(np.int64)
     ).to(points.device)
