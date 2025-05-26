@@ -1,4 +1,4 @@
-"""Example of Alpha PH vs. Flood PH on cheese data."""
+"""Runtime measurements for Alpha PH vs. Flood PH on cheese data."""
 
 import torch
 import numpy as np
@@ -6,7 +6,7 @@ import gudhi
 from timeit import default_timer as timer
 import pandas as pd
 
-from flooder import generate_swiss_cheese_points, flood_complex, generate_landmarks
+from flooder import generate_swiss_cheese_points, flood_complex
 
 device = torch.device("cuda")
 RED = "\033[91m"
@@ -31,7 +31,7 @@ pdiagram_land_flood_s = []
 pdiagram_land_alpha_s = []
 
 print(f"{YELLOW}Alpha PH vs. Flood PH timing on cheese")
-print(f"{YELLOW}-----------------------------------")
+print(f"{YELLOW}--------------------------------------")
 for i, N_w in enumerate(N_ws):
     for rep in range(5):
         points, radii = generate_swiss_cheese_points(
@@ -84,4 +84,7 @@ for i, N_w in enumerate(N_ws):
 
 
 df = pd.DataFrame(results)
-torch.save((df, pdiagram_land_flood_s, pdiagram_land_alpha_s), "cheese_w.pt")
+torch.save(
+    (df, pdiagram_land_flood_s, pdiagram_land_alpha_s),
+    "cheese_timing_for_varying_number_of_points.pt",
+)

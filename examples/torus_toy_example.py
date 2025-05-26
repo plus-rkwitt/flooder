@@ -8,7 +8,12 @@ from plotly.subplots import make_subplots
 
 from flooder import generate_noisy_torus_points, flood_complex, generate_landmarks
 
-DEVICE = torch.device("cuda")
+device = torch.device("cuda")
+
+RED = "\033[91m"
+BLUE = "\033[94m"
+YELLOW = "\033[93m"
+RESET = "\033[0m"
 
 
 def plot_persistence_diagrams(pdiagram0, pdiagram1, pdiagram2, outfile="diagrams.png"):
@@ -68,29 +73,35 @@ def main():
     N_l = 1000  # nr. of landmarks for Flood complex
 
     pts = generate_noisy_torus_points(N_w)
+
+    t0_fps = time.perf_counter()
     lms = generate_landmarks(pts, N_l)
+    t1_fps = time.perf_counter()
 
-    start = time.perf_counter()
-    # construct the Flood complex
-    out_complex = flood_complex(lms.to(DEVICE), pts.to(DEVICE), dim=3, batch_size=16)
-    end = time.perf_counter()
-    print(f"Flood complex construction took {end - start:.4f} seconds")
+    t0_complex = time.perf_counter()
+    out_complex = flood_complex(lms.to(device), pts.to(device), dim=3, batch_size=16)
+    t1_complex = time.perf_counter()
 
-    start = time.perf_counter()
-    # use Gudhi to create a simplex tree from the Flood complex and compute PH
+    t0_ph = time.perf_counter()
     st = gudhi.SimplexTree()
     for simplex in out_complex:
         st.insert(simplex, out_complex[simplex])
     st.make_filtration_non_decreasing()
     st.compute_persistence()
-    end = time.perf_counter()
-    print(f"PH computation took {end - start:.4f} seconds")
+    t1_ph = time.perf_counter()
+
+    print(
+        f"{BLUE}{N_w:8d} points ({N_l} landmarks) | "
+        f"Complex (Flood): {(t1_complex-t0_complex):6.2f} sec | "
+        f"PH (Flood): {t1_ph-t0_ph:6.2f} sec | "
+        f"FPS: {t1_fps-t0_fps:6.2f} sec{RESET}"
+    )
 
     # extact persistence diagrams and write to PNG file
     pdiagram0 = st.persistence_intervals_in_dimension(0)
     pdiagram1 = st.persistence_intervals_in_dimension(1)
     pdiagram2 = st.persistence_intervals_in_dimension(2)
-    plot_persistence_diagrams(pdiagram0, pdiagram1, pdiagram2)
+    # plot_persistence_diagrams(pdiagram0, pdiagram1, pdiagram2)
 
 
 if __name__ == "__main__":
