@@ -3,6 +3,8 @@ import gudhi
 import fpsample
 import numpy as np
 from math import sqrt
+from typing import Union
+
 
 from .triton_kernel_flood_filtered import flood_triton_filtered
 
@@ -41,15 +43,15 @@ def generate_landmarks(points: torch.Tensor, N_l: int) -> torch.Tensor:
 
 
 def flood_complex(
-    landmarks,
-    witnesses,
-    dim=1,
-    N=512,
-    batch_size=32,
-    BATCH_MULT=32,
-    disable_kernel=False,
-    do_second_stage=False,
-):
+    landmarks: Union[int, torch.Tensor],
+    witnesses: torch.Tensor,
+    dim: int = 1,
+    N: int = 512,
+    batch_size: int = 32,
+    BATCH_MULT: int = 32,
+    disable_kernel: bool = False,
+    do_second_stage: bool = False,
+) -> dict:
     RADIUS_FACTOR = 1.4
 
     max_range_dim = torch.argmax(

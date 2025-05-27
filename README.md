@@ -1,10 +1,99 @@
 # Flooder
 
-Official implementation of the **Flood** complex for constructing a lightweight
-(filtered) simplicial complex on top of large point clouds for subsequent persistent 
-homology computation.
+`flooder` is a Python package for constructing a lightweight filtered simplicial complex on Euclidean point cloud data, leveraging state-of-the-art GPU computing hardware, for subsequent persistent homology (PH) computation (using `gudhi`).
 
-Please see the **official** project documentation!
+Currently, `flooder` allows computing *Flood PH* on millions of points in 3D (see Examples), enabling previously computationally infeasible large-scale applications of persistent homology on point clouds. For theoretical guarantees of the Flood complex, see [Citing](#citing).
+
+## Related Projects
+
+If you are looking for fast implementations of Rips PH, see 
+[ripser](https://github.com/ripser/ripser), or the GPU-accelerated [ripser++](https://github.com/simonzhang00/ripser-plusplus), respectively. In addition [gudhi](https://pypi.org/project/gudhi/) supports, e.g., computing Alpha PH also on fairly large point clouds (see the `examples/cheese_runtime_example.py` for a runtime comparison).
+
+## Setup
+
+Currently, `flooder` is available on `pypi` with wheels for Unix-based platforms. To install, type the following command into your environment:
+
+```bash
+pip install flooder
+```
+
+### Local/Development build
+
+In case you want to contribute to the project, we recommend checking out the `flooder` GitHub repository in a clean Anaconda environment via, e.g.,
+
+```bash
+git clone https://github.com/plus-rkwitt/flooder
+conda create -n flooder-env python=3.9 -y
+conda activate flooder-env
+pip install -r requirements.txt
+```
+This will install all dependencies, such as `torch`, `gudhi`, `numpy`, `fpsample` and `plotly`. Once installed, you can run our examples from within the top-level `flooder` folder (i.e., the directory created when doing `git clone` from above) via 
+
+```bash
+PYTHONPATH=. python examples/cheese_runtime_example.py
+```
+
+Alternatively, you can also do a `pip install -e .` for a local [editable](https://setuptools.pypa.io/en/latest/userguide/development_mode.html) build. Note that the latter command will already install all required dependencies.
+
+### Optional dependencies
+
+In case you want to show persistence diagrams, we recommend using `persim` which can be installed via
+
+```bash
+pip install persim
+```
+
+## Usage
+
+In the following example, we compute **Flood PH** on 100k points, using 1k landmarks, and finally plot the diagrams up to dimension 2. You could, e.g., just copy-paste the following code into a Jupyter notebook (note that, in case you just checked out the GitHub repository and did not do a `pip install flooder`, the notebook would need to be in the top-level directory for all imports to work).
+
+```python
+import torch
+import gudhi
+from persim import plot_diagrams
+from flooder import flood_complex, generate_landmarks
+
+device = torch.device("cuda")
+
+pts = torch.randn((100000,3), device=device)
+lms = generate_landmarks(pts, 1000)
+out_complex = flood_complex(
+    lms.to(device), 
+    pts.to(device), 
+    dim=3, 
+    batch_size=16)
+
+st = gudhi.SimplexTree()
+for simplex in out_complex:
+    st.insert(simplex, out_complex[simplex])
+st.make_filtration_non_decreasing()
+st.compute_persistence()
+
+diags = [st.persistence_intervals_in_dimension(i) for i in range(3)]
+plot_diagrams(diags)
+```
+
+## License
+
+The code is licensed under an MIT license.
+
+## Citing
+
+Please cite the following arXiv preprint in case you `flooder` useful for your applications.
+
+```bibtex
+@article{Pellizzoni25a,
+    author = {Pellizzoni, P. and Graf, F. and Uray, M. and Huber, S. and Kwitt, R.},
+    title = {The Flood Complex: Large-Scale Persistent Homology on Millions of Points},
+    journal = {arXiv preprint arXiv:XXXX.XXXXX},
+    year = {2025}
+    eprint = {XXXX.XXXXX},
+    archivePrefix = {arXiv},
+    primaryClass = {XXX}
+}
+```
+
+
 
 
 
