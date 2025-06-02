@@ -2,16 +2,16 @@
 
 `flooder` is a Python package for constructing a lightweight filtered simplicial complex on Euclidean point cloud data, leveraging state-of-the-art GPU computing hardware, for subsequent persistent homology (PH) computation (using `gudhi`).
 
-Currently, `flooder` allows computing *Flood PH* on millions of points in 3D (see Examples), enabling previously computationally infeasible large-scale applications of persistent homology on point clouds. For theoretical guarantees of the Flood complex, see [Citing](#citing).
+Currently, `flooder` allows computing *Flood PH* on millions of points in 3D (see [Usage](#usage)), enabling previously computationally infeasible large-scale applications of persistent homology on point clouds. While `flooder` is primarily intended for 3D Euclidean point cloud data, it also works with Euclidean point cloud data of moderate dimension (e.g., 4,5,6). For theoretical guarantees of the Flood complex, including algorithmic details, see [Citing](#citing).
 
 ## Related Projects
 
-If you are looking for fast implementations of Rips PH, see 
+If you are looking for fast implementations of (Vietoris-)Rips PH, see 
 [ripser](https://github.com/ripser/ripser), or the GPU-accelerated [ripser++](https://github.com/simonzhang00/ripser-plusplus), respectively. In addition [gudhi](https://pypi.org/project/gudhi/) supports, e.g., computing Alpha PH also on fairly large point clouds (see the `examples/cheese_runtime_example.py` for a runtime comparison).
 
 ## Setup
 
-Currently, `flooder` is available on `pypi` with wheels for Unix-based platforms. To install, type the following command into your environment:
+Currently, `flooder` is available on `pypi` with wheels for Unix-based platforms. To install, type the following command into your environment (we do recommend a clean new Anaconda environment, e.g., created via `conda create -n flooder-env python=3.9 -y`):
 
 ```bash
 pip install flooder
@@ -37,7 +37,7 @@ Alternatively, you can also do a `pip install -e .` for a local [editable](https
 
 ### Optional dependencies
 
-In case you want to show persistence diagrams, we recommend using `persim` which can be installed via
+In case you want to plot persistence diagrams, we recommend using `persim` which can be installed via
 
 ```bash
 pip install persim
@@ -45,7 +45,7 @@ pip install persim
 
 ## Usage
 
-In the following example, we compute **Flood PH** on 100k points, using 1k landmarks, and finally plot the diagrams up to dimension 2. You could, e.g., just copy-paste the following code into a Jupyter notebook (note that, in case you just checked out the GitHub repository and did not do a `pip install flooder`, the notebook would need to be in the top-level directory for all imports to work).
+In the following example, we compute **Flood PH** on 2M points in 3D, using 1k landmarks, and finally plot the diagrams up to dimension 2. You could, e.g., just copy-paste the following code into a Jupyter notebook (note that, in case you just checked out the GitHub repository and did not do a `pip install flooder`, the notebook would need to be in the top-level directory for all imports to work).
 
 ```python
 import torch
@@ -55,7 +55,7 @@ from flooder import flood_complex, generate_landmarks
 
 device = torch.device("cuda")
 
-pts = torch.randn((100000,3), device=device)
+pts = torch.randn((2000000,3), device=device)
 lms = generate_landmarks(pts, 1000)
 out_complex = flood_complex(
     lms.to(device), 
