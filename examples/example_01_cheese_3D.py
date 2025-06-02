@@ -1,4 +1,4 @@
-"""Runtime measurements for Alpha PH vs. Flood PH on cheese data."""
+"""Example 01: Runtime measurements for Alpha PH vs. Flood PH on 3D cheese data."""
 
 import torch
 import numpy as np
@@ -15,7 +15,7 @@ YELLOW = "\033[93m"
 RESET = "\033[0m"
 
 
-N_ws = [10000, 100000]  # 1000000, 10000000]  # number of flood sources / data points
+N_ws = [10000, 100000, 1000000, 10000000]  # number of flood sources / data points
 N_l = 1000  # number of landmarks
 b_sizes = [1024, 1024, 32, 2]
 

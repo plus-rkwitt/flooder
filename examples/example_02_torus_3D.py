@@ -1,6 +1,8 @@
+"""Example 02: Flood PH of a noisy torus sample (1M points)"""
+
+import time
 import torch
 import gudhi
-import time
 import numpy as np
 
 import plotly.graph_objects as go
