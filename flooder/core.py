@@ -4,12 +4,20 @@ import fpsample
 import numpy as np
 from math import sqrt
 from typing import Union
+from pathlib import Path
 
 
 from .triton_kernel_flood_filtered import flood_triton_filtered
 
 BLOCK_W = 64
 BLOCK_R = 64
+
+
+def save_via_torch(dir_path, filename, data):
+    p = Path(dir_path)
+    p.mkdir(parents=True, exist_ok=True)
+    file_path = p / filename
+    torch.save(data, file_path)
 
 
 def generate_landmarks(points: torch.Tensor, N_l: int) -> torch.Tensor:

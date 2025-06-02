@@ -2,4 +2,3 @@ torch
 gudhi
 numpy
 fpsample
-plotly

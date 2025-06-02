@@ -13,9 +13,6 @@ dependencies = [
     "torch",
     "gudhi",
     "numpy",
-    "plotly",
-    "pandas",
-    "kaleido",
     "fpsample",
 ]
 requires-python = ">=3.8"

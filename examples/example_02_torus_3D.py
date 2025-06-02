@@ -5,12 +5,17 @@ import torch
 import gudhi
 import numpy as np
 
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
+from flooder import (
+    generate_noisy_torus_points,
+    flood_complex,
+    generate_landmarks,
+    save_via_torch,
+)
 
-from flooder import generate_noisy_torus_points, flood_complex, generate_landmarks
 
-device = torch.device("cuda")
+OUT_DIR = "/tmp/"
+OUT_FILE = "flooder_example_02_torus_3D_diagrams.pt"
+DEVICE = torch.device("cuda")
 
 RED = "\033[91m"
 BLUE = "\033[94m"
@@ -18,59 +23,7 @@ YELLOW = "\033[93m"
 RESET = "\033[0m"
 
 
-def plot_persistence_diagrams(pdiagram0, pdiagram1, pdiagram2, outfile="diagrams.png"):
-    all_pts = np.vstack([pdiagram0, pdiagram1, pdiagram2])
-    min_val = np.min(all_pts)
-    max_val = np.max(all_pts)
-    buffer = 0.05 * (max_val - min_val)
-    plot_range = [min_val - buffer, max_val + buffer]
-
-    # Create subplots with shared axes off
-    fig = make_subplots(rows=1, cols=3, subplot_titles=("H0", "H1", "H2"))
-
-    # Helper to add a subplot
-    def add_diagram(fig, diagram, row, col, name):
-        fig.add_trace(
-            go.Scatter(
-                x=diagram[:, 0],
-                y=diagram[:, 1],
-                mode="markers",
-                marker=dict(size=6),
-                name=f"{name} features",
-                showlegend=False,
-            ),
-            row=row,
-            col=col,
-        )
-
-        # Add diagonal
-        fig.add_trace(
-            go.Scatter(
-                x=plot_range,
-                y=plot_range,
-                mode="lines",
-                line=dict(color="black", dash="dash"),
-                showlegend=False,
-            ),
-            row=row,
-            col=col,
-        )
-
-        fig.update_xaxes(range=plot_range, title_text="Birth", row=row, col=col)
-        fig.update_yaxes(range=plot_range, title_text="Death", row=row, col=col)
-
-    # Add each persistence diagram
-    add_diagram(fig, pdiagram0, 1, 1, "H0")
-    add_diagram(fig, pdiagram1, 1, 2, "H1")
-    add_diagram(fig, pdiagram2, 1, 3, "H2")
-
-    # Layout tweaks
-    fig.update_layout(width=1000, height=350, margin=dict(t=40))
-    fig.write_image(outfile)
-
-
 def main():
-
     print(f"{YELLOW}Flood PH of a noisy torus sample (1M points)")
     print(f"{YELLOW}--------------------------------------------")
 
@@ -84,7 +37,7 @@ def main():
     t1_fps = time.perf_counter()
 
     t0_complex = time.perf_counter()
-    out_complex = flood_complex(lms.to(device), pts.to(device), dim=3, batch_size=16)
+    out_complex = flood_complex(lms.to(DEVICE), pts.to(DEVICE), dim=3, batch_size=16)
     t1_complex = time.perf_counter()
 
     t0_ph = time.perf_counter()
@@ -102,11 +55,8 @@ def main():
         f"FPS: {t1_fps-t0_fps:6.2f} sec{RESET}"
     )
 
-    # UNCOMMENT (next 4 lines) to extact persistence diagrams and write to PNG file
-    # pdiagram0 = st.persistence_intervals_in_dimension(0)
-    # pdiagram1 = st.persistence_intervals_in_dimension(1)
-    # pdiagram2 = st.persistence_intervals_in_dimension(2)
-    # plot_persistence_diagrams(pdiagram0, pdiagram1, pdiagram2)
+    diags = [st.persistence_intervals_in_dimension(d) for d in range(3)]
+    save_via_torch(OUT_DIR, OUT_FILE, diags)
 
 
 if __name__ == "__main__":
