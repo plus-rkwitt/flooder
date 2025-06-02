@@ -7,7 +7,7 @@ Currently, `flooder` allows computing *Flood PH* on millions of points in 3D (se
 ## Related Projects
 
 If you are looking for fast implementations of (Vietoris-)Rips PH, see 
-[ripser](https://github.com/ripser/ripser), or the GPU-accelerated [ripser++](https://github.com/simonzhang00/ripser-plusplus), respectively. In addition [gudhi](https://pypi.org/project/gudhi/) supports, e.g., computing Alpha PH also on fairly large point clouds (see the `examples/cheese_runtime_example.py` for a runtime comparison).
+[ripser](https://github.com/ripser/ripser), or the GPU-accelerated [ripser++](https://github.com/simonzhang00/ripser-plusplus), respectively. In addition [gudhi](https://pypi.org/project/gudhi/) supports, e.g., computing Alpha PH also on fairly large point clouds (see the `examples/example_01_cheese_3D.py` for a runtime comparison).
 
 ## Setup
 
@@ -82,15 +82,7 @@ The code is licensed under an MIT license.
 Please cite the following arXiv preprint in case you `flooder` useful for your applications.
 
 ```bibtex
-@article{Pellizzoni25a,
-    author = {Pellizzoni, P. and Graf, F. and Uray, M. and Huber, S. and Kwitt, R.},
-    title = {The Flood Complex: Large-Scale Persistent Homology on Millions of Points},
-    journal = {arXiv preprint arXiv:XXXX.XXXXX},
-    year = {2025}
-    eprint = {XXXX.XXXXX},
-    archivePrefix = {arXiv},
-    primaryClass = {XXX}
-}
+coming soon!
 ```
 
 
