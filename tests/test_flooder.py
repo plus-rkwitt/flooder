@@ -3,21 +3,44 @@ import numpy as np
 import gudhi
 import matplotlib.pyplot as plt
 
-from flooder import flood_complex, generate_landmarks, generate_noisy_torus_points
+from flooder import (
+    flood_complex,
+    generate_landmarks,
+    generate_noisy_torus_points,
+    generate_figure_eight_2D_points,
+)
+
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-def test_flooder():
-    N_w = 1000000
-    N_l = 1000
+def test_vs_alpha_1():
+    """Test case of homotopy equivalence for Alpha and Flood(X,X), i.e., when L=X"""
+    X = generate_figure_eight_2D_points(1000)
+    L = X
 
-    pts = generate_noisy_torus_points(N_w)  # use default parameters for the noisy torus
-    lms = generate_landmarks(pts, N_l)
+    X = X.to(DEVICE)
+    L = L.to(DEVICE)
 
-    device = torch.device("cuda")
-    out_complex = flood_complex(lms.to(device), pts.to(device), dim=3, batch_size=16)
+    fc = flood_complex(L, X, dim=2, N=1024, batch_size=16, disable_kernel=False)
 
     st = gudhi.SimplexTree()
-    for simplex in out_complex:
-        st.insert(simplex, out_complex[simplex])
+    for simplex in fc:
+        st.insert(simplex, fc[simplex])
     st.make_filtration_non_decreasing()
     st.compute_persistence()
+    flood_complex_diags = [st.persistence_intervals_in_dimension(i) for i in range(2)]
+
+    alpha_complex = gudhi.AlphaComplex(X.cpu().numpy()).create_simplex_tree(
+        output_squared_values=False
+    )
+    alpha_complex.compute_persistence()
+    alpha_complex_diags = [
+        alpha_complex.persistence_intervals_in_dimension(i) for i in range(2)
+    ]
+
+    assert (
+        gudhi.bottleneck_distance(flood_complex_diags[0], alpha_complex_diags[0]) < 1e-3
+    )
+    assert (
+        gudhi.bottleneck_distance(flood_complex_diags[1], alpha_complex_diags[1]) < 1e-3
+    )

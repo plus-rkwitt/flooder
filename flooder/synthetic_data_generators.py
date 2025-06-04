@@ -3,7 +3,7 @@ import numpy as np
 
 
 def generate_figure_eight_2D_points(
-    n_samples,
+    n_samples: int = 1000,
     r_bounds=(0.2, 0.3),
     centers=((0.3, 0.5), (0.7, 0.5)),
     noise_std=0.0,
@@ -15,8 +15,8 @@ def generate_figure_eight_2D_points(
 
     Parameters
     ----------
-    n_samples : int
-        Number of points to generate.
+    n_samples : int, optional
+        Number of points to generate. Defaults to 1000.
     r_bounds : tuple(float, float)
         (inner_radius, outer_radius) shared by both parts of the figure-eight
     centers : tuple[(float, float), (float, float)]
@@ -68,6 +68,7 @@ def generate_swiss_cheese_points(
     rect_max: torch.tensor = torch.tensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0]),
     k: int = 6,
     void_radius_range: tuple = (0.1, 0.2),
+    rng: int = None,
 ):
     """
     Generate points in a rectangular region with voids (like 3D Swiss cheese).
@@ -83,6 +84,8 @@ def generate_swiss_cheese_points(
         Number of voids to generate. Defaults to 6.
     void_radius_range : tuple, optional
         Range of radii for the voids (min, max). Defaults to (0.1, 0.2).
+    rng : int, optional
+        Random-state for reproducibility.
     Returns
     -------
     points : torch.tensor
@@ -90,6 +93,10 @@ def generate_swiss_cheese_points(
     void_radii : torch.tensor
         A tensor of shape (k,) containing the radii of the voids.
     """
+
+    if rng:
+        torch.manual_seed(rng)
+
     void_centers = []
     void_radii = []
     for _ in range(k):
@@ -127,7 +134,38 @@ def generate_swiss_cheese_points(
     return torch.stack(points, dim=0), void_radii
 
 
-def generate_donut_points(N, center, radius, width):  # 2D
+def generate_donut_points(
+    N: int = 1000,
+    center: torch.tensor = torch.tensor([0.0, 0.0]),
+    radius: float = 1.0,
+    width: float = 0.2,
+    rng: int = None,
+):
+    """Generate points uniformly distributed in a 2D annulus (donut shape).
+
+    Parameters
+    ----------
+    N : int, optional
+        Number of points to generate. Defaults to 1000.
+    center : torch.tensor, optional
+        Center of the annulus as a 2D tensor. Defaults to [0.0, 0.0].
+    radius : float, optional
+        Outer radius of the annulus. Defaults to 1.0.
+    width : float, optional
+        Width of the annulus. Defaults to 0.2.
+    rng : int, optional
+        Random-state for reproducibility.
+    Returns
+    -------
+    points : torch.tensor
+        A tensor of shape (N, 2) containing the generated points.
+    """
+    assert center.shape == (2,), "Center must be a 2D point."
+    assert radius > 0 and width > 0, "Radius and width must be positive."
+
+    if rng:
+        torch.manual_seed(rng)
+
     angles = torch.rand(N) * 2 * torch.pi  # Random angles
     r = (
         radius - width + width * torch.sqrt(torch.rand(N))
@@ -138,7 +176,11 @@ def generate_donut_points(N, center, radius, width):  # 2D
 
 
 def generate_noisy_torus_points(
-    num_points=1000, R=3, r=1, noise_std=0.02, device="cpu"
+    num_points=1000,
+    R: float = 3.0,
+    r: float = 1.0,
+    noise_std: float = 0.02,
+    rng: int = None,
 ):
     """
     Generate points on a torus in 3D with added Gaussian noise.
@@ -153,15 +195,18 @@ def generate_noisy_torus_points(
         Minor radius of the torus. Defaults to 1.
     noise_std : float, optional
         Standard deviation of the Gaussian noise added to the points. Defaults to 0.02.
-    device : str, optional
-        Device to generate the points on (e.g., "cpu" or "cuda"). Defaults to "cpu".
+    rng : int or numpy.random.Generator, optional
+        Random-state for reproducibility.
     Returns
     -------
     points : torch.Tensor
         A tensor of shape (num_points, 3) containing the generated points on the torus.
     """
-    theta = torch.rand(num_points, device=device) * 2 * torch.pi
-    phi = torch.rand(num_points, device=device) * 2 * torch.pi
+    if rng:
+        torch.manual_seed(rng)
+
+    theta = torch.rand(num_points) * 2 * torch.pi
+    phi = torch.rand(num_points) * 2 * torch.pi
 
     x = (R + r * torch.cos(phi)) * torch.cos(theta)
     y = (R + r * torch.cos(phi)) * torch.sin(theta)

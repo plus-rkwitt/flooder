@@ -54,13 +54,15 @@ def flood_complex(
     landmarks: Union[int, torch.Tensor],
     witnesses: torch.Tensor,
     dim: int = 1,
-    N: int = 512,
+    N: int = 512,  # needs to be a multiple of BLOCK_R
     batch_size: int = 32,
     BATCH_MULT: int = 32,
     disable_kernel: bool = False,
     do_second_stage: bool = False,
 ) -> dict:
     RADIUS_FACTOR = 1.4
+
+    assert N % BLOCK_R == 0, "N must be a multiple of BLOCK_R."
 
     max_range_dim = torch.argmax(
         witnesses.max(dim=0).values - witnesses.min(dim=0).values
