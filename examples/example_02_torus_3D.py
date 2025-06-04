@@ -3,7 +3,6 @@
 import time
 import torch
 import gudhi
-import numpy as np
 
 from flooder import (
     generate_noisy_torus_points,

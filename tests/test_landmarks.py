@@ -1,5 +1,4 @@
 import torch
-import gudhi
 import pytest
 import numpy as np
 
