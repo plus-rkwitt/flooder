@@ -1,27 +1,38 @@
 import torch
-import numpy as np
 import gudhi
-import matplotlib.pyplot as plt
+import pytest
+import numpy as np
 
 from flooder import (
     flood_complex,
-    generate_landmarks,
-    generate_noisy_torus_points,
     generate_figure_eight_2D_points,
 )
+
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-def test_vs_alpha_1():
-    """Test case of homotopy equivalence for Alpha and Flood(X,X), i.e., when L=X"""
+@pytest.mark.parametrize("disable_kernel", [True, False])
+@pytest.mark.parametrize("batch_size", [8, 16, 32])
+@pytest.mark.parametrize("N", [64 * 16, 64 * 32, 64 * 64])
+def test_vs_alpha_1(disable_kernel, batch_size, N):
+    """
+    Test the homotopy equivalence of the Alpha complex and the Flood complex
+    when landmarks L are set equal to the dataset X.clear
+    """
+    torch.manual_seed(42)
+    np.random.seed(42)
+
     X = generate_figure_eight_2D_points(1000)
     L = X
 
     X = X.to(DEVICE)
     L = L.to(DEVICE)
 
-    fc = flood_complex(L, X, dim=2, N=1024, batch_size=16, disable_kernel=False)
+    # Test w and w/o kernel
+    fc = flood_complex(
+        L, X, dim=2, N=N, batch_size=batch_size, disable_kernel=disable_kernel
+    )
 
     st = gudhi.SimplexTree()
     for simplex in fc:
@@ -37,6 +48,15 @@ def test_vs_alpha_1():
     alpha_complex_diags = [
         alpha_complex.persistence_intervals_in_dimension(i) for i in range(2)
     ]
+
+    for dim in range(2):
+        dist = gudhi.bottleneck_distance(
+            flood_complex_diags[dim], alpha_complex_diags[dim]
+        )
+        assert dist < 1e-3, (
+            f"Bottleneck distance too high in dimension {dim} "
+            f"with disable_kernel={disable_kernel}: {dist}"
+        )
 
     assert (
         gudhi.bottleneck_distance(flood_complex_diags[0], alpha_complex_diags[0]) < 1e-3
