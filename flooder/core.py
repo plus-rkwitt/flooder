@@ -25,9 +25,12 @@ def generate_landmarks(points: torch.Tensor, N_l: int) -> torch.Tensor:
     Farthest-Point-Sampling (bucket FPS) from
 
     @article{han2023quickfps,
-        title={QuickFPS: Architecture and Algorithm Co-Design for Farthest Point Sampling in Large-Scale Point Clouds},
-        author={Han, Meng and Wang, Liang and Xiao, Limin and Zhang, Hao and Zhang, Chenhao and Xu, Xiangrong and Zhu, Jianfeng},
-        journal={IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems},
+        title={QuickFPS: Architecture and Algorithm Co-Design for Farthest
+            Point Sampling in Large-Scale Point Clouds},
+        author={Han, Meng and Wang, Liang and Xiao, Limin and Zhang, Hao and Zhang,
+            Chenhao and Xu, Xiangrong and Zhu, Jianfeng},
+        journal={IEEE Transactions on Computer-Aided Design of Integrated Circuits
+            and Systems},
         year={2023},
         publisher={IEEE}}
 
@@ -70,7 +73,7 @@ def flood_complex(
     witnesses = witnesses[torch.argsort(witnesses[:, max_range_dim])].contiguous()
     witnesses_search = witnesses[:, max_range_dim].contiguous()
 
-    if type(landmarks) == int:
+    if isinstance(landmarks, int):
         landmarks = generate_landmarks(witnesses, min(landmarks, witnesses.shape[0]))
     resolution = torch.cdist(landmarks[-1:], landmarks[:-1]).min().item()
     resolution = 9.0 * resolution * resolution + 1e-3
@@ -132,8 +135,7 @@ def flood_complex(
         all_random_points = weights.unsqueeze(0) @ all_simplex_points
         del weights
 
-        if disable_kernel == True or (not landmarks.is_cuda):
-            # naive
+        if disable_kernel or (not landmarks.is_cuda):
             for i, simplex in enumerate(list_simplexes[d - 1]):
                 valid_witnesses_mask = (
                     torch.cdist(simplex_centers_vec[i : i + 1], witnesses)
