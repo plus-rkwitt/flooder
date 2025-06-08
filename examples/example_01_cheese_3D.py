@@ -5,7 +5,7 @@ import numpy as np
 import gudhi
 from timeit import default_timer as timer
 
-from flooder import generate_swiss_cheese_points, flood_complex, save_via_torch
+from flooder import generate_swiss_cheese_points, flood_complex, save_to_disk
 
 DEVICE = torch.device("cuda")
 OUT_DIR = "/tmp/"
@@ -91,7 +91,19 @@ def main():
             pdiagram_land2 = st.persistence_intervals_in_dimension(dim - 1)
             pdiagram_land_flood_s.append(pdiagram_land2)
 
-    save_via_torch(OUT_DIR, OUT_FILE, (pdiagram_land_flood_s, pdiagram_land_alpha_s))
+    save_to_disk(
+        {
+            "results": results,
+            "pdiagram_land_flood_s": pdiagram_land_flood_s,
+            "pdiagram_land_alpha_s": pdiagram_land_alpha_s,
+            "N_ws": N_ws,
+            "N_l": N_l,
+            "b_sizes": b_sizes,
+            "rect_min": rect_min.cpu().numpy(),
+            "rect_max": rect_max.cpu().numpy(),
+        },
+        "/tmp/example_01_cheese_3D_out.pt",
+    )
 
 
 if __name__ == "__main__":

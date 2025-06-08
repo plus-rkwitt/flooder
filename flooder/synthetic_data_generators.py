@@ -1,17 +1,24 @@
+"""Implementation of synthetic data generators.
+
+Copyright (c) 2025 Paolo Pellizzoni, Florian Graf, Martin Uray, Stefan Huber and Roland Kwitt
+SPDX-License-Identifier: MIT
+"""
+
 import torch
 import numpy as np
+import numpy.typing as npt
+from typing import Tuple, Optional, Literal
 
 
 def generate_figure_eight_2D_points(
     n_samples: int = 1000,
-    r_bounds=(0.2, 0.3),
-    centers=((0.3, 0.5), (0.7, 0.5)),
-    noise_std=0.0,
-    noise_kind="gaussian",
-    rng=None,
-):
-    """
-    Uniformly sample a figure-eight shape in 2D and optionally add noise.
+    r_bounds: Tuple[float, float] = (0.2, 0.3),
+    centers: Tuple[Tuple[float, float], Tuple[float, float]] = ((0.3, 0.5), (0.7, 0.5)),
+    noise_std: float = 0.0,
+    noise_kind: Literal["gaussian", "uniform"] = "gaussian",
+    rng: Optional[np.random.Generator] = None,
+) -> torch.tensor:
+    """Uniformly sample a figure-eight shape in 2D and optionally add noise.
 
     Parameters
     ----------
@@ -70,8 +77,8 @@ def generate_swiss_cheese_points(
     void_radius_range: tuple = (0.1, 0.2),
     rng: int = None,
 ):
-    """
-    Generate points in a rectangular region with voids (like 3D Swiss cheese).
+    """Generate points in a rectangular region with voids (like 3D Swiss cheese).
+
     Parameters
     ----------
     N : int, optional
@@ -93,7 +100,6 @@ def generate_swiss_cheese_points(
     void_radii : torch.tensor
         A tensor of shape (k,) containing the radii of the voids.
     """
-
     if rng:
         torch.manual_seed(rng)
 
@@ -140,7 +146,7 @@ def generate_donut_points(
     radius: float = 1.0,
     width: float = 0.2,
     rng: int = None,
-):
+) -> torch.tensor:
     """Generate points uniformly distributed in a 2D annulus (donut shape).
 
     Parameters
@@ -182,8 +188,7 @@ def generate_noisy_torus_points(
     noise_std: float = 0.02,
     rng: int = None,
 ):
-    """
-    Generate points on a torus in 3D with added Gaussian noise.
+    """Generate points on a torus in 3D with added Gaussian noise.
 
     Parameters
     ----------

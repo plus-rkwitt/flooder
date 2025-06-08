@@ -68,4 +68,3 @@ dependencies:
       - torch==2.7.0
       - triton==3.3.0
       - typing-extensions==4.13.2
-      - zipp==3.22.0

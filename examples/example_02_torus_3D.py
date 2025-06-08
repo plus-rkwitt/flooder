@@ -8,7 +8,7 @@ from flooder import (
     generate_noisy_torus_points,
     flood_complex,
     generate_landmarks,
-    save_via_torch,
+    save_to_disk,
 )
 
 
@@ -55,7 +55,16 @@ def main():
     )
 
     diags = [st.persistence_intervals_in_dimension(d) for d in range(3)]
-    save_via_torch(OUT_DIR, OUT_FILE, diags)
+
+    save_to_disk(
+        {
+            "pts": pts.cpu().numpy(),
+            "lms": lms.cpu().numpy(),
+            "complex": out_complex,
+            "diags": diags,
+        },
+        "/tmp/example_02_torus_3D_out.pt",
+    )
 
 
 if __name__ == "__main__":

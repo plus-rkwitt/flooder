@@ -1,3 +1,9 @@
+"""Implementation of flooder core functionality.
+
+Copyright (c) 2025 Paolo Pellizzoni, Florian Graf, Martin Uray, Stefan Huber and Roland Kwitt
+SPDX-License-Identifier: MIT
+"""
+
 import torch
 import gudhi
 import fpsample
@@ -6,18 +12,10 @@ from math import sqrt
 from typing import Union
 from pathlib import Path
 
-
 from .triton_kernel_flood_filtered import flood_triton_filtered
 
 BLOCK_W = 64
 BLOCK_R = 64
-
-
-def save_via_torch(dir_path, filename, data):
-    p = Path(dir_path)
-    p.mkdir(parents=True, exist_ok=True)
-    file_path = p / filename
-    torch.save(data, file_path)
 
 
 def generate_landmarks(points: torch.Tensor, N_l: int) -> torch.Tensor:
@@ -63,6 +61,39 @@ def flood_complex(
     disable_kernel: bool = False,
     do_second_stage: bool = False,
 ) -> dict:
+    """Flood complex construction.
+
+    Parameters
+    ----------
+    landmarks : Union[int, torch.Tensor]
+        Either an integer specifying the number of landmarks to sample from `witnesses`
+        or a tensor of shape (N_l, d) containing the landmarks.
+    witnesses : torch.Tensor
+        (N, d) tensor of points to be used as flood sources.
+    dim : int, optional
+        Dimension of the simplices to be computed, by default 1.
+    N : int, optional
+        Number of random points to sample for each simplex, must be a multiple of
+        `BLOCK_R`, by default 512.
+    batch_size : int, optional
+        Batch size for processing simplices, by default 32.
+    BATCH_MULT : int, optional
+        Multiplier for batch size, by default 32.
+    disable_kernel : bool, optional
+        If True, disables the use of the Triton kernel for flood complex computation,
+        default is False.
+    do_second_stage : bool, optional
+        If True, performs a second stage of refinement for the computed radii,
+        default is False.
+    Returns
+    -------
+    dict: dict
+        A dictionary where keys are tuples representing simplices and values are the
+        corresponding covering radii. The keys are of the form (i, j, ..., k) for
+        simplices of dimension `dim`, where `i`, `j`, ..., `k` are indices of the
+        landmarks. The values are the covering radii for each simplex.
+    """
+
     RADIUS_FACTOR = 1.4
 
     assert N % BLOCK_R == 0, "N must be a multiple of BLOCK_R."
@@ -80,6 +111,10 @@ def flood_complex(
 
     dc = gudhi.AlphaComplex(landmarks).create_simplex_tree()
 
+    """
+    For now, the landmark points upon which the flood complex is build 
+    are always born at time 0.
+    """
     out_complex = {}
     idxs = list(range(landmarks.shape[0]))
     for idx in idxs:
@@ -128,13 +163,14 @@ def flood_complex(
         simplex_radii_vec = simplex_radii_vec[splx_idx]
         list_simplexes[d - 1] = [list_simplexes[d - 1][ii] for ii in splx_idx]
 
-        # precompute random weights
+        # Precompute random weights
         num_rand = N
         weights = -torch.log(torch.rand(num_rand, d + 1, device=landmarks.device))
         weights = weights / weights.sum(dim=1, keepdim=True)
         all_random_points = weights.unsqueeze(0) @ all_simplex_points
         del weights
 
+        # If triton kernel is disabled or we are not on the GPU, run CPU computation
         if disable_kernel or (not landmarks.is_cuda):
             for i, simplex in enumerate(list_simplexes[d - 1]):
                 valid_witnesses_mask = (
@@ -146,7 +182,7 @@ def flood_complex(
                 )
                 out_complex[tuple(simplex)] = torch.min(dists_valid, dim=1).values.max()
         else:
-            # triton kernel
+            # Run triton kernel
             start = 0
             while start < len(list_simplexes[d - 1]):
                 end = min(len(list_simplexes[d - 1]), start + batch_size * BATCH_MULT)

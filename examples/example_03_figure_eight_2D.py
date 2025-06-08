@@ -5,7 +5,12 @@ import gudhi
 import torch
 import numpy as np
 
-from flooder import generate_landmarks, flood_complex, generate_figure_eight_2D_points
+from flooder import (
+    generate_landmarks,
+    flood_complex,
+    generate_figure_eight_2D_points,
+    save_to_disk,
+)
 
 device = torch.device("cuda")
 
@@ -78,6 +83,17 @@ def main():
             print(
                 f"{BLUE}  {j+1:2d}: (birth, death)=({b:.4f}, {d:.4f}), lifetime={(d-b):.4f} {RESET}"
             )
+
+    # Save the output to disk
+    save_to_disk(
+        {
+            "pts": pts.cpu().numpy(),
+            "lms": lms.cpu().numpy(),
+            "complex": out_complex,
+            "diags": diags,
+        },
+        "/tmp/example_03_figure_eight_2D_out.pt",
+    )
 
 
 if __name__ == "__main__":
