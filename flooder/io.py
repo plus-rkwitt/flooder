@@ -1,9 +1,13 @@
-import os
+"""IO functionality (for consistent saving).
+
+Copyright (c) 2025 Paolo Pellizzoni, Florian Graf, Martin Uray, Stefan Huber and Roland Kwitt
+SPDX-License-Identifier: MIT
+"""
+
 import torch
 import datetime
-import numpy as np
 from pathlib import Path
-from typing import Any, Dict, Union
+from typing import Any, Union
 
 
 def save_to_disk(

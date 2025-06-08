@@ -6,7 +6,6 @@ SPDX-License-Identifier: MIT
 
 import torch
 import numpy as np
-import numpy.typing as npt
 from typing import Tuple, Optional, Literal
 
 

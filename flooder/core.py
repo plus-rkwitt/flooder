@@ -10,7 +10,6 @@ import fpsample
 import numpy as np
 from math import sqrt
 from typing import Union
-from pathlib import Path
 
 from .triton_kernel_flood_filtered import flood_triton_filtered
 
@@ -111,9 +110,7 @@ def flood_complex(
 
     dc = gudhi.AlphaComplex(landmarks).create_simplex_tree()
 
-    """
-    For now, the landmark points upon which the flood complex is build 
-    are always born at time 0.
+    """For now, the landmark points are always born at time 0.
     """
     out_complex = {}
     idxs = list(range(landmarks.shape[0]))
