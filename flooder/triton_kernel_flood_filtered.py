@@ -65,8 +65,13 @@ def flood_triton_filtered(
     # Allocate an intermediate tensor of shape (S, R) on the GPU.
     inter = torch.full((S, R), 2e9, device=x.device, dtype=torch.int32)
 
+    # Bounds check
+    assert col_idx.shape[0] == T * BLOCK_W
+    assert row_idx.shape[0] == T
+
     try:
         grid = lambda meta: (R_tiles, T)
+        x = x.contiguous().view(-1)  # Make sure indexing math (later) matches layout
         row_idx = row_idx + 0  # this is needed
         flood_kernel[grid](
             x, y, row_idx, col_idx, inter, R, W, d, BLOCK_R=BLOCK_R, BLOCK_W=BLOCK_W

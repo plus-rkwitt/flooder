@@ -110,8 +110,7 @@ def flood_complex(
 
     dc = gudhi.AlphaComplex(landmarks).create_simplex_tree()
 
-    """For now, the landmark points are always born at time 0.
-    """
+    # For now, the landmark points are always born at time 0.
     out_complex = {}
     idxs = list(range(landmarks.shape[0]))
     for idx in idxs:
@@ -178,8 +177,8 @@ def flood_complex(
                     all_random_points[i], witnesses[valid_witnesses_mask[0]]
                 )
                 out_complex[tuple(simplex)] = torch.min(dists_valid, dim=1).values.max()
+        # Run triton kernel
         else:
-            # Run triton kernel
             start = 0
             while start < len(list_simplexes[d - 1]):
                 end = min(len(list_simplexes[d - 1]), start + batch_size * BATCH_MULT)
@@ -206,7 +205,6 @@ def flood_complex(
                     ],
                     dim=1,
                 )
-
                 for b in range(BATCH_MULT):
                     start2 = start + b * batch_size
                     end2 = min(end, start2 + batch_size)
@@ -216,6 +214,10 @@ def flood_complex(
                         valid[start2 - start : end2 - start], as_tuple=True
                     )
                     row_idx = row_idx[::BLOCK_W]
+
+                    # make sure indexing is contiguous and of type int32 for triton
+                    row_idx = row_idx.contiguous().to(torch.int32)
+                    col_idx = col_idx.contiguous().to(torch.int32)
 
                     min_covering_radius, idx = flood_triton_filtered(
                         random_points,

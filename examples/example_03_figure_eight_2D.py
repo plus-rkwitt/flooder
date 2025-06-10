@@ -42,11 +42,13 @@ def top_k_longest(bd: np.array, k: int = 10):
 
 def main():
 
-    print(f"{YELLOW}Flood PH of a noisy figure-eight sample (1M points)")
-    print(f"{YELLOW}---------------------------------------------------")
+    torch.cuda.reset_peak_memory_stats()
 
-    N_w = 1000000  # Number of points sampled from figure-eight
-    N_l = 1000  # Number of landmarks for Flood complex
+    N_w = 10_000_000  # Number of points sampled from figure-eight
+    N_l = 2000  # Number of landmarks for Flood complex
+
+    print(f"{YELLOW}Flood PH of a noisy figure-eight sample 10M points)")
+    print(f"{YELLOW}---------------------------------------------------")
 
     pts = generate_figure_eight_2D_points(
         N_w, noise_std=0.02, noise_kind="gaussian", rng=42
@@ -56,8 +58,11 @@ def main():
     lms = generate_landmarks(pts, N_l)
     t1_fps = time.perf_counter()
 
+    lms = lms.to(device)
+    pts = pts.to(device)
+
     t0_complex = time.perf_counter()
-    out_complex = flood_complex(lms.to(device), pts.to(device), dim=3, batch_size=16)
+    out_complex = flood_complex(lms, pts, dim=3, batch_size=12, BATCH_MULT=1)
     t1_complex = time.perf_counter()
 
     t0_ph = time.perf_counter()
@@ -93,6 +98,11 @@ def main():
             "diags": diags,
         },
         "/tmp/example_03_figure_eight_2D_out.pt",
+        True,
+        True,
+    )
+    print(
+        f"{RED}Peak memory: {torch.cuda.max_memory_allocated() / 1024**2} MiB {RESET}"
     )
 
 
