@@ -91,6 +91,15 @@ def flood_complex(
         corresponding covering radii. The keys are of the form (i, j, ..., k) for
         simplices of dimension `dim`, where `i`, `j`, ..., `k` are indices of the
         landmarks. The values are the covering radii for each simplex.
+
+    Notes
+    -----
+    The grid dimensions `(R_tiles, T)` when launching the Triton kernel in
+    triton_kernel_flood_filtered.py must not exceed the GPU's hardware limits, e.g.,
+        - `grid_x <= 2**31 - 1`
+        - `grid_y <= 65535`
+    In case an error related to the kernel launch occurs, consider reducing the batch
+    size and/or `BATCH_MULT`.
     """
 
     RADIUS_FACTOR = 1.4
