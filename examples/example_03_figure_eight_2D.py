@@ -44,10 +44,10 @@ def main():
 
     torch.cuda.reset_peak_memory_stats()
 
-    N_w = 10_000_000  # Number of points sampled from figure-eight
+    N_w = 40_000_000  # Number of points sampled from figure-eight
     N_l = 2000  # Number of landmarks for Flood complex
 
-    print(f"{YELLOW}Flood PH of a noisy figure-eight sample 10M points)")
+    print(f"{YELLOW}Flood PH of a noisy figure-eight sample 40M points)")
     print(f"{YELLOW}---------------------------------------------------")
 
     pts = generate_figure_eight_2D_points(
@@ -62,7 +62,7 @@ def main():
     pts = pts.to(device)
 
     t0_complex = time.perf_counter()
-    out_complex = flood_complex(lms, pts, dim=3, batch_size=12, BATCH_MULT=1)
+    out_complex = flood_complex(lms, pts, dim=3, batch_size=8, BATCH_MULT=1)
     t1_complex = time.perf_counter()
 
     t0_ph = time.perf_counter()

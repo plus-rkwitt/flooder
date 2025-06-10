@@ -69,6 +69,16 @@ def flood_triton_filtered(
     assert col_idx.shape[0] == T * BLOCK_W
     assert row_idx.shape[0] == T
 
+    """Important: run ./deviceQuery from 
+    
+    https://github.com/NVIDIA/cuda-samples/
+    
+    and check for "Max dimension size of a grid size" as the grid may become 
+    too large for the GPU to handle. If this is the case, you can set
+    disable_kernel=True in the flood_complex function to use the CPU fallback, or
+    reduce the batch size.
+    """
+
     try:
         grid = lambda meta: (R_tiles, T)
         x = x.contiguous().view(-1)  # Make sure indexing math (later) matches layout
@@ -78,7 +88,7 @@ def flood_triton_filtered(
         )
     except RuntimeError:
         raise RuntimeError(
-            "Memory error in CUDA, try lowering the batch size or setting disable_kernel=True"
+            "Memory/Grid size error in CUDA, try lowering the batch size or setting disable_kernel=True"
         )
 
     out, idx = (inter.to(torch.float32) / 1e6).max(dim=1)
