@@ -2,7 +2,3 @@ torch
 gudhi
 numpy
 fpsample
-mkdocs
-mkdocs-material
-mkdocstrings[python]
-mkdocs-charts-plugin
