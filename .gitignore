@@ -2,3 +2,4 @@ assets
 dist
 flooder.egg-info
 flooder/__pycache__
+site/

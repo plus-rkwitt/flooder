@@ -1,0 +1,69 @@
+site_name: flooder - Lightspeed Flood Complex (for Persistent Homology)
+site_url: https://mydomain.org/mysite
+nav:
+  - Home: index.md
+  - Installation: install.md
+  - Examples: examples.md
+  - API Reference:
+      - Utils: reference/io.md
+      - Synthetic data generators: reference/synthetic_data_generators.md
+theme:
+  font:
+    text: Lato
+    code: Roboto Mono
+  name: material
+  features:
+    - navigation.instant
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - content.code.copy
+  palette:
+    primary: orange
+markdown_extensions:
+  - footnotes
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - tables
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.arithmatex:
+      generic: true
+  - attr_list
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - md_in_html
+  - pymdownx.blocks.caption
+  - pymdownx.superfences:
+      custom_fences:
+        - name: vegalite
+          class: vegalite
+          format: !!python/name:mkdocs_charts_plugin.fences.fence_vegalite
+plugins:
+  - search
+  - charts
+  - mkdocstrings:
+      handlers:
+        python:
+          docstring_style: google
+          options:
+            show_source: false
+            show_root_heading: true
+            show_signature_annotations: true
+            separate_signature: true
+            merge_init_into_class: true
+            line_length: 60  # wrap long signatures
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
+  - https://cdn.jsdelivr.net/npm/vega@5
+  - https://cdn.jsdelivr.net/npm/vega-lite@5
+  - https://cdn.jsdelivr.net/npm/vega-embed@6
+repo_url: https://github.com/plus-rkwitt/flooder
+copyright: Copyright &copy; 2025 Paolo Pellizzoni, Florian Graf, Martin Uray, Stefan Huber, Roland Kwitt
