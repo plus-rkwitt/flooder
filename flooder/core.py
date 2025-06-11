@@ -45,8 +45,8 @@ def generate_landmarks(points: torch.Tensor, N_l: int) -> torch.Tensor:
     """
     assert N_l > 0, "Number of landmarks must be positive."
     index_set = torch.tensor(
-        fpsample.bucket_fps_kdline_sampling(points.cpu(), N_l, h=5).astype(np.int64)
-    ).to(points.device)
+        fpsample.bucket_fps_kdline_sampling(points.cpu(), N_l, h=5).astype(np.int64), device=points.device
+    )
     return points[index_set]
 
 
@@ -104,7 +104,7 @@ def flood_complex(
 
     RADIUS_FACTOR = 1.4
 
-    assert N % BLOCK_R == 0, "N must be a multiple of BLOCK_R."
+    assert N % BLOCK_R == 0, f"N ({N}) must be a multiple of BLOCK_R ({BLOCK_R})."
 
     max_range_dim = torch.argmax(
         witnesses.max(dim=0).values - witnesses.min(dim=0).values
@@ -114,6 +114,8 @@ def flood_complex(
 
     if isinstance(landmarks, int):
         landmarks = generate_landmarks(witnesses, min(landmarks, witnesses.shape[0]))
+    assert landmarks.device == witnesses.device, f"landmarks.device ({landmarks.device}) != witnesses.device {witnesses.device}"
+    device = landmarks.device
     resolution = torch.cdist(landmarks[-1:], landmarks[:-1]).min().item()
     resolution = 9.0 * resolution * resolution + 1e-3
 
@@ -164,7 +166,7 @@ def flood_complex(
         # Precompute random weights
         num_rand = N
         torch.manual_seed(1)
-        weights = -torch.log(torch.rand(num_rand, d + 1, device=landmarks.device))
+        weights = -torch.log(torch.rand(num_rand, d + 1, device=device))
         weights = weights / weights.sum(dim=1, keepdim=True)
         all_random_points = weights[None] @ all_simplex_points
         del weights
@@ -203,7 +205,7 @@ def flood_complex(
                 valid = torch.cat(
                     [
                         valid_witnesses_mask,
-                        torch.arange(BLOCK_W, device=landmarks.device).unsqueeze(0)
+                        torch.arange(BLOCK_W, device=device).unsqueeze(0)
                         < ((-valid_witnesses_mask.sum(dim=1)) % BLOCK_W).unsqueeze(1),
                     ],
                     dim=1,
