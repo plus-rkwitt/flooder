@@ -145,14 +145,15 @@ def flood_complex(
             torch.cdist(all_simplex_points, all_simplex_points).flatten(1),
             dim=1,
         )
-        idx0, idx1 = torch.unravel_index(max_flat_idx,[d+1, d+1])
+        idx0, idx1 = torch.unravel_index(max_flat_idx, [d + 1, d + 1])
         simplex_centers_vec = (
             all_simplex_points[torch.arange(num_simplices), idx0]
             + all_simplex_points[torch.arange(num_simplices), idx1]
         ) / 2.0
-        simplex_radii_vec = (
-            all_simplex_points - simplex_centers_vec.unsqueeze(1)
-        ).norm(dim=2).max(dim=1)[0] * (RADIUS_FACTOR if d > 1 else 1.0)
+        simplex_radii_vec = torch.amax(
+            (all_simplex_points - simplex_centers_vec[:, None]).norm(dim=2),
+            dim=1
+        ) * (RADIUS_FACTOR if d > 1 else 1.0)
 
         splx_idx = torch.argsort(simplex_centers_vec[:, max_range_dim])
         all_simplex_points = all_simplex_points[splx_idx]
@@ -162,9 +163,10 @@ def flood_complex(
 
         # Precompute random weights
         num_rand = N
+        torch.manual_seed(1)
         weights = -torch.log(torch.rand(num_rand, d + 1, device=landmarks.device))
         weights = weights / weights.sum(dim=1, keepdim=True)
-        all_random_points = weights.unsqueeze(0) @ all_simplex_points
+        all_random_points = weights[None] @ all_simplex_points
         del weights
 
         # If triton kernel is disabled or we are not on the GPU, run CPU computation
@@ -177,7 +179,7 @@ def flood_complex(
                 dists_valid = torch.cdist(
                     all_random_points[i], witnesses[valid_witnesses_mask[0]]
                 )
-                out_complex[tuple(simplex)] = torch.min(dists_valid, dim=1).values.max()
+                out_complex[tuple(simplex)] = torch.amin(dists_valid, dim=1).max()
         # Run triton kernel
         else:
             start = 0
@@ -217,8 +219,8 @@ def flood_complex(
                     row_idx = row_idx[::BLOCK_W]
 
                     # make sure indexing is contiguous and of type int32 for triton
-                    row_idx = row_idx.contiguous().to(torch.int32)
-                    col_idx = col_idx.contiguous().to(torch.int32)
+                    row_idx = row_idx.to(torch.int32).contiguous()
+                    col_idx = col_idx.to(torch.int32).contiguous()
 
                     min_covering_radius, idx = flood_triton_filtered(
                         random_points,
