@@ -5,3 +5,4 @@ fpsample
 mkdocs
 mkdocs-material
 mkdocstrings[python]
+mkdocs-charts-plugin
