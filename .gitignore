@@ -7,3 +7,4 @@ site/
 __pycache__/
 Makefile
 WORKFLOW.md
+docs/.DS_Store

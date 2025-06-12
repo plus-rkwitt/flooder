@@ -34,11 +34,7 @@ Please see our `examples` folder in the **flooder** [GitHub repository](https://
 Technical details for **flooder** can be found in the following arXiv preprint:
 
 ```bibtex
-@article{Pellizzoni25a,
-    author  = {Pellizzoni, P. and Graf, F. and Uray, M. and Huber, S. and Kwitt, R.},
-    title   = {{The Flood Complex - Large-Scale Persistent Homology on Millions of Points}},
-    journal = {arXiv preprint},
-    year    = {2025}}
+coming soon!
 ```
 
 
