@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["flooder"]
+
+[project]
+name = "flooder"
+version = "0.1.5"
+description = "Flood complex PH"
+readme = "README.md"
+license = "MIT"
+authors = [{ name="Paolo Pellizzoni, Florian Graf, Martin Uray, Stefan Huber, Roland Kwitt", email="roland.kwitt@gmail.com" }]
+dependencies = [
+    "torch",
+    "gudhi",
+    "numpy",
+    "fpsample",
+]
+requires-python = ">=3.8"
