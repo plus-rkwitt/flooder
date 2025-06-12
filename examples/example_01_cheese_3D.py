@@ -1,9 +1,10 @@
 """Example 01: Runtime measurements for Alpha PH vs. Flood PH on 3D cheese data."""
 
+from timeit import default_timer as timer
+
 import torch
 import numpy as np
-import gudhi
-from timeit import default_timer as timer
+from gudhi import AlphaComplex, SimplexTree
 
 from flooder import generate_swiss_cheese_points, flood_complex, save_to_disk
 
@@ -19,8 +20,8 @@ RESET = "\033[0m"
 
 
 def main():
-    N_ws = [10000, 100000, 1000000, 10000000]  # Number of flood sources / data points
-    N_l = 1000  # Number of landmarks to use
+    n_ws = [10000, 100000, 1000000, 10000000]  # Number of flood sources / data points
+    n_l = 1000  # Number of landmarks to use
     b_sizes = [1024, 1024, 32, 2]  # Batch sizes for flood complex computation
 
     rect_min = torch.tensor([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
@@ -35,25 +36,25 @@ def main():
 
     print(f"{YELLOW}Alpha PH vs. Flood PH timing on cheese")
     print(f"{YELLOW}--------------------------------------")
-    for i, N_w in enumerate(N_ws):
+    for i, n_w in enumerate(n_ws):
         for rep in range(5):
             points, _ = generate_swiss_cheese_points(
-                N_w, rect_min[:dim], rect_max[:dim], k, void_radius_range
+                n_w, rect_min[:dim], rect_max[:dim], k, void_radius_range
             )
 
             startt = timer()
-            alpha = gudhi.AlphaComplex(points).create_simplex_tree()
+            alpha = AlphaComplex(points).create_simplex_tree()
             t1 = timer() - startt
 
             alpha.compute_persistence()
             t2 = timer() - startt
             print(
-                f"{RED}{N_w:8d} points (try {rep}) | "
+                f"{RED}{n_w:8d} points (try {rep}) | "
                 f"Complex (Alpha): {t1:6.2f} sec | "
                 f"PH (Alpha): {t2:6.2f} sec{RESET}"
             )
             results.append(
-                {"rep": rep, "W": N_w, "method": "Alpha", "tA": t1, "tB": t2}
+                {"rep": rep, "W": n_w, "method": "Alpha", "tA": t1, "tB": t2}
             )
 
             pdiagram_land2_alpha = np.sqrt(
@@ -62,15 +63,16 @@ def main():
             pdiagram_land_alpha_s.append(pdiagram_land2_alpha)
 
             points = points.to(DEVICE)
+            # GPU warmup
             out_complex = flood_complex(
-                N_l, points[:10000], dim=3, batch_size=b_sizes[i]
+                n_l, points[:10000], dim=3, batch_size=b_sizes[i]
             )
             torch.cuda.synchronize()
 
             startt = timer()
-            out_complex = flood_complex(N_l, points, dim=3, batch_size=b_sizes[i])
+            out_complex = flood_complex(n_l, points, dim=3, batch_size=b_sizes[i])
 
-            st = gudhi.SimplexTree()
+            st = SimplexTree()
             for simplex in out_complex:
                 st.insert(simplex, out_complex[simplex])
             st.make_filtration_non_decreasing()
@@ -80,12 +82,12 @@ def main():
             st.compute_persistence()
             t2 = timer() - startt
             print(
-                f"{BLUE}{N_w:8d} points (try {rep}) | "
+                f"{BLUE}{n_w:8d} points (try {rep}) | "
                 f"Complex (Flood): {t1:6.2f} sec | "
                 f"PH (Flood): {t2:6.2f} sec{RESET}"
             )
             results.append(
-                {"rep": rep, "W": N_w, "method": "Flood", "tA": t1, "tB": t2}
+                {"rep": rep, "W": n_w, "method": "Flood", "tA": t1, "tB": t2}
             )
 
             pdiagram_land2 = st.persistence_intervals_in_dimension(dim - 1)
@@ -96,8 +98,8 @@ def main():
             "results": results,
             "pdiagram_land_flood_s": pdiagram_land_flood_s,
             "pdiagram_land_alpha_s": pdiagram_land_alpha_s,
-            "N_ws": N_ws,
-            "N_l": N_l,
+            "n_ws": n_ws,
+            "n_l": n_l,
             "b_sizes": b_sizes,
             "rect_min": rect_min.cpu().numpy(),
             "rect_max": rect_max.cpu().numpy(),
