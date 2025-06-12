@@ -5,3 +5,5 @@ flooder/__pycache__
 site/
 *.pyc
 __pycache__/
+Makefile
+WORKFLOW.md
