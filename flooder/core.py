@@ -175,8 +175,7 @@ def flood_complex(
                 out_complex[tuple(simplex)] = torch.amin(dists_valid, dim=1).max()
         # Run triton kernel
         else:
-            start = 0
-            while start < len(d_simplices):
+            for start in range(0, len(d_simplices), batch_size * BATCH_MULT):
                 end = min(len(d_simplices), start + batch_size * BATCH_MULT)
                 vmin = (
                     simplex_centers_vec[start:end, max_range_dim]
@@ -201,10 +200,9 @@ def flood_complex(
                     ],
                     dim=1,
                 )
-                for b in range(BATCH_MULT):
-                    start2 = start + b * batch_size
-                    end2 = min(end, start2 + batch_size)
 
+                for start2 in range(start, end, batch_size):
+                    end2 = min(end, start2 + batch_size)
                     random_points = all_random_points[start2:end2]
                     row_idx, col_idx = torch.nonzero(
                         valid[start2 - start : end2 - start], as_tuple=True
@@ -245,7 +243,5 @@ def flood_complex(
                         )
 
                     out_complex.update(zip(d_simplices[start2:end2], min_covering_radius))
-
-                start = end
 
     return out_complex
