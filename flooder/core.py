@@ -19,29 +19,23 @@ BLOCK_R = 64
 
 def generate_landmarks(points: torch.Tensor, N_l: int) -> torch.Tensor:
     """
-    Farthest-Point-Sampling (bucket FPS) from
+    Selects landmarks using Farthest-Point Sampling (bucket FPS).
 
-    @article{han2023quickfps,
-        title={QuickFPS: Architecture and Algorithm Co-Design for Farthest
-            Point Sampling in Large-Scale Point Clouds},
-        author={Han, Meng and Wang, Liang and Xiao, Limin and Zhang, Hao and Zhang,
-            Chenhao and Xu, Xiangrong and Zhu, Jianfeng},
-        journal={IEEE Transactions on Computer-Aided Design of Integrated Circuits
-            and Systems},
-        year={2023},
-        publisher={IEEE}}
+    This method implements a variant of Farthest-Point Sampling from 
+    [here](https://dl.acm.org/doi/abs/10.1109/TCAD.2023.3274922).
 
-    Parameters
-    ----------
-    points : torch.Tensor
-        (P, d) point cloud on **any** device / dtype.
-    N_l : int
-        Number of landmarks to sample (<= P).
+    Args:
+        points (torch.Tensor):
+            A (P, d) tensor representing a point cloud. The tensor may reside on any device
+            (CPU or GPU) and be of any floating-point dtype.
+        N_l (int):
+            The number of landmarks to sample (must be <= P and > 0).
 
-    Returns
-    -------
-    torch.Tensor
-        (N_l, d) subset of `points` on the *same* device and dtype.
+    Returns:
+        torch.Tensor:
+            A (N_l, d) tensor containing a subset of the input `points`, representing the
+            sampled landmarks. Returned tensor is on the same device and has the same dtype
+            as the input.
     """
     assert N_l > 0, "Number of landmarks must be positive."
     index_set = torch.tensor(
@@ -60,46 +54,43 @@ def flood_complex(
     disable_kernel: bool = False,
     do_second_stage: bool = False,
 ) -> dict:
-    """Flood complex construction.
+    """
+    Constructs a Flood complex from a set of landmark and witness points.
 
-    Parameters
-    ----------
-    landmarks : Union[int, torch.Tensor]
-        Either an integer specifying the number of landmarks to sample from `witnesses`
-        or a tensor of shape (N_l, d) containing the landmarks.
-    witnesses : torch.Tensor
-        (N, d) tensor of points to be used as flood sources.
-    dim : int, optional
-        Dimension of the simplices to be computed, by default 1.
-    N : int, optional
-        Number of random points to sample for each simplex, must be a multiple of
-        `BLOCK_R`, by default 512.
-    batch_size : int, optional
-        Batch size for processing simplices, by default 32.
-    BATCH_MULT : int, optional
-        Multiplier for batch size, by default 32.
-    disable_kernel : bool, optional
-        If True, disables the use of the Triton kernel for flood complex computation,
-        default is False.
-    do_second_stage : bool, optional
-        If True, performs a second stage of refinement for the computed radii,
-        default is False.
-    Returns
-    -------
-    dict: dict
-        A dictionary where keys are tuples representing simplices and values are the
-        corresponding covering radii. The keys are of the form (i, j, ..., k) for
-        simplices of dimension `dim`, where `i`, `j`, ..., `k` are indices of the
-        landmarks. The values are the covering radii for each simplex.
+    Args:
+        landmarks (Union[int, torch.Tensor]):
+            Either an integer indicating the number of landmarks to randomly sample
+            from `witnesses`, or a tensor of shape (N_l, d) specifying explicit landmark coordinates.
+        witnesses (torch.Tensor):
+            A (N, d) tensor containing witness points used as sources in the flood process.
+        dim (int, optional):
+            The top dimension of the simplices to construct (e.g., 1 for edges, 2 for triangles). Defaults to 1.
+        N (int, optional):
+            Number of random points to sample for each simplex. This value MUST be a multiple 
+            of `BLOCK_R`. Defaults to 512.
+        batch_size (int, optional):
+            Number of simplices to process per batch. Defaults to 32.
+        BATCH_MULT (int, optional):
+            Batch size multiplier, used to control kernel tile granularity. Defaults to 32.
+        disable_kernel (bool, optional):
+            If True, disables the use of the Triton kernel and uses the CPU fallback method. 
+            Defaults to False.
+        do_second_stage (bool, optional):
+            If True, performs a secondary refinement step to improve the accuracy 
+            of the covering radii. Defaults to False.
 
-    Notes
-    -----
-    The grid dimensions `(R_tiles, T)` when launching the Triton kernel in
-    triton_kernel_flood_filtered.py must not exceed the GPU's hardware limits, e.g.,
-        - `grid_x <= 2**31 - 1`
-        - `grid_y <= 65535`
-    In case an error related to the kernel launch occurs, consider reducing the batch
-    size and/or `BATCH_MULT`.
+    Returns:
+        dict:
+            A dictionary mapping simplices to their estimated covering radii (i.e., filtration
+            value). Each key is a tuple of landmark indices (e.g., (i, j) for an edge), and 
+            each value is a float radius.
+
+    Notes:
+        Triton kernel launches may fail if grid dimensions exceed hardware limits.
+        Typical constraints include:
+            - grid_x <= 2**31 - 1
+            - grid_y <= 65535
+        To avoid such issues, reduce `batch_size` and/or `BATCH_MULT` if necessary.
     """
 
     RADIUS_FACTOR = 1.4

@@ -7,6 +7,7 @@ nav:
   - API Reference:
       - Utils: reference/io.md
       - Synthetic data generators: reference/synthetic_data_generators.md
+      - Core: reference/core.md
 theme:
   font:
     text: Lato
