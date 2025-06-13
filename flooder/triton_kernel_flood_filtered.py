@@ -39,7 +39,6 @@ def flood_kernel(
 
     # Use tl.min with axis=1 to compute the minimum along the BLOCK_W (tile) dimension.
     tile_min = tl.sqrt(tl.min(dist2, axis=1))
-    tile_min = (tile_min * 1e6).to(tl.int32)  # cast to int
 
     tl.atomic_min(
         inter_ptr + id_s * R + pid_r * BLOCK_R + tl.arange(0, BLOCK_R), tile_min
@@ -54,6 +53,7 @@ def flood_triton_filtered(
     BLOCK_W,
     BLOCK_R,
 ) -> torch.Tensor:
+
     S, R, d = x.shape
     W, d_y = y.shape
     num_valid = col_idx.shape[0]
@@ -63,11 +63,16 @@ def flood_triton_filtered(
     R_tiles = R // BLOCK_R  # Number of tiles in the R dimension.
 
     # Allocate an intermediate tensor of shape (S, R) on the GPU.
-    inter = torch.full((S, R), 2e9, device=x.device, dtype=torch.int32)
+    inter = torch.full((S, R), torch.inf, device=x.device, dtype=torch.float32)
 
     # Bounds check
-    assert col_idx.shape[0] == T * BLOCK_W
-    assert row_idx.shape[0] == T
+    assert row_idx.shape ==  col_idx.shape, f"row_idx.shape ({row_idx.shape}) does not match col_idx.shape ({col_idx.shape}"
+    assert col_idx.shape[0] == T * BLOCK_W, f"col_idx.shape[0] {col_idx.shape[0]} does not match T * BLOCK_W ({T} * {BLOCK_W} = {T * BLOCK_W})"    
+
+    row_idx = row_idx[::BLOCK_W] # consecutive row_indices need to be constant in blocks of length BLOCK_W
+    # make sure indexing is contiguous and of type int32 for triton
+    row_idx = row_idx.to(torch.int32).contiguous()
+    col_idx = col_idx.to(torch.int32).contiguous()
 
     """Important: run ./deviceQuery from 
     
@@ -82,7 +87,6 @@ def flood_triton_filtered(
     try:
         def grid(meta): return (R_tiles, T)
         x = x.contiguous().view(-1)  # Make sure indexing math (later) matches layout
-        row_idx = row_idx + 0  # this is needed
         flood_kernel[grid](
             x, y, row_idx, col_idx, inter, R, W, d, BLOCK_R=BLOCK_R, BLOCK_W=BLOCK_W
         )
@@ -91,5 +95,5 @@ def flood_triton_filtered(
             "Memory/Grid size error in CUDA, try lowering the batch size or setting disable_kernel=True"
         )
 
-    out, idx = (inter.to(torch.float32) / 1e6).max(dim=1)
+    out, idx = inter.max(dim=1)
     return out, idx
