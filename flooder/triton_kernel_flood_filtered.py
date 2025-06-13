@@ -80,7 +80,7 @@ def flood_triton_filtered(
     """
 
     try:
-        grid = lambda meta: (R_tiles, T)
+        def grid(meta): return (R_tiles, T)
         x = x.contiguous().view(-1)  # Make sure indexing math (later) matches layout
         row_idx = row_idx + 0  # this is needed
         flood_kernel[grid](
