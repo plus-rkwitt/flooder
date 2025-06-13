@@ -10,6 +10,7 @@ import fpsample
 import numpy as np
 from math import sqrt
 from typing import Union
+from scipy.spatial import KDTree
 
 from .triton_kernel_flood_filtered import flood_triton_filtered
 
@@ -21,7 +22,7 @@ def generate_landmarks(points: torch.Tensor, N_l: int) -> torch.Tensor:
     """
     Selects landmarks using Farthest-Point Sampling (bucket FPS).
 
-    This method implements a variant of Farthest-Point Sampling from 
+    This method implements a variant of Farthest-Point Sampling from
     [here](https://dl.acm.org/doi/abs/10.1109/TCAD.2023.3274922).
 
     Args:
@@ -38,7 +39,8 @@ def generate_landmarks(points: torch.Tensor, N_l: int) -> torch.Tensor:
             as the input.
     """
     assert N_l > 0, "Number of landmarks must be positive."
-    if N_l > points.shape[0]: N_l = points.shape[0]
+    if N_l > points.shape[0]:
+        N_l = points.shape[0]
     index_set = torch.tensor(
         fpsample.bucket_fps_kdline_sampling(points.cpu(), N_l, h=5).astype(np.int64), device=points.device
     )
@@ -67,23 +69,23 @@ def flood_complex(
         dim (int, optional):
             The top dimension of the simplices to construct (e.g., 1 for edges, 2 for triangles). Defaults to 1.
         N (int, optional):
-            Number of random points to sample for each simplex. This value MUST be a multiple 
+            Number of random points to sample for each simplex. This value MUST be a multiple
             of `BLOCK_R`. Defaults to 512.
         batch_size (int, optional):
             Number of simplices to process per batch. Defaults to 32.
         BATCH_MULT (int, optional):
             Batch size multiplier, used to control kernel tile granularity. Defaults to 32.
         disable_kernel (bool, optional):
-            If True, disables the use of the Triton kernel and uses the CPU fallback method. 
+            If True, disables the use of the Triton kernel and uses the CPU fallback method.
             Defaults to False.
         do_second_stage (bool, optional):
-            If True, performs a secondary refinement step to improve the accuracy 
+            If True, performs a secondary refinement step to improve the accuracy
             of the covering radii. Defaults to False.
 
     Returns:
         dict:
             A dictionary mapping simplices to their estimated covering radii (i.e., filtration
-            value). Each key is a tuple of landmark indices (e.g., (i, j) for an edge), and 
+            value). Each key is a tuple of landmark indices (e.g., (i, j) for an edge), and
             each value is a float radius.
 
     Notes:
@@ -96,6 +98,9 @@ def flood_complex(
 
     RADIUS_FACTOR = 1.4
     assert N % BLOCK_R == 0, f"N ({N}) must be a multiple of BLOCK_R ({BLOCK_R})."
+
+    if not landmarks.is_cuda:
+        kdtree = KDTree(np.asarray(witnesses))
 
     max_range_dim = torch.argmax(
         witnesses.max(dim=0).values - witnesses.min(dim=0).values
@@ -156,13 +161,17 @@ def flood_complex(
 
         # Precompute random weights
         num_rand = N
-        weights = -torch.log(torch.rand(num_rand, d + 1, device=device))
+        weights = -torch.log(torch.rand(num_rand, d + 1).to(device))  # Random points are created on cpu for seed for consistency across devices
         weights = weights / weights.sum(dim=1, keepdim=True)
         all_random_points = weights.unsqueeze(0) @ all_simplex_points
         del weights
 
+        if landmarks.is_cpu:
+            nn_dists, _ = kdtree.query(np.asarray(all_random_points))
+            filt = np.max(nn_dists, axis=1)
+            out_complex.update(zip(d_simplices, filt))
         # If triton kernel is disabled or we are not on the GPU, run CPU computation
-        if disable_kernel or (not landmarks.is_cuda):
+        elif landmarks.is_cuda and disable_kernel:
             for i, simplex in enumerate(d_simplices):
                 valid_witnesses_mask = (
                     torch.cdist(simplex_centers_vec[i : i + 1], witnesses)
@@ -173,7 +182,7 @@ def flood_complex(
                 )
                 out_complex[tuple(simplex)] = torch.amin(dists_valid, dim=1).max()
         # Run triton kernel
-        else:
+        elif landmarks.is_cuda and not disable_kernel:
             for start in range(0, len(d_simplices), batch_size * BATCH_MULT):
                 end = min(len(d_simplices), start + batch_size * BATCH_MULT)
                 vmin = (
@@ -206,7 +215,6 @@ def flood_complex(
                     row_idx, col_idx = torch.nonzero(
                         valid[start2 - start : end2 - start], as_tuple=True
                     )
-                    
                     min_covering_radius, idx = flood_triton_filtered(
                         random_points,
                         witnesses[imin:imax],
@@ -237,5 +245,9 @@ def flood_complex(
                         )
 
                     out_complex.update(zip(d_simplices[start2:end2], min_covering_radius.tolist()))
+        else:
+            raise RuntimeError(
+                "device not supported."
+            )
 
     return out_complex
