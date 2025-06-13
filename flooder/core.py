@@ -38,9 +38,10 @@ def generate_landmarks(points: torch.Tensor, N_l: int) -> torch.Tensor:
             as the input.
     """
     assert N_l > 0, "Number of landmarks must be positive."
+    if N_l > points.shape[0]: N_l = points.shape[0]
     index_set = torch.tensor(
-        fpsample.bucket_fps_kdline_sampling(points.cpu(), N_l, h=5).astype(np.int64)
-    ).to(points.device)
+        fpsample.bucket_fps_kdline_sampling(points.cpu(), N_l, h=5).astype(np.int64), device=points.device
+    )
     return points[index_set]
 
 
@@ -94,8 +95,7 @@ def flood_complex(
     """
 
     RADIUS_FACTOR = 1.4
-
-    assert N % BLOCK_R == 0, "N must be a multiple of BLOCK_R."
+    assert N % BLOCK_R == 0, f"N ({N}) must be a multiple of BLOCK_R ({BLOCK_R})."
 
     max_range_dim = torch.argmax(
         witnesses.max(dim=0).values - witnesses.min(dim=0).values
@@ -105,18 +105,19 @@ def flood_complex(
 
     if isinstance(landmarks, int):
         landmarks = generate_landmarks(witnesses, min(landmarks, witnesses.shape[0]))
+    assert landmarks.device == witnesses.device, f"landmarks.device ({landmarks.device}) != witnesses.device {witnesses.device}"
+    device = landmarks.device
     resolution = torch.cdist(landmarks[-1:], landmarks[:-1]).min().item()
     resolution = 9.0 * resolution * resolution + 1e-3
 
     dc = gudhi.AlphaComplex(landmarks).create_simplex_tree()
 
-    # For now, the landmark points are always born at time 0.
     out_complex = {}
-    idxs = list(range(landmarks.shape[0]))
-    for idx in idxs:
-        out_complex[(idx,)] = 0.0
 
-    list_simplexes = [[] for _ in range(1, dim + 1)]
+    # For now, the landmark points are always born at time 0.
+    out_complex.update(((i,), 0.0) for i in range(len(landmarks)))
+
+    list_simplices = [[] for _ in range(dim)]
     for simplex, filtration in dc.get_simplices():
         if len(simplex) == 1 or len(simplex) > dim + 1:
             continue
@@ -124,51 +125,45 @@ def flood_complex(
         if filtration > resolution:
             out_complex[tuple(simplex)] = sqrt(filtration)
         else:
-            list_simplexes[len(simplex) - 2].append(tuple(simplex))
+            list_simplices[len(simplex) - 2].append(tuple(simplex))
 
     for d in range(1, dim + 1):
-        if len(list_simplexes[d - 1]) == 0:
+        d_simplices = list_simplices[d - 1]
+        num_simplices = len(d_simplices)
+        if num_simplices == 0:
             continue
         # precompute simplex centers
-        all_simplex_points = landmarks[
-            torch.tensor(list_simplexes[d - 1], device=landmarks.device)
-        ]
+        all_simplex_points = landmarks[[d_simplices]]
         max_flat_idx = torch.argmax(
-            torch.cdist(all_simplex_points, all_simplex_points).view(
-                all_simplex_points.shape[0], -1
-            ),
+            torch.cdist(all_simplex_points, all_simplex_points).flatten(1),
             dim=1,
         )
+        idx0, idx1 = torch.unravel_index(max_flat_idx, [d + 1, d + 1])
         simplex_centers_vec = (
-            all_simplex_points[
-                torch.arange(all_simplex_points.shape[0]),
-                max_flat_idx // all_simplex_points.shape[1],
-            ]
-            + all_simplex_points[
-                torch.arange(all_simplex_points.shape[0]),
-                max_flat_idx % all_simplex_points.shape[1],
-            ]
+            all_simplex_points[torch.arange(num_simplices), idx0]
+            + all_simplex_points[torch.arange(num_simplices), idx1]
         ) / 2.0
-        simplex_radii_vec = (
-            all_simplex_points - simplex_centers_vec.unsqueeze(1)
-        ).norm(dim=2).max(dim=1)[0] * (RADIUS_FACTOR if d > 1 else 1.0)
+        simplex_radii_vec = torch.amax(
+            (all_simplex_points - simplex_centers_vec.unsqueeze(1)).norm(dim=2),
+            dim=1
+        ) * (RADIUS_FACTOR if d > 1 else 1.0)
 
         splx_idx = torch.argsort(simplex_centers_vec[:, max_range_dim])
         all_simplex_points = all_simplex_points[splx_idx]
         simplex_centers_vec = simplex_centers_vec[splx_idx]
         simplex_radii_vec = simplex_radii_vec[splx_idx]
-        list_simplexes[d - 1] = [list_simplexes[d - 1][ii] for ii in splx_idx]
+        d_simplices = [d_simplices[ii] for ii in splx_idx]
 
         # Precompute random weights
         num_rand = N
-        weights = -torch.log(torch.rand(num_rand, d + 1, device=landmarks.device))
+        weights = -torch.log(torch.rand(num_rand, d + 1, device=device))
         weights = weights / weights.sum(dim=1, keepdim=True)
         all_random_points = weights.unsqueeze(0) @ all_simplex_points
         del weights
 
         # If triton kernel is disabled or we are not on the GPU, run CPU computation
         if disable_kernel or (not landmarks.is_cuda):
-            for i, simplex in enumerate(list_simplexes[d - 1]):
+            for i, simplex in enumerate(d_simplices):
                 valid_witnesses_mask = (
                     torch.cdist(simplex_centers_vec[i : i + 1], witnesses)
                     < simplex_radii_vec[i] + 1e-3
@@ -176,12 +171,11 @@ def flood_complex(
                 dists_valid = torch.cdist(
                     all_random_points[i], witnesses[valid_witnesses_mask[0]]
                 )
-                out_complex[tuple(simplex)] = torch.min(dists_valid, dim=1).values.max()
+                out_complex[tuple(simplex)] = torch.amin(dists_valid, dim=1).max()
         # Run triton kernel
         else:
-            start = 0
-            while start < len(list_simplexes[d - 1]):
-                end = min(len(list_simplexes[d - 1]), start + batch_size * BATCH_MULT)
+            for start in range(0, len(d_simplices), batch_size * BATCH_MULT):
+                end = min(len(d_simplices), start + batch_size * BATCH_MULT)
                 vmin = (
                     simplex_centers_vec[start:end, max_range_dim]
                     - simplex_radii_vec[start:end]
@@ -200,25 +194,19 @@ def flood_complex(
                 valid = torch.cat(
                     [
                         valid_witnesses_mask,
-                        torch.arange(BLOCK_W, device=landmarks.device).unsqueeze(0)
+                        torch.arange(BLOCK_W, device=device).unsqueeze(0)
                         < ((-valid_witnesses_mask.sum(dim=1)) % BLOCK_W).unsqueeze(1),
                     ],
                     dim=1,
                 )
-                for b in range(BATCH_MULT):
-                    start2 = start + b * batch_size
-                    end2 = min(end, start2 + batch_size)
 
+                for start2 in range(start, end, batch_size):
+                    end2 = min(end, start2 + batch_size)
                     random_points = all_random_points[start2:end2]
                     row_idx, col_idx = torch.nonzero(
                         valid[start2 - start : end2 - start], as_tuple=True
                     )
-                    row_idx = row_idx[::BLOCK_W]
-
-                    # make sure indexing is contiguous and of type int32 for triton
-                    row_idx = row_idx.contiguous().to(torch.int32)
-                    col_idx = col_idx.contiguous().to(torch.int32)
-
+                    
                     min_covering_radius, idx = flood_triton_filtered(
                         random_points,
                         witnesses[imin:imax],
@@ -248,11 +236,6 @@ def flood_complex(
                             BLOCK_R=BLOCK_R,
                         )
 
-                    for i in range(end2 - start2):
-                        out_complex[list_simplexes[d - 1][start2 + i]] = (
-                            min_covering_radius[i]
-                        )
-
-                start = end
+                    out_complex.update(zip(d_simplices[start2:end2], min_covering_radius.tolist()))
 
     return out_complex
