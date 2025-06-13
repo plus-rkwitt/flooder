@@ -242,6 +242,6 @@ def flood_complex(
                             BLOCK_R=BLOCK_R,
                         )
 
-                    out_complex.update(zip(d_simplices[start2:end2], min_covering_radius))
+                    out_complex.update(zip(d_simplices[start2:end2], min_covering_radius.tolist()))
 
     return out_complex
