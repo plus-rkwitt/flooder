@@ -4,6 +4,7 @@ nav:
   - Home: index.md
   - Installation: install.md
   - Examples: examples.md
+  - Contributing: contributing.md
   - API Reference:
       - Utils: reference/io.md
       - Synthetic data generators: reference/synthetic_data_generators.md
