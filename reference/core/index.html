@@ -242,6 +242,25 @@
   
   
   
+  
+    <li class="md-tabs__item">
+      <a href="../../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
     
   
   
@@ -381,6 +400,28 @@
       
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Contributing
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
     
   
   
@@ -400,10 +441,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
           
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
             
   
   
@@ -416,8 +457,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_4">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             API Reference
           </label>
@@ -776,7 +817,7 @@ from <code>witnesses</code>, or a tensor of shape (N_l, d) specifying explicit l
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Number of random points to sample for each simplex. This value MUST be a multiple 
+                <p>Number of random points to sample for each simplex. This value MUST be a multiple
 of <code>BLOCK_R</code>. Defaults to 512.</p>
               </div>
             </td>
@@ -825,7 +866,7 @@ of <code>BLOCK_R</code>. Defaults to 512.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>If True, disables the use of the Triton kernel and uses the CPU fallback method. 
+                <p>If True, disables the use of the Triton kernel and uses the CPU fallback method.
 Defaults to False.</p>
               </div>
             </td>
@@ -842,7 +883,7 @@ Defaults to False.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>If True, performs a secondary refinement step to improve the accuracy 
+                <p>If True, performs a secondary refinement step to improve the accuracy
 of the covering radii. Defaults to False.</p>
               </div>
             </td>
@@ -870,7 +911,7 @@ of the covering radii. Defaults to False.</p>
             <td>
               <div class="doc-md-description">
                 <p>A dictionary mapping simplices to their estimated covering radii (i.e., filtration
-value). Each key is a tuple of landmark indices (e.g., (i, j) for an edge), and 
+value). Each key is a tuple of landmark indices (e.g., (i, j) for an edge), and
 each value is a float radius.</p>
               </div>
             </td>
@@ -908,7 +949,7 @@ To avoid such issues, reduce <code>batch_size</code> and/or <code>BATCH_MULT</co
     <div class="doc doc-contents ">
 
         <p>Selects landmarks using Farthest-Point Sampling (bucket FPS).</p>
-<p>This method implements a variant of Farthest-Point Sampling from 
+<p>This method implements a variant of Farthest-Point Sampling from
 <a href="https://dl.acm.org/doi/abs/10.1109/TCAD.2023.3274922">here</a>.</p>
 
 

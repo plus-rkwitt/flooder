@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://mydomain.org/mysite/install/">
+        <link rel="canonical" href="https://mydomain.org/mysite/contributing/">
       
       
-        <link rel="prev" href="..">
+        <link rel="prev" href="../examples/">
       
       
-        <link rel="next" href="../examples/">
+        <link rel="next" href="../reference/io/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -22,7 +22,7 @@
     
     
       
-        <title>Installation - flooder - Lightspeed Flood Complex (for Persistent Homology)</title>
+        <title>Contributing - flooder - Lightspeed Flood Complex (for Persistent Homology)</title>
       
     
     
@@ -74,7 +74,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#installation" class="md-skip">
+        <a href="#contributing" class="md-skip">
           Skip to content
         </a>
       
@@ -110,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Installation
+              Contributing
             
           </span>
         </div>
@@ -206,11 +206,9 @@
   
   
   
-    
   
-  
-    <li class="md-tabs__item md-tabs__item--active">
-      <a href="./" class="md-tabs__link">
+    <li class="md-tabs__item">
+      <a href="../install/" class="md-tabs__link">
         
   
   
@@ -246,9 +244,11 @@
   
   
   
+    
   
-    <li class="md-tabs__item">
-      <a href="../contributing/" class="md-tabs__link">
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
         
   
   
@@ -360,32 +360,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    Installation
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../install/" class="md-nav__link">
         
   
   
@@ -396,53 +374,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#environment-setup" class="md-nav__link">
-    <span class="md-ellipsis">
-      Environment setup
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#via-pip-recommended" class="md-nav__link">
-    <span class="md-ellipsis">
-      Via Pip (recommended)
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#development-installation" class="md-nav__link">
-    <span class="md-ellipsis">
-      Development installation
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -473,10 +404,32 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../contributing/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Contributing
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -487,6 +440,98 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#fork-the-repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fork the repository
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#add-upstream-remote" class="md-nav__link">
+    <span class="md-ellipsis">
+      Add upstream remote
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sync-your-local-main" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sync your local main
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create-a-feature-branch" class="md-nav__link">
+    <span class="md-ellipsis">
+      Create a feature branch
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#make-changes-and-commit" class="md-nav__link">
+    <span class="md-ellipsis">
+      Make changes and commit
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#push-your-branch-to-your-fork" class="md-nav__link">
+    <span class="md-ellipsis">
+      Push your branch to your fork
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#open-a-pr-on-github" class="md-nav__link">
+    <span class="md-ellipsis">
+      Open a PR on GitHub
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cleanup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cleanup
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -637,27 +682,72 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#environment-setup" class="md-nav__link">
+  <a href="#fork-the-repository" class="md-nav__link">
     <span class="md-ellipsis">
-      Environment setup
+      Fork the repository
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#via-pip-recommended" class="md-nav__link">
+  <a href="#add-upstream-remote" class="md-nav__link">
     <span class="md-ellipsis">
-      Via Pip (recommended)
+      Add upstream remote
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#development-installation" class="md-nav__link">
+  <a href="#sync-your-local-main" class="md-nav__link">
     <span class="md-ellipsis">
-      Development installation
+      Sync your local main
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create-a-feature-branch" class="md-nav__link">
+    <span class="md-ellipsis">
+      Create a feature branch
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#make-changes-and-commit" class="md-nav__link">
+    <span class="md-ellipsis">
+      Make changes and commit
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#push-your-branch-to-your-fork" class="md-nav__link">
+    <span class="md-ellipsis">
+      Push your branch to your fork
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#open-a-pr-on-github" class="md-nav__link">
+    <span class="md-ellipsis">
+      Open a PR on GitHub
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cleanup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cleanup
     </span>
   </a>
   
@@ -684,36 +774,57 @@
   
 
 
-<h1 id="installation">Installation</h1>
-<h2 id="environment-setup">Environment setup</h2>
-<p>We recommend installing <strong>flooder</strong> in a clean new Anaconda environment
-as described below:</p>
-<div class="language-bash highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-1">1</a></span>
-<span class="normal"><a href="#__codelineno-0-2">2</a></span>
-<span class="normal"><a href="#__codelineno-0-3">3</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1"></a>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>flooder-env<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.9<span class="w"> </span>-y
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2"></a>conda<span class="w"> </span>activate<span class="w"> </span>flooder-env
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3"></a>conda<span class="w"> </span>install<span class="w"> </span>pip<span class="w"> </span>git<span class="w"> </span>-y
-</span></code></pre></div></td></tr></table></div>
-<h2 id="via-pip-recommended">Via Pip (recommended)</h2>
-<p><strong>flooder</strong> is available on PyPi and can be installed via:</p>
-<div class="language-bash highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-1-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1"></a>pip<span class="w"> </span>install<span class="w"> </span>flooder
-</span></code></pre></div></td></tr></table></div>
-<h2 id="development-installation">Development installation</h2>
-<p>In case you want to contribute to <strong>flooder</strong>, clone the <a href="https://github.com/plus-rkwitt/flooder">GitHub repo</a> and run</p>
-<div class="language-bash highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-2-1">1</a></span>
-<span class="normal"><a href="#__codelineno-2-2">2</a></span>
-<span class="normal"><a href="#__codelineno-2-3">3</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/plus-rkwitt/flooder
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2"></a><span class="nb">cd</span><span class="w"> </span>flooder
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3"></a>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
-</span></code></pre></div></td></tr></table></div>
-<p>In case you do not want to install anything, you can also execute examples or tests
-from within the checked-out folder by specifying <code>PYTHONPATH</code>as</p>
-<div class="language-bash highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-3-1">1</a></span>
-<span class="normal"><a href="#__codelineno-3-2">2</a></span>
-<span class="normal"><a href="#__codelineno-3-3">3</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/plus-rkwitt/flooder
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2"></a><span class="nb">cd</span><span class="w"> </span>flooder
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3"></a><span class="nv">PYTHONPATH</span><span class="o">=</span>.<span class="w"> </span>python<span class="w"> </span>examples/example_01_cheese_3D.py
-</span></code></pre></div></td></tr></table></div>
+<h1 id="contributing">Contributing</h1>
+<p>Here's a step-by-step example of how to contribute to <code>flooder</code>.</p>
+<h2 id="fork-the-repository">Fork the repository</h2>
+<p>On GitHub, click <strong>"Fork"</strong> to create your personal copy of the repository, then
+   clone your fork. In the following, lets call the fork <code>flooder-devel</code>.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>https://github.com/rkwitt/flooder-devel.git
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nb">cd</span><span class="w"> </span>flooder-devel
+</span></code></pre></div>
+<h2 id="add-upstream-remote">Add upstream remote</h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>git<span class="w"> </span>remote<span class="w"> </span>add<span class="w"> </span>upstream<span class="w"> </span>https://github.com/plus-rkwitt/flooder.git<span class="w">   </span>
+</span></code></pre></div>
+<h2 id="sync-your-local-main">Sync your local main</h2>
+<p>Surely, if you just forked, everything will be in sync (but just to be sure :)</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>git<span class="w"> </span>checkout<span class="w"> </span>main
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>git<span class="w"> </span>fetch<span class="w"> </span>upstream
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>git<span class="w"> </span>rebase<span class="w"> </span>upstream/main
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>main
+</span></code></pre></div>
+<h2 id="create-a-feature-branch">Create a feature branch</h2>
+<p>Next, we create a feature branch which will contain our adjustments/enhancements/etc.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>fix-typos
+</span></code></pre></div>
+<h2 id="make-changes-and-commit">Make changes and commit</h2>
+<p>Once you are done with your changes, commit.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>git<span class="w"> </span>commit<span class="w"> </span>-a<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;ENH: Fixed some typos.&quot;</span>
+</span></code></pre></div>
+<p><em>What if <code>upstream/main</code> divereged in the meantime (e.g., a PR 
+   got merged or so)?</em></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>git<span class="w"> </span>fetch<span class="w"> </span>upstream
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>git<span class="w"> </span>rebase<span class="w"> </span>upstream/main
+</span></code></pre></div>
+<p>Fix files in case of conflicts, then add them and continue the rebase.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>git<span class="w"> </span>add<span class="w"> </span>&lt;file&gt;
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>git<span class="w"> </span>rebase<span class="w"> </span>--continue
+</span></code></pre></div>
+<h2 id="push-your-branch-to-your-fork">Push your branch to your fork</h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>git<span class="w"> </span>push<span class="w"> </span>--force-with-lease<span class="w"> </span>origin<span class="w"> </span>fix-typos
+</span></code></pre></div>
+<h2 id="open-a-pr-on-github">Open a PR on GitHub</h2>
+<p>Finally, we create a pull request on GitHub.</p>
+<ul>
+<li>Navigate to your fork on GitHub.</li>
+<li>Click "Compare &amp; pull request".</li>
+<li>Submit the pull request to the upstream repository.</li>
+</ul>
+<p>PR's will be reviewed by the main developers of <code>flooder</code>, possibly commented, and then merged in case of no conflicts or concerns.</p>
+<h2 id="cleanup">Cleanup</h2>
+<p>Finally, we cleanup the branch in the forked repo.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>git<span class="w"> </span>branch<span class="w"> </span>-d<span class="w"> </span>fix-typos
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>--delete<span class="w"> </span>fix-typos
+</span></code></pre></div>
 
 
 
