@@ -56,6 +56,7 @@ def flood_complex(
     BATCH_MULT: int = 32,
     disable_kernel: bool = False,
     do_second_stage: bool = False,
+    return_simplex_tree: bool = False,
 ) -> dict:
     """
     Constructs a Flood complex from a set of landmark and witness points.
@@ -249,5 +250,17 @@ def flood_complex(
             raise RuntimeError(
                 "device not supported."
             )
+
+    stree = gudhi.SimplexTree()
+    for simplex in out_complex:
+        stree.insert(simplex, float('inf'))
+        stree.assign_filtration(simplex, out_complex[simplex])
+    stree.make_filtration_non_decreasing()
+    
+    if return_simplex_tree:
+        return stree
+
+    out_complex = {}
+    out_complex.update( (tuple(simplex), filtr) for (simplex, filtr) in stree.get_simplices() )
 
     return out_complex

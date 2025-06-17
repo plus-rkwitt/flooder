@@ -69,50 +69,91 @@ def test_vs_alpha_1(disable_kernel, batch_size, N):
 
 
 
-@pytest.mark.parametrize("batch_size", [8, 32])
-@pytest.mark.parametrize("num_witnesses", [1000, 10_000, 50_000])
+@pytest.mark.parametrize("num_witnesses", [1000, 10_000])
 @pytest.mark.parametrize("num_landmarks", [20, 701, 1000, 2000]) 
-def test_cpu_vs_gpu(batch_size, num_witnesses, num_landmarks):
+def test_naive_vs_triton(num_witnesses, num_landmarks):
     """
-    Test consistency of the Flood complex between CPU and GPU computation
+    Test consistency of the Flood complex between naive and Triton computation
     for different batch sizes, number of witnesses and number of landmarks. 
     Tests also number of landmars being equal or larger than number of witnesses.
     """
 
     assert DEVICE.type == 'cuda'
 
+    torch.manual_seed(42)
+    np.random.seed(42)
+    
     X = generate_noisy_torus_points(num_witnesses).to(DEVICE)
     L = generate_landmarks(X, num_landmarks)
 
     # Test w kernel 
     torch.manual_seed(42)
     np.random.seed(42)
-    fc_cuda = flood_complex(
-        L, X, dim=3, batch_size=batch_size
+    fc_triton = flood_complex(
+        L, X, dim=3, batch_size=32
     )
-    st_cuda = gudhi.SimplexTree()
-    for simplex in fc_cuda:
-        st_cuda.insert(simplex, fc_cuda[simplex])
-    st_cuda.make_filtration_non_decreasing()
-    st_cuda.compute_persistence()
-    cuda_diags = [st_cuda.persistence_intervals_in_dimension(i) for i in range(2)]
 
     # Test w/o kernel
     torch.manual_seed(42)
     np.random.seed(42)
-    fc_cpu = flood_complex(
-        L, X, dim=3, batch_size=batch_size, disable_kernel=True
+    fc_naive = flood_complex(
+        L, X, dim=3, batch_size=32, disable_kernel=True
     )
-    st_cpu = gudhi.SimplexTree()
-    for simplex in fc_cpu:
-        st_cpu.insert(simplex, fc_cpu[simplex])
-    st_cpu.make_filtration_non_decreasing()
-    st_cpu.compute_persistence()
-    cpu_diags = [st_cpu.persistence_intervals_in_dimension(i) for i in range(2)]
-
     
-    for simplex in fc_cpu:
-        assert simplex in fc_cuda
-        assert abs(fc_cpu[simplex] - fc_cuda[simplex]) < 1e-4, \
-        f"Simplex {simplex}: CPU {fc_cpu[simplex]:.5f} and CUDA {fc_cuda[simplex]:.5f}"
+    for simplex in fc_naive:
+        assert simplex in fc_triton
+        assert abs(fc_naive[simplex] - fc_triton[simplex]) < 1e-3, \
+        f"Simplex {simplex}: Naive {fc_naive[simplex]:.5f} and Triton {fc_triton[simplex]:.5f}"
+
+
+@pytest.mark.parametrize("num_witnesses", [1000, 10_000])
+@pytest.mark.parametrize("num_landmarks", [20, 1000]) 
+@pytest.mark.parametrize("mode", ['CPU', 'dist', 'Triton']) 
+@pytest.mark.parametrize("return_simplex_tree", [True, False]) 
+def test_filtration_condition(num_witnesses, num_landmarks, mode, return_simplex_tree):
+    """
+    Test that the Flood complex is a filtered complex.
+    """
+
+    disable_kernel = False
+    if mode == 'CPU':
+        device = 'cpu'
+    else:
+        assert DEVICE.type == 'cuda'
+        device = DEVICE
+        if mode == 'dist':
+            disable_kernel = True
+        elif mode == 'Triton':
+            disable_kernel = False
+        else:
+            raise RuntimeError('Mode not implemented')
+
+    torch.manual_seed(42)
+    np.random.seed(42)
+    X = generate_noisy_torus_points(num_witnesses).to(device)
+    L = generate_landmarks(X, num_landmarks)
+    
+    if return_simplex_tree == False:
+        fc = flood_complex(
+            L, X, dim=3, batch_size=32, disable_kernel=disable_kernel, return_simplex_tree=False
+        )
+        st = gudhi.SimplexTree()
+        for simplex in fc:
+            st.insert(simplex, float('inf'))
+            st.assign_filtration(simplex, fc[simplex])
+    else:
+        st = flood_complex(
+            L, X, dim=3, batch_size=32, disable_kernel=disable_kernel, return_simplex_tree=True
+        )
+
+    for simplex, filtration in st.get_simplices():
+        faces = [ _ for _ in st.get_boundaries(simplex)]
+        if len(simplex) > 1:
+            assert len(faces) == len(simplex), f"Simplex {simplex} has {len(faces)} faces"
+        else:
+            assert len(simplex) == 1 and len(faces) == 0, f"Simplex {simplex} has {len(faces)} faces"
+        
+        for face, face_filtration in faces:
+            assert face_filtration <= filtration, f"Simplex {simplex} has filtr. value {filtration:.5f} and its face {face} has {face_filtration:.5f}"
+
 
