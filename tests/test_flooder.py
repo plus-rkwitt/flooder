@@ -105,3 +105,55 @@ def test_naive_vs_triton(num_witnesses, num_landmarks):
         assert abs(fc_naive[simplex] - fc_triton[simplex]) < 1e-3, \
         f"Simplex {simplex}: Naive {fc_naive[simplex]:.5f} and Triton {fc_triton[simplex]:.5f}"
 
+
+@pytest.mark.parametrize("num_witnesses", [1000, 10_000])
+@pytest.mark.parametrize("num_landmarks", [20, 1000]) 
+@pytest.mark.parametrize("mode", ['CPU', 'dist', 'Triton']) 
+@pytest.mark.parametrize("return_simplex_tree", [True, False]) 
+def test_filtration_condition(num_witnesses, num_landmarks, mode, return_simplex_tree):
+    """
+    Test that the Flood complex is a filtered complex.
+    """
+
+    disable_kernel = False
+    if mode == 'CPU':
+        device = 'cpu'
+    else:
+        assert DEVICE.type == 'cuda'
+        device = DEVICE
+        if mode == 'dist':
+            disable_kernel = True
+        elif mode == 'Triton':
+            disable_kernel = False
+        else:
+            raise RuntimeError('Mode not implemented')
+
+    torch.manual_seed(42)
+    np.random.seed(42)
+    X = generate_noisy_torus_points(num_witnesses).to(device)
+    L = generate_landmarks(X, num_landmarks)
+    
+    if return_simplex_tree == False:
+        fc = flood_complex(
+            L, X, dim=3, batch_size=32, disable_kernel=disable_kernel, return_simplex_tree=False
+        )
+        st = gudhi.SimplexTree()
+        for simplex in fc:
+            st.insert(simplex, float('inf'))
+            st.assign_filtration(simplex, fc[simplex])
+    else:
+        st = flood_complex(
+            L, X, dim=3, batch_size=32, disable_kernel=disable_kernel, return_simplex_tree=True
+        )
+
+    for simplex, filtration in st.get_simplices():
+        faces = [ _ for _ in st.get_boundaries(simplex)]
+        if len(simplex) > 1:
+            assert len(faces) == len(simplex), f"Simplex {simplex} has {len(faces)} faces"
+        else:
+            assert len(simplex) == 1 and len(faces) == 0, f"Simplex {simplex} has {len(faces)} faces"
+        
+        for face, face_filtration in faces:
+            assert face_filtration <= filtration, f"Simplex {simplex} has filtr. value {filtration:.5f} and its face {face} has {face_filtration:.5f}"
+
+
