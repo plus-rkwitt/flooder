@@ -2,3 +2,4 @@ torch
 gudhi
 numpy
 fpsample
+scipy

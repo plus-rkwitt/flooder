@@ -13,6 +13,7 @@ construct the Flood complex on top of `N_l=1000` landmarks (see [Illustration](i
 homology (up to dimension 3) using `gudhi` based on the constructed filtered Flood simplicial complex.
 
 ``` py linenums="1"
+import gudhi
 from flooder import (
     generate_noisy_torus_points, 
     flood_complex, 
