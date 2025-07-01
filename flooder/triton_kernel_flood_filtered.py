@@ -22,8 +22,8 @@ def flood_kernel(
     BLOCK_R: tl.constexpr,  # block size (tile size) for R dimension (must divide R)
     BLOCK_W: tl.constexpr,  # block size for the W dimension per tile
 ):
-    pid_r = tl.program_id(0)  # tile index for R dimension
-    pid_w = tl.program_id(1)  # tile index for W dimension
+    pid_w = tl.program_id(0)  # tile index for W dimension
+    pid_r = tl.program_id(1)  # tile index for R dimension
     id_s = tl.load(s_idx_ptr + pid_w)
 
     w_idx = tl.load(w_idx_ptr + pid_w * BLOCK_W + tl.arange(0, BLOCK_W))
@@ -85,9 +85,8 @@ def flood_triton_filtered(
     """
 
     try:
-        def grid(meta): return (R_tiles, T)
         x = x.contiguous().view(-1)  # Make sure indexing math (later) matches layout
-        flood_kernel[grid](
+        flood_kernel[(T, R_tiles)](
             x, y, row_idx, col_idx, inter, R, W, d, BLOCK_R=BLOCK_R, BLOCK_W=BLOCK_W
         )
     except RuntimeError:
