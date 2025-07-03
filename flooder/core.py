@@ -12,7 +12,7 @@ from math import sqrt
 from typing import Union
 from scipy.spatial import KDTree
 
-from .triton_kernel_flood_filtered import flood_triton_filtered
+from .triton_kernels import flood_triton_filtered
 
 BLOCK_W = 64
 BLOCK_R = 64
