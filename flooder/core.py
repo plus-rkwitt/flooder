@@ -201,18 +201,14 @@ def flood_complex(
                 imin = torch.searchsorted(witnesses_search, vmin, right=False)
                 imax = torch.searchsorted(witnesses_search, vmax, right=True)
 
-                valid_witnesses_mask = (
+                valid = torch.zeros([end - start, imax - imin + BLOCK_W], dtype = bool, device = device)
+                valid[:, :imax - imin] = (
                     torch.cdist(simplex_centers_vec[start:end], witnesses[imin:imax])
                     < simplex_radii_vec[start:end].unsqueeze(1) + 1e-3
                 )
-                valid = torch.cat(
-                    [
-                        valid_witnesses_mask,
-                        torch.arange(BLOCK_W, device=device).unsqueeze(0)
-                        < ((-valid_witnesses_mask.sum(dim=1)) % BLOCK_W).unsqueeze(1),
-                    ],
-                    dim=1,
-                )
+                counts = valid.sum(dim=1)
+                valid[:, imax - imin:] = (torch.arange(BLOCK_W, device=device).unsqueeze(0)
+                    < ((-counts) % BLOCK_W).unsqueeze(1))
 
                 for start2 in range(start, end, batch_size):
                     end2 = min(end, start2 + batch_size)
