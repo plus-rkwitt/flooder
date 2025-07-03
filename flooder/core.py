@@ -14,10 +14,10 @@ from scipy.spatial import KDTree
 
 from .triton_kernels import compute_mask, compute_filtration
 
-BLOCK_W = 64
-BLOCK_R = 64
-BLOCK_N = 64
-BLOCK_M = 64
+BLOCK_W = 512
+BLOCK_R = 16
+BLOCK_N = 16
+BLOCK_M = 512
 
 
 def generate_landmarks(points: torch.Tensor, N_l: int) -> torch.Tensor:
