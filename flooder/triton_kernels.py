@@ -10,7 +10,7 @@ import triton.language as tl
 
 
 @triton.jit
-def flood_kernel(
+def compute_filtration_kernel(
     x_ptr,  # pointer to x, shape (S, R, d)
     y_ptr,  # pointer to y, shape (W, d)
     s_idx_ptr,
@@ -44,8 +44,7 @@ def flood_kernel(
         inter_ptr + id_s * R + pid_r * BLOCK_R + tl.arange(0, BLOCK_R), tile_min
     )
 
-
-def flood_triton_filtered(
+def compute_filtration(
     x: torch.Tensor,
     y: torch.Tensor,
     row_idx: torch.Tensor,
@@ -86,7 +85,7 @@ def flood_triton_filtered(
 
     try:
         x = x.contiguous().view(-1)  # Make sure indexing math (later) matches layout
-        flood_kernel[(T, R_tiles)](
+        compute_filtration_kernel[(T, R_tiles)](
             x, y, row_idx, col_idx, inter, R, W, d, BLOCK_R=BLOCK_R, BLOCK_W=BLOCK_W
         )
     except RuntimeError:
@@ -96,3 +95,100 @@ def flood_triton_filtered(
 
     out, idx = inter.max(dim=1)
     return out, idx
+
+@triton.jit
+def compute_mask_kernel(
+    points_ptr,      # (m, 3), row-major
+    mask_ptr,        # (n, m), flat index
+    counts_ptr,       # (n), Trues per row
+    cent_ptr,        # (n, 3), row-major
+    radi_ptr,        # (n, 1) or (n,), radius (not squared)
+    n, m, d,
+    BLOCK_N: tl.constexpr,
+    BLOCK_M: tl.constexpr,
+    BLOCK_W: tl.constexpr
+):
+    pid_m = tl.program_id(0)  # points
+    pid_n = tl.program_id(1)  # centers
+
+    offs_m = pid_m * BLOCK_M + tl.arange(0, BLOCK_M)
+    offs_n = pid_n * BLOCK_N + tl.arange(0, BLOCK_N)
+
+    mask_n = offs_n < n
+    mask_m = offs_m < m
+
+    pt_stride = d
+    cent_stride = d
+
+    radi = tl.load(radi_ptr + offs_n, mask=mask_n, other=0.0)
+    sq_radi = radi * radi  # [BLOCK_N]
+
+    sq_dist = tl.zeros((BLOCK_N, BLOCK_M), dtype=tl.float32)
+    for i in range(d):
+        pt_i = tl.load(points_ptr + offs_m * pt_stride + i, mask=mask_m, other=0.0)  # [BLOCK_M]
+        cent_i = tl.load(cent_ptr + offs_n * cent_stride + i, mask=mask_n, other=0.0)  # [BLOCK_N]
+        diff_i = pt_i[None, :] - cent_i[:, None]  # [BLOCK_N, BLOCK_M]
+        sq_dist += diff_i * diff_i  # [BLOCK_N, BLOCK_M]
+    
+    inside = sq_dist <= sq_radi[:, None]  # [BLOCK_N, BLOCK_M]
+
+    stride_mask = m + BLOCK_W
+    out_idx = offs_n[:, None] * stride_mask + offs_m[None, :]
+    write_mask = (offs_n[:, None] < n) & (offs_m[None, :] < m)  # [BLOCK_N, BLOCK_M]
+
+    tl.store(mask_ptr + out_idx, inside, mask=write_mask)
+    counts_tile = tl.sum((inside*write_mask).to(tl.int32), axis=1)  # [BLOCK_N]
+
+    # Atomically add counts_tile to global counts_ptr at offsets offs_n
+    tl.atomic_add(counts_ptr + offs_n, counts_tile, mask=mask_n)
+
+
+def compute_mask(points: torch.Tensor, centers: torch.Tensor, radii: torch.Tensor, BLOCK_N, BLOCK_M, BLOCK_W) -> torch.Tensor:
+    """
+    Check which points are inside Euclidean balls with given radii.
+
+    Args:
+        points (torch.Tensor):
+            Tensor of shape (m, 3), tensor with points to test.
+        centers (torch.Tensor):
+            Tensor of shape (n, 3), tensor with centers of balls.
+        radii (torch.Tensor):
+            Tensor of shape (n, 3), tensor with radii of balls.
+        BLOCK_N (int):
+            Block size along balls axis
+        BLOCK_M (int):
+            Block size along points axis
+        BLOCk_W (int):
+            Only used for padding
+
+    Returns:
+        mask (torch.Tensor):
+            Boolean tensor of shape (n, m + BLOCK_W), mask[i,j] = True if points[j] inside simplices[i].
+            Last (n, BLOCK_W) block is padded so that number of Trues per row is divisible by BLOCK_W
+    """
+    n, d = centers.shape
+    m = points.shape[0]
+
+    centers_flat = centers.view(n, -1).contiguous()
+    radii_flat = radii.view(-1).contiguous()
+    mask = torch.zeros((n, m + BLOCK_W), dtype=torch.bool, device=points.device)
+    counts = torch.zeros(n, dtype=torch.int32, device=points.device)
+
+    grid = ( (m + BLOCK_M - 1) // BLOCK_M, (n + BLOCK_N - 1) // BLOCK_N)
+
+    compute_mask_kernel[grid](
+        points,
+        mask,
+        counts,
+        centers_flat,
+        radii_flat,
+        n, m, d,
+        BLOCK_N=BLOCK_N,
+        BLOCK_M=BLOCK_M,
+        BLOCK_W=BLOCK_W
+    )
+   
+    extra = ((-counts) % BLOCK_W).unsqueeze(1)  #[n, 1]
+    extra_range = torch.arange(BLOCK_W, device=counts.device).unsqueeze(0)  # [1, BLOCK_W]
+    mask[:, m : m + BLOCK_W] = extra_range < extra  # [n, BLOCK_W]
+    return mask
