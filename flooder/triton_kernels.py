@@ -27,7 +27,7 @@ def compute_filtration_kernel(
     id_s = tl.load(s_idx_ptr + pid_w)
 
     r_offset = pid_r * BLOCK_R + tl.arange(0, BLOCK_R)
-    r_mask = r_offset < R  # <-- this is new
+    r_mask = r_offset < R
     x_idx = id_s * R * d + r_offset * d  # offset into x_ptr for each row
     w_idx = tl.load(w_idx_ptr + pid_w * BLOCK_W + tl.arange(0, BLOCK_W))
 
