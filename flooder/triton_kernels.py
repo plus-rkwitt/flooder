@@ -44,6 +44,7 @@ def compute_filtration_kernel(
         inter_ptr + id_s * R + pid_r * BLOCK_R + tl.arange(0, BLOCK_R), tile_min
     )
 
+
 def compute_filtration(
     x: torch.Tensor,
     y: torch.Tensor,
@@ -98,11 +99,11 @@ def compute_filtration(
 
 @triton.jit
 def compute_mask_kernel(
-    points_ptr,      # (m, 3), row-major
+    points_ptr,      # (m, d), row-major
     mask_ptr,        # (n, m), flat index
-    counts_ptr,       # (n), Trues per row
-    cent_ptr,        # (n, 3), row-major
-    radi_ptr,        # (n, 1) or (n,), radius (not squared)
+    counts_ptr,      # (n), Trues per row
+    cent_ptr,        # (n, d), center positions
+    radi_ptr,        # (n, 1) or (n,), radius
     n, m, d,
     BLOCK_N: tl.constexpr,
     BLOCK_M: tl.constexpr,
@@ -149,11 +150,11 @@ def compute_mask(points: torch.Tensor, centers: torch.Tensor, radii: torch.Tenso
 
     Args:
         points (torch.Tensor):
-            Tensor of shape (m, 3), tensor with points to test.
+            Tensor of shape (m, d), tensor with points to test.
         centers (torch.Tensor):
-            Tensor of shape (n, 3), tensor with centers of balls.
+            Tensor of shape (n, d), tensor with centers of balls.
         radii (torch.Tensor):
-            Tensor of shape (n, 3), tensor with radii of balls.
+            Tensor of shape (n, d), tensor with radii of balls.
         BLOCK_N (int):
             Block size along balls axis
         BLOCK_M (int):
