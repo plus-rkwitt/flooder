@@ -26,22 +26,23 @@ def compute_filtration_kernel(
     pid_r = tl.program_id(1)  # tile index for R dimension
     id_s = tl.load(s_idx_ptr + pid_w)
 
+    r_offset = pid_r * BLOCK_R + tl.arange(0, BLOCK_R)
+    r_mask = r_offset < R  # <-- this is new
+    x_idx = id_s * R * d + r_offset * d  # offset into x_ptr for each row
     w_idx = tl.load(w_idx_ptr + pid_w * BLOCK_W + tl.arange(0, BLOCK_W))
-    x_idx = id_s * R * d + pid_r * BLOCK_R * d + tl.arange(0, BLOCK_R) * d
 
     # Initialize the squared-distance accumulator for this (BLOCK_R x BLOCK_W) tile.
     dist2 = tl.zeros((BLOCK_R, BLOCK_W), dtype=tl.float32)
     for i in range(d):
-        x_vals = tl.load(x_ptr + x_idx + i)
-        y_vals = tl.load(y_ptr + w_idx * d + i, mask=(w_idx < W), other=float("inf"))
+        x_vals = tl.load(x_ptr + x_idx + i, mask=r_mask, other=0.0)
+        y_vals = tl.load(y_ptr + w_idx * d + i, mask=(w_idx < W), other=float('inf'))
         diff = x_vals[:, None] - y_vals[None, :]
         dist2 += diff * diff
 
     # Use tl.min with axis=1 to compute the minimum along the BLOCK_W (tile) dimension.
     tile_min = tl.sqrt(tl.min(dist2, axis=1))
-
     tl.atomic_min(
-        inter_ptr + id_s * R + pid_r * BLOCK_R + tl.arange(0, BLOCK_R), tile_min
+        inter_ptr + id_s * R + r_offset, tile_min, mask=r_mask
     )
 
 
@@ -60,7 +61,8 @@ def compute_filtration(
     assert d == d_y, "Feature dimensions of x and y must match."
 
     T = num_valid // BLOCK_W  # Number of tiles along the W dimension.
-    R_tiles = R // BLOCK_R  # Number of tiles in the R dimension.
+    R_tiles = triton.cdiv(R, BLOCK_R)
+    # Number of tiles in the R dimension.
 
     # Allocate an intermediate tensor of shape (S, R) on the GPU.
     inter = torch.full((S, R), torch.inf, device=x.device, dtype=torch.float32)
@@ -175,8 +177,7 @@ def compute_mask(points: torch.Tensor, centers: torch.Tensor, radii: torch.Tenso
     mask = torch.zeros((n, m + BLOCK_W), dtype=torch.bool, device=points.device)
     counts = torch.zeros(n, dtype=torch.int32, device=points.device)
 
-    grid = ( (m + BLOCK_M - 1) // BLOCK_M, (n + BLOCK_N - 1) // BLOCK_N)
-
+    grid = (triton.cdiv(m, BLOCK_M), triton.cdiv(n, BLOCK_N))
     compute_mask_kernel[grid](
         points,
         mask,

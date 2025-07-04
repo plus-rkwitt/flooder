@@ -73,8 +73,8 @@ def flood_complex(
         dim (int, optional):
             The top dimension of the simplices to construct (e.g., 1 for edges, 2 for triangles). Defaults to 1.
         N (int, optional):
-            Number of random points to sample for each simplex. This value MUST be a multiple
-            of `BLOCK_R`. Defaults to 512.
+            Number of random points to sample for each simplex.
+            Defaults to 512.
         batch_size (int, optional):
             Number of simplices to process per batch. Defaults to 32.
         BATCH_MULT (int, optional):
@@ -101,7 +101,6 @@ def flood_complex(
     """
 
     RADIUS_FACTOR = 1.4
-    assert N % BLOCK_R == 0, f"N ({N}) must be a multiple of BLOCK_R ({BLOCK_R})."
 
     max_range_dim = torch.argmax(
         witnesses.max(dim=0).values - witnesses.min(dim=0).values
