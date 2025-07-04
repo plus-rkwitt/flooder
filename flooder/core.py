@@ -140,7 +140,7 @@ def flood_complex(
         ) / 2.0
         simplex_radii_vec = torch.amax(
             (all_simplex_points - simplex_centers_vec.unsqueeze(1)).norm(dim=2), dim=1
-        ) * (1.4 if d > 1 else 1.) + 1e-3
+        ) * (1.42 if d > 1 else 1.01) + 1e-3
 
         splx_idx = torch.argsort(simplex_centers_vec[:, max_range_dim])
         all_simplex_points = all_simplex_points[splx_idx]
