@@ -27,7 +27,7 @@ def compute_filtration_kernel(
     id_s = tl.load(s_idx_ptr + pid_w)
 
     r_offset = pid_r * BLOCK_R + tl.arange(0, BLOCK_R)
-    r_mask = r_offset < R  # <-- this is new
+    r_mask = r_offset < R
     x_idx = id_s * R * d + r_offset * d  # offset into x_ptr for each row
     w_idx = tl.load(w_idx_ptr + pid_w * BLOCK_W + tl.arange(0, BLOCK_W))
 
@@ -68,23 +68,13 @@ def compute_filtration(
     inter = torch.full((S, R), torch.inf, device=x.device, dtype=torch.float32)
 
     # Bounds check
-    assert row_idx.shape ==  col_idx.shape, f"row_idx.shape ({row_idx.shape}) does not match col_idx.shape ({col_idx.shape}"
-    assert col_idx.shape[0] == T * BLOCK_W, f"col_idx.shape[0] {col_idx.shape[0]} does not match T * BLOCK_W ({T} * {BLOCK_W} = {T * BLOCK_W})"    
+    assert row_idx.shape == col_idx.shape, f"row_idx.shape ({row_idx.shape}) does not match col_idx.shape ({col_idx.shape}"
+    assert col_idx.shape[0] == T * BLOCK_W, f"col_idx.shape[0] {col_idx.shape[0]} does not match T * BLOCK_W ({T} * {BLOCK_W} = {T * BLOCK_W})"
 
-    row_idx = row_idx[::BLOCK_W] # consecutive row_indices need to be constant in blocks of length BLOCK_W
+    row_idx = row_idx[::BLOCK_W]  # consecutive row_indices need to be constant in blocks of length BLOCK_W
     # make sure indexing is contiguous and of type int32 for triton
     row_idx = row_idx.to(torch.int32).contiguous()
     col_idx = col_idx.to(torch.int32).contiguous()
-
-    """Important: run ./deviceQuery from 
-    
-    https://github.com/NVIDIA/cuda-samples/
-    
-    and check for "Max dimension size of a grid size" as the grid may become 
-    too large for the GPU to handle. If this is the case, you can set
-    disable_kernel=True in the flood_complex function to use the CPU fallback, or
-    reduce the batch size.
-    """
 
     try:
         x = x.contiguous().view(-1)  # Make sure indexing math (later) matches layout
@@ -96,8 +86,9 @@ def compute_filtration(
             "Memory/Grid size error in CUDA, try lowering the batch size or setting disable_kernel=True"
         )
 
-    out, idx = inter.max(dim=1)
-    return out, idx
+    out = inter.max(dim=1).values
+    return out
+
 
 @triton.jit
 def compute_mask_kernel(
@@ -132,7 +123,7 @@ def compute_mask_kernel(
         cent_i = tl.load(cent_ptr + offs_n * cent_stride + i, mask=mask_n, other=0.0)  # [BLOCK_N]
         diff_i = pt_i[None, :] - cent_i[:, None]  # [BLOCK_N, BLOCK_M]
         sq_dist += diff_i * diff_i  # [BLOCK_N, BLOCK_M]
-    
+
     inside = sq_dist <= sq_radi[:, None]  # [BLOCK_N, BLOCK_M]
 
     stride_mask = m + BLOCK_W
@@ -140,7 +131,7 @@ def compute_mask_kernel(
     write_mask = (offs_n[:, None] < n) & (offs_m[None, :] < m)  # [BLOCK_N, BLOCK_M]
 
     tl.store(mask_ptr + out_idx, inside, mask=write_mask)
-    counts_tile = tl.sum((inside*write_mask).to(tl.int32), axis=1)  # [BLOCK_N]
+    counts_tile = tl.sum((inside * write_mask).to(tl.int32), axis=1)  # [BLOCK_N]
 
     # Atomically add counts_tile to global counts_ptr at offsets offs_n
     tl.atomic_add(counts_ptr + offs_n, counts_tile, mask=mask_n)
@@ -189,8 +180,7 @@ def compute_mask(points: torch.Tensor, centers: torch.Tensor, radii: torch.Tenso
         BLOCK_M=BLOCK_M,
         BLOCK_W=BLOCK_W
     )
-   
-    extra = ((-counts) % BLOCK_W).unsqueeze(1)  #[n, 1]
+    extra = ((-counts) % BLOCK_W).unsqueeze(1)  # [n, 1]
     extra_range = torch.arange(BLOCK_W, device=counts.device).unsqueeze(0)  # [1, BLOCK_W]
     mask[:, m : m + BLOCK_W] = extra_range < extra  # [n, BLOCK_W]
     return mask
