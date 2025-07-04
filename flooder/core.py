@@ -12,10 +12,12 @@ from math import sqrt
 from typing import Union
 from scipy.spatial import KDTree
 
-from .triton_kernel_flood_filtered import flood_triton_filtered
+from .triton_kernels import compute_mask, compute_filtration
 
-BLOCK_W = 64
-BLOCK_R = 64
+BLOCK_W = 512
+BLOCK_R = 16
+BLOCK_N = 16
+BLOCK_M = 512
 
 
 def generate_landmarks(points: torch.Tensor, N_l: int) -> torch.Tensor:
@@ -55,7 +57,7 @@ def flood_complex(
     N: int = 512,  # needs to be a multiple of BLOCK_R
     batch_size: int = 32,
     BATCH_MULT: int = 32,
-    disable_kernel: bool = False,
+    use_triton: bool = True,
     do_second_stage: bool = False,
     return_simplex_tree: bool = False,
 ) -> dict:
@@ -71,15 +73,15 @@ def flood_complex(
         dim (int, optional):
             The top dimension of the simplices to construct (e.g., 1 for edges, 2 for triangles). Defaults to 1.
         N (int, optional):
-            Number of random points to sample for each simplex. This value MUST be a multiple
-            of `BLOCK_R`. Defaults to 512.
+            Number of random points to sample for each simplex.
+            Defaults to 512.
         batch_size (int, optional):
             Number of simplices to process per batch. Defaults to 32.
         BATCH_MULT (int, optional):
             Batch size multiplier, used to control kernel tile granularity. Defaults to 32.
-        disable_kernel (bool, optional):
-            If True, disables the use of the Triton kernel and uses the CPU fallback method.
-            Defaults to False.
+        use_triton (bool, optional):
+            If True, Triton kernel is used
+            Defaults to True.
         do_second_stage (bool, optional):
             If True, performs a secondary refinement step to improve the accuracy
             of the covering radii. Defaults to False.
@@ -99,7 +101,6 @@ def flood_complex(
     """
 
     RADIUS_FACTOR = 1.4
-    assert N % BLOCK_R == 0, f"N ({N}) must be a multiple of BLOCK_R ({BLOCK_R})."
 
     max_range_dim = torch.argmax(
         witnesses.max(dim=0).values - witnesses.min(dim=0).values
@@ -175,19 +176,8 @@ def flood_complex(
             nn_dists, _ = kdtree.query(np.asarray(all_random_points))
             filt = np.max(nn_dists, axis=1)
             out_complex.update(zip(d_simplices, filt))
-        # If triton kernel is disabled or we are not on the GPU, run CPU computation
-        elif landmarks.is_cuda and disable_kernel:
-            for i, simplex in enumerate(d_simplices):
-                valid_witnesses_mask = (
-                    torch.cdist(simplex_centers_vec[i : i + 1], witnesses)
-                    < simplex_radii_vec[i] + 1e-3
-                )
-                dists_valid = torch.cdist(
-                    all_random_points[i], witnesses[valid_witnesses_mask[0]]
-                )
-                out_complex[tuple(simplex)] = torch.amin(dists_valid, dim=1).max()
-        # Run triton kernel
-        elif landmarks.is_cuda and not disable_kernel:
+            
+        elif landmarks.is_cuda and use_triton:
             for start in range(0, len(d_simplices), batch_size * BATCH_MULT):
                 end = min(len(d_simplices), start + batch_size * BATCH_MULT)
                 vmin = (
@@ -201,46 +191,24 @@ def flood_complex(
                 imin = torch.searchsorted(witnesses_search, vmin, right=False)
                 imax = torch.searchsorted(witnesses_search, vmax, right=True)
 
-                valid_witnesses_mask = (
-                    torch.cdist(simplex_centers_vec[start:end], witnesses[imin:imax])
-                    < simplex_radii_vec[start:end].unsqueeze(1) + 1e-3
-                )
-                valid = torch.cat(
-                    [
-                        valid_witnesses_mask,
-                        torch.arange(BLOCK_W, device=device).unsqueeze(0)
-                        < ((-valid_witnesses_mask.sum(dim=1)) % BLOCK_W).unsqueeze(1),
-                    ],
-                    dim=1,
-                )
-
-                for start2 in range(start, end, batch_size):
-                    end2 = min(end, start2 + batch_size)
-                    random_points = all_random_points[start2:end2]
-                    row_idx, col_idx = torch.nonzero(
-                        valid[start2 - start : end2 - start], as_tuple=True
-                    )
-                    min_covering_radius, idx = flood_triton_filtered(
-                        random_points,
+                if use_triton:
+                    valid = compute_mask(
                         witnesses[imin:imax],
-                        row_idx,
-                        col_idx,
-                        BLOCK_W=BLOCK_W,
-                        BLOCK_R=BLOCK_R,
-                    )
-
-                    if do_second_stage:
-                        random_points = (
-                            random_points
-                            - random_points[
-                                torch.arange(random_points.shape[0]), idx, :
-                            ].unsqueeze(1)
-                        ) / 10.0 + random_points[
-                            torch.arange(random_points.shape[0]), idx, :
-                        ].unsqueeze(
-                            1
+                        simplex_centers_vec[start:end],
+                        simplex_radii_vec[start:end] + 1e-3,
+                        BLOCK_N,
+                        BLOCK_M,
+                        BLOCK_W
                         )
-                        min_covering_radius, idx = flood_triton_filtered(
+                    
+                    for start2 in range(start, end, batch_size):
+                        end2 = min(end, start2 + batch_size)
+                        random_points = all_random_points[start2:end2]
+                        row_idx, col_idx = torch.nonzero(
+                            valid[start2 - start : end2 - start], as_tuple=True
+                        )
+
+                        min_covering_radius, idx = compute_filtration(
                             random_points,
                             witnesses[imin:imax],
                             row_idx,
@@ -249,9 +217,39 @@ def flood_complex(
                             BLOCK_R=BLOCK_R,
                         )
 
-                    out_complex.update(
-                        zip(d_simplices[start2:end2], min_covering_radius.tolist())
-                    )
+                        if do_second_stage:
+                            random_points = (
+                                random_points
+                                - random_points[
+                                    torch.arange(random_points.shape[0]), idx, :
+                                ].unsqueeze(1)
+                            ) / 10.0 + random_points[
+                                torch.arange(random_points.shape[0]), idx, :
+                            ].unsqueeze(
+                                1
+                            )
+                            min_covering_radius, idx = compute_filtration(
+                                random_points,
+                                witnesses[imin:imax],
+                                row_idx,
+                                col_idx,
+                                BLOCK_W=BLOCK_W,
+                                BLOCK_R=BLOCK_R,
+                            )
+
+                        out_complex.update(
+                            zip(d_simplices[start2:end2], min_covering_radius.tolist())
+                        )
+        elif landmarks.is_cuda and not use_triton:
+            for i, simplex in enumerate(d_simplices):
+                valid_witnesses_mask = (
+                    torch.cdist(simplex_centers_vec[i : i + 1], witnesses)
+                    < simplex_radii_vec[i] + 1e-3
+                )
+                dists_valid = torch.cdist(
+                    all_random_points[i], witnesses[valid_witnesses_mask[0]]
+                )
+                out_complex[tuple(simplex)] = torch.amin(dists_valid, dim=1).max()
         else:
             raise RuntimeError("device not supported.")
 

@@ -14,10 +14,10 @@ from flooder import (
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-@pytest.mark.parametrize("disable_kernel", [True, False])
+@pytest.mark.parametrize("use_triton", [True, False])
 @pytest.mark.parametrize("batch_size", [8, 32])
 @pytest.mark.parametrize("N", [64 * 16, 64 * 32])
-def test_vs_alpha_1(disable_kernel, batch_size, N):
+def test_vs_alpha_1(use_triton, batch_size, N):
     """
     Test the homotopy equivalence of the Alpha complex and the Flood complex
     when landmarks L are set equal to the dataset X.clear
@@ -33,7 +33,7 @@ def test_vs_alpha_1(disable_kernel, batch_size, N):
 
     # Test w and w/o kernel
     fc = flood_complex(
-        L, X, dim=2, N=N, batch_size=batch_size, disable_kernel=disable_kernel
+        L, X, dim=2, N=N, batch_size=batch_size, use_triton=use_triton
     )
 
     st = gudhi.SimplexTree()
@@ -57,7 +57,7 @@ def test_vs_alpha_1(disable_kernel, batch_size, N):
         )
         assert dist < 1e-3, (
             f"Bottleneck distance too high in dimension {dim} "
-            f"with disable_kernel={disable_kernel}: {dist}"
+            f"with use_triton={use_triton}: {dist}"
         )
 
     assert (
@@ -71,10 +71,10 @@ def test_vs_alpha_1(disable_kernel, batch_size, N):
 
 @pytest.mark.parametrize("num_witnesses", [1000, 10_000])
 @pytest.mark.parametrize("num_landmarks", [20, 701, 1000, 2000]) 
-def test_naive_vs_triton(num_witnesses, num_landmarks):
+def test_triton(num_witnesses, num_landmarks):
     """
-    Test consistency of the Flood complex between naive and Triton computation
-    for different batch sizes, number of witnesses and number of landmarks. 
+    Test consistency of the Flood complex between using and not using Triton
+    kernels for different batch sizes, number of witnesses and number of landmarks.
     Tests also number of landmars being equal or larger than number of witnesses.
     """
 
@@ -90,19 +90,55 @@ def test_naive_vs_triton(num_witnesses, num_landmarks):
     torch.manual_seed(42)
     np.random.seed(42)
     fc_triton = flood_complex(
-        L, X, dim=3, batch_size=32
+        L, X, dim=3, batch_size=32, use_triton=True
     )
 
     # Test w/o kernel
     torch.manual_seed(42)
     np.random.seed(42)
+    fc_no_triton = flood_complex(
+        L, X, dim=3, batch_size=32, use_triton=False
+    )
+    
+    for simplex in fc_no_triton:
+        assert simplex in fc_triton
+        assert abs(fc_no_triton[simplex] - fc_triton[simplex]) < 1e-4, \
+        f"Simplex {simplex}: Naive {fc_no_triton[simplex]:.5f} and Triton {fc_triton[simplex]:.5f}"
+
+@pytest.mark.parametrize("num_witnesses", [1000, 10_000])
+@pytest.mark.parametrize("num_landmarks", [20, 701, 1000, 2000]) 
+def test_kdtree_vs_triton(num_witnesses, num_landmarks):
+    """
+    Test consistency of the Flood complex between kdtree and Triton computation
+    for different batch sizes, number of witnesses and number of landmarks. 
+    Tests also number of landmars being equal or larger than number of witnesses.
+    """
+
+    assert DEVICE.type == 'cuda'
+
+    torch.manual_seed(42)
+    np.random.seed(42)
+    
+    X = generate_noisy_torus_points(num_witnesses).to(DEVICE)
+    L = generate_landmarks(X, num_landmarks)
+
+    # Test using triton kernel 
+    torch.manual_seed(42)
+    np.random.seed(42)
+    fc_triton = flood_complex(
+        L, X, dim=3, batch_size=32
+    )
+
+    # Test cpu version (kd-tree)
+    torch.manual_seed(42)
+    np.random.seed(42)
     fc_naive = flood_complex(
-        L, X, dim=3, batch_size=32, disable_kernel=True
+        L.cpu(), X.cpu(), dim=3, batch_size=32
     )
     
     for simplex in fc_naive:
         assert simplex in fc_triton
-        assert abs(fc_naive[simplex] - fc_triton[simplex]) < 1e-3, \
+        assert abs(fc_naive[simplex] - fc_triton[simplex]) < 1e-4, \
         f"Simplex {simplex}: Naive {fc_naive[simplex]:.5f} and Triton {fc_triton[simplex]:.5f}"
 
 
@@ -115,16 +151,16 @@ def test_filtration_condition(num_witnesses, num_landmarks, mode, return_simplex
     Test that the Flood complex is a filtered complex.
     """
 
-    disable_kernel = False
     if mode == 'CPU':
         device = 'cpu'
+        use_triton = False
     else:
         assert DEVICE.type == 'cuda'
         device = DEVICE
         if mode == 'dist':
-            disable_kernel = True
+            use_triton = False
         elif mode == 'Triton':
-            disable_kernel = False
+            use_triton = True
         else:
             raise RuntimeError('Mode not implemented')
 
@@ -135,7 +171,7 @@ def test_filtration_condition(num_witnesses, num_landmarks, mode, return_simplex
     
     if return_simplex_tree == False:
         fc = flood_complex(
-            L, X, dim=3, batch_size=32, disable_kernel=disable_kernel, return_simplex_tree=False
+            L, X, dim=3, batch_size=32, use_triton=use_triton, return_simplex_tree=False
         )
         st = gudhi.SimplexTree()
         for simplex in fc:
@@ -143,7 +179,7 @@ def test_filtration_condition(num_witnesses, num_landmarks, mode, return_simplex
             st.assign_filtration(simplex, fc[simplex])
     else:
         st = flood_complex(
-            L, X, dim=3, batch_size=32, disable_kernel=disable_kernel, return_simplex_tree=True
+            L, X, dim=3, batch_size=32, use_triton=use_triton, return_simplex_tree=True
         )
 
     for simplex, filtration in st.get_simplices():
@@ -157,3 +193,4 @@ def test_filtration_condition(num_witnesses, num_landmarks, mode, return_simplex
             assert face_filtration <= filtration, f"Simplex {simplex} has filtr. value {filtration:.5f} and its face {face} has {face_filtration:.5f}"
 
 
+# test_kdtree_vs_triton(1000,100000)
