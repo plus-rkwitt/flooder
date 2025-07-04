@@ -8,7 +8,6 @@ import torch
 import gudhi
 import fpsample
 import numpy as np
-from math import sqrt
 from typing import Union
 from scipy.spatial import KDTree
 
@@ -53,14 +52,12 @@ def generate_landmarks(points: torch.Tensor, N_l: int) -> torch.Tensor:
 def flood_complex(
     landmarks: Union[int, torch.Tensor],
     witnesses: torch.Tensor,
-    dim: int = 1,
-    N: int = 512,  # needs to be a multiple of BLOCK_R
+    dim: Union[None, int] = None,
+    num_rand: int = 512,
     batch_size: int = 32,
-    BATCH_MULT: int = 32,
     use_triton: bool = True,
-    do_second_stage: bool = False,
-    return_simplex_tree: bool = False,
-) -> dict:
+    return_simplex_tree: bool = False
+) -> Union[dict, gudhi.SimplexTree]:
     """
     Constructs a Flood complex from a set of landmark and witness points.
 
@@ -70,37 +67,31 @@ def flood_complex(
             from `witnesses`, or a tensor of shape (N_l, d) specifying explicit landmark coordinates.
         witnesses (torch.Tensor):
             A (N, d) tensor containing witness points used as sources in the flood process.
-        dim (int, optional):
-            The top dimension of the simplices to construct (e.g., 1 for edges, 2 for triangles). Defaults to 1.
-        N (int, optional):
+        dim (Union[None, int], optional):
+            The top dimension of the simplices to construct.
+            Defaults to None resulting in the dimension of the ambient space.
+        num_rand (int, optional):
             Number of random points to sample for each simplex.
             Defaults to 512.
         batch_size (int, optional):
             Number of simplices to process per batch. Defaults to 32.
-        BATCH_MULT (int, optional):
-            Batch size multiplier, used to control kernel tile granularity. Defaults to 32.
         use_triton (bool, optional):
             If True, Triton kernel is used
             Defaults to True.
-        do_second_stage (bool, optional):
-            If True, performs a secondary refinement step to improve the accuracy
-            of the covering radii. Defaults to False.
+        return_simplex_tree (bool, optional):
+            I true, a gudhi.SimplexTree is returned, else a dictionary.
+            Defaults to False
 
     Returns:
-        dict:
-            A dictionary mapping simplices to their estimated covering radii (i.e., filtration
+        Union[dict, gudhi.SimplexTree]
+            Depending on the return_simplex_tree argument either a
+            gudhi.SimplexTree or a dictionary is returned,
+            mapping simplices to their estimated covering radii (i.e., filtration
             value). Each key is a tuple of landmark indices (e.g., (i, j) for an edge), and
             each value is a float radius.
-
-    Notes:
-        Triton kernel launches may fail if grid dimensions exceed hardware limits.
-        Typical constraints include:
-            - grid_x <= 2**31 - 1
-            - grid_y <= 65535
-        To avoid such issues, reduce `batch_size` and/or `BATCH_MULT` if necessary.
     """
-
-    RADIUS_FACTOR = 1.4
+    if dim is None:
+        dim = witnesses.shape[1]
 
     max_range_dim = torch.argmax(
         witnesses.max(dim=0).values - witnesses.min(dim=0).values
@@ -114,13 +105,11 @@ def flood_complex(
         landmarks.device == witnesses.device
     ), f"landmarks.device ({landmarks.device}) != witnesses.device {witnesses.device}"
     device = landmarks.device
-    resolution = torch.cdist(landmarks[-1:], landmarks[:-1]).min().item()
-    resolution = 9.0 * resolution * resolution + 1e-3
 
     if not landmarks.is_cuda:
         kdtree = KDTree(np.asarray(witnesses))
 
-    dc = gudhi.AlphaComplex(landmarks).create_simplex_tree()
+    dc = gudhi.DelaunayComplex(landmarks).create_simplex_tree()
 
     out_complex = {}
 
@@ -128,14 +117,10 @@ def flood_complex(
     out_complex.update(((i,), 0.0) for i in range(len(landmarks)))
 
     list_simplices = [[] for _ in range(dim)]
-    for simplex, filtration in dc.get_simplices():
+    for simplex, _ in dc.get_simplices():
         if len(simplex) == 1 or len(simplex) > dim + 1:
             continue
-
-        if filtration > resolution:
-            out_complex[tuple(simplex)] = sqrt(filtration)
-        else:
-            list_simplices[len(simplex) - 2].append(tuple(simplex))
+        list_simplices[len(simplex) - 2].append(tuple(simplex))
 
     for d in range(1, dim + 1):
         d_simplices = list_simplices[d - 1]
@@ -155,7 +140,7 @@ def flood_complex(
         ) / 2.0
         simplex_radii_vec = torch.amax(
             (all_simplex_points - simplex_centers_vec.unsqueeze(1)).norm(dim=2), dim=1
-        ) * (RADIUS_FACTOR if d > 1 else 1.0)
+        ) * (1.42 if d > 1 else 1.) + 1e-3
 
         splx_idx = torch.argsort(simplex_centers_vec[:, max_range_dim])
         all_simplex_points = all_simplex_points[splx_idx]
@@ -164,10 +149,9 @@ def flood_complex(
         d_simplices = [d_simplices[ii] for ii in splx_idx]
 
         # Precompute random weights
-        num_rand = N
         weights = -torch.log(
-            torch.rand(num_rand, d + 1).to(device)
-        )  # Random points are created on cpu for seed for consistency across devices
+            1 - torch.rand(num_rand, d + 1).to(device)
+        )  # Random points are created on cpu for seed for consistency across devices, use 1 - torch.rand(..) to exclude 0.
         weights = weights / weights.sum(dim=1, keepdim=True)
         all_random_points = weights.unsqueeze(0) @ all_simplex_points
         del weights
@@ -176,18 +160,18 @@ def flood_complex(
             nn_dists, _ = kdtree.query(np.asarray(all_random_points))
             filt = np.max(nn_dists, axis=1)
             out_complex.update(zip(d_simplices, filt))
-            
+
         elif landmarks.is_cuda and use_triton:
-            for start in range(0, len(d_simplices), batch_size * BATCH_MULT):
-                end = min(len(d_simplices), start + batch_size * BATCH_MULT)
+            for start in range(0, len(d_simplices), batch_size):
+                end = min(len(d_simplices), start + batch_size)
                 vmin = (
                     simplex_centers_vec[start:end, max_range_dim]
                     - simplex_radii_vec[start:end]
-                ).min() - 1e-3
+                ).min()
                 vmax = (
                     simplex_centers_vec[start:end, max_range_dim]
                     + simplex_radii_vec[start:end]
-                ).max() + 1e-3
+                ).max()
                 imin = torch.searchsorted(witnesses_search, vmin, right=False)
                 imax = torch.searchsorted(witnesses_search, vmax, right=True)
 
@@ -195,56 +179,31 @@ def flood_complex(
                     valid = compute_mask(
                         witnesses[imin:imax],
                         simplex_centers_vec[start:end],
-                        simplex_radii_vec[start:end] + 1e-3,
+                        simplex_radii_vec[start:end],
                         BLOCK_N,
                         BLOCK_M,
                         BLOCK_W
-                        )
-                    
-                    for start2 in range(start, end, batch_size):
-                        end2 = min(end, start2 + batch_size)
-                        random_points = all_random_points[start2:end2]
-                        row_idx, col_idx = torch.nonzero(
-                            valid[start2 - start : end2 - start], as_tuple=True
-                        )
-
-                        min_covering_radius, idx = compute_filtration(
-                            random_points,
-                            witnesses[imin:imax],
-                            row_idx,
-                            col_idx,
-                            BLOCK_W=BLOCK_W,
-                            BLOCK_R=BLOCK_R,
-                        )
-
-                        if do_second_stage:
-                            random_points = (
-                                random_points
-                                - random_points[
-                                    torch.arange(random_points.shape[0]), idx, :
-                                ].unsqueeze(1)
-                            ) / 10.0 + random_points[
-                                torch.arange(random_points.shape[0]), idx, :
-                            ].unsqueeze(
-                                1
-                            )
-                            min_covering_radius, idx = compute_filtration(
-                                random_points,
-                                witnesses[imin:imax],
-                                row_idx,
-                                col_idx,
-                                BLOCK_W=BLOCK_W,
-                                BLOCK_R=BLOCK_R,
-                            )
-
-                        out_complex.update(
-                            zip(d_simplices[start2:end2], min_covering_radius.tolist())
-                        )
+                    )
+                    row_idx, col_idx = torch.nonzero(
+                        valid, as_tuple=True
+                    )
+                    min_covering_radius = compute_filtration(
+                        all_random_points[start:end],
+                        witnesses[imin:imax],
+                        row_idx,
+                        col_idx,
+                        BLOCK_W=BLOCK_W,
+                        BLOCK_R=BLOCK_R,
+                    )
+                    out_complex.update(zip(
+                        d_simplices[start:end],
+                        min_covering_radius.tolist())
+                    )
         elif landmarks.is_cuda and not use_triton:
             for i, simplex in enumerate(d_simplices):
                 valid_witnesses_mask = (
                     torch.cdist(simplex_centers_vec[i : i + 1], witnesses)
-                    < simplex_radii_vec[i] + 1e-3
+                    < simplex_radii_vec[i]
                 )
                 dists_valid = torch.cdist(
                     all_random_points[i], witnesses[valid_witnesses_mask[0]]
@@ -266,5 +225,4 @@ def flood_complex(
     out_complex.update(
         (tuple(simplex), filtr) for (simplex, filtr) in stree.get_simplices()
     )
-
     return out_complex

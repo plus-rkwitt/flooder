@@ -65,12 +65,12 @@ def main():
             points = points.to(DEVICE)
             # GPU warmup
             out_complex = flood_complex(
-                n_l, points[:10000], dim=3, batch_size=b_sizes[i]
+                n_l, points[:10000], batch_size=b_sizes[i]
             )
             torch.cuda.synchronize()
 
             startt = timer()
-            out_complex = flood_complex(n_l, points, dim=3, batch_size=b_sizes[i])
+            out_complex = flood_complex(n_l, points, batch_size=b_sizes[i])
 
             st = SimplexTree()
             for simplex in out_complex:

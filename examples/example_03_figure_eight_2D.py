@@ -62,7 +62,7 @@ def main():
     pts = pts.to(device)
 
     t0_complex = time.perf_counter()
-    out_complex = flood_complex(lms, pts, dim=3, batch_size=8, BATCH_MULT=1)
+    out_complex = flood_complex(lms, pts, batch_size=8)
     t1_complex = time.perf_counter()
 
     t0_ph = time.perf_counter()
@@ -75,9 +75,9 @@ def main():
 
     print(
         f"{BLUE}{N_w:8d} points ({N_l} landmarks) | "
-        f"Complex (Flood): {(t1_complex-t0_complex):6.2f} sec | "
-        f"PH (Flood): {t1_ph-t0_ph:6.2f} sec | "
-        f"FPS: {t1_fps-t0_fps:6.2f} sec{RESET}"
+        f"Complex (Flood): {(t1_complex - t0_complex):6.2f} sec | "
+        f"PH (Flood): {t1_ph - t0_ph:6.2f} sec | "
+        f"FPS: {t1_fps - t0_fps:6.2f} sec{RESET}"
     )
 
     diags = [st.persistence_intervals_in_dimension(i) for i in range(2)]
@@ -86,7 +86,7 @@ def main():
         topk_Hi = top_k_longest(diags[i], k=10)
         for j, (b, d) in enumerate(topk_Hi):
             print(
-                f"{BLUE}  {j+1:2d}: (birth, death)=({b:.4f}, {d:.4f}), lifetime={(d-b):.4f} {RESET}"
+                f"{BLUE}  {j + 1:2d}: (birth, death)=({b:.4f}, {d:.4f}), lifetime={(d - b):.4f} {RESET}"
             )
 
     # Save the output to disk
