@@ -110,9 +110,11 @@ def flood_complex(
         landmarks.device == witnesses.device
     ), f"landmarks.device ({landmarks.device}) != witnesses.device {witnesses.device}"
     if points_per_edge:
-        assert use_triton, "points_per_edge requires use_triton or cpu tensors"  # 
+        assert use_triton, "points_per_edge requires use_triton or cpu tensors"
     device = landmarks.device
-    if not landmarks.is_cuda:
+    if landmarks.is_cuda:
+        torch.cuda.set_device(device)
+    else:
         kdtree = KDTree(np.asarray(witnesses))
 
     dc = gudhi.DelaunayComplex(landmarks).create_simplex_tree()
