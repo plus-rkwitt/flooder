@@ -44,7 +44,7 @@ def generate_landmarks(points: torch.Tensor, N_l: int) -> torch.Tensor:
     if N_l > points.shape[0]:
         N_l = points.shape[0]
     index_set = torch.tensor(
-        fpsample.bucket_fps_kdline_sampling(points.cpu(), N_l, h=5).astype(np.int64),
+        fpsample.bucket_fps_kdline_sampling(points.cpu(), N_l, h=9, start_idx=0).astype(np.int64),
         device=points.device,
     )
     return points[index_set]
