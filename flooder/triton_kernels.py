@@ -52,7 +52,7 @@ def compute_filtration(
     row_idx: torch.Tensor,
     col_idx: torch.Tensor,
     BLOCK_W,
-    BLOCK_R,
+    BLOCK_R
 ) -> torch.Tensor:
 
     S, R, d = x.shape
@@ -85,9 +85,7 @@ def compute_filtration(
         raise RuntimeError(
             "Memory/Grid size error in CUDA, try lowering the batch size or setting disable_kernel=True"
         )
-
-    out = inter.max(dim=1).values
-    return out
+    return inter
 
 
 @triton.jit
