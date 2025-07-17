@@ -20,7 +20,7 @@ BLOCK_N = 16
 BLOCK_M = 512
 
 
-def generate_landmarks(points: torch.Tensor, N_l: int) -> torch.Tensor:
+def generate_landmarks(points: torch.Tensor, N_l: int, fps_h: Union[None, int] = None) -> torch.Tensor:
     """
     Selects landmarks using Farthest-Point Sampling (bucket FPS).
 
@@ -33,6 +33,10 @@ def generate_landmarks(points: torch.Tensor, N_l: int) -> torch.Tensor:
             (CPU or GPU) and be of any floating-point dtype.
         N_l (int):
             The number of landmarks to sample (must be <= P and > 0).
+        fps_h (Union[None, int], optional):
+            h parameter (depth of kdtree) that is used for farthest point sampling to select the landmarks.
+            If None, then h is selected based on the size of the point cloud.
+            Defaults to None
 
     Returns:
         torch.Tensor:
@@ -43,8 +47,17 @@ def generate_landmarks(points: torch.Tensor, N_l: int) -> torch.Tensor:
     assert N_l > 0, "Number of landmarks must be positive."
     if N_l > points.shape[0]:
         N_l = points.shape[0]
+    N_p = len(points)
+    if fps_h == None:
+        if N_p > 200_000:
+            fps_h = 9
+        elif N_p > 80_000:
+            fps_h = 7
+        else:
+            fps_h = 5
+
     index_set = torch.tensor(
-        fpsample.bucket_fps_kdline_sampling(points.cpu(), N_l, h=9, start_idx=0).astype(np.int64),
+        fpsample.bucket_fps_kdline_sampling(points.cpu(), N_l, h=fps_h, start_idx=0).astype(np.int64),
         device=points.device,
     )
     return points[index_set]
@@ -58,7 +71,8 @@ def flood_complex(
     points_per_edge: Union[None, int] = None,
     batch_size: int = 256,
     use_triton: bool = True,
-    return_simplex_tree: bool = False
+    return_simplex_tree: bool = False,
+    fps_h: Union[None, int] = None
 ) -> Union[dict, gudhi.SimplexTree]:
     """
     Constructs a Flood complex from a set of landmark and witness points.
@@ -83,6 +97,10 @@ def flood_complex(
         use_triton (bool, optional):
             If True, Triton kernel is used
             Defaults to True.
+        fps_h (Union[None, int], optional):
+            h parameter (depth of kdtree) that is used for farthest point sampling to select the landmarks.
+            If None, then h is selected based on the size of the point cloud.
+            Defaults to None
         return_simplex_tree (bool, optional):
             I true, a gudhi.SimplexTree is returned, else a dictionary.
             Defaults to False
@@ -96,7 +114,7 @@ def flood_complex(
             each value is a float radius.
     """
     if dim is None:
-        dim = witnesses.shape[1]
+        dim = witnesses.shape[1]        
 
     max_range_dim = torch.argmax(
         witnesses.max(dim=0).values - witnesses.min(dim=0).values
@@ -105,7 +123,7 @@ def flood_complex(
     witnesses_search = witnesses[:, max_range_dim].contiguous()
 
     if isinstance(landmarks, int):
-        landmarks = generate_landmarks(witnesses, min(landmarks, witnesses.shape[0]))
+        landmarks = generate_landmarks(witnesses, min(landmarks, witnesses.shape[0]), fps_h)
     assert (
         landmarks.device == witnesses.device
     ), f"landmarks.device ({landmarks.device}) != witnesses.device {witnesses.device}"
@@ -308,6 +326,6 @@ def generate_uniform_weights(num_rand, dim, device):
         torch.Tensor:
             A tensor of shape [num_rand, dim + 1] containing the random points (coordinate weights).
     """
-    weights = -torch.log(torch.rand(num_rand, dim + 1)).to(device)  # For consistency with the cpu version, random points are generated on the CPU and then moved to the device.
+    weights = -torch.log(1 - torch.rand(num_rand, dim + 1)).to(device)  # For consistency with the cpu version, random points are generated on the CPU and then moved to the device.
     weights = weights / weights.sum(dim=1, keepdim=True)
     return weights
