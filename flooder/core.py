@@ -8,6 +8,7 @@ import torch
 import gudhi
 import fpsample
 import numpy as np
+import itertools
 from typing import Union
 from scipy.spatial import KDTree
 
@@ -19,7 +20,7 @@ BLOCK_N = 16
 BLOCK_M = 512
 
 
-def generate_landmarks(points: torch.Tensor, N_l: int) -> torch.Tensor:
+def generate_landmarks(points: torch.Tensor, N_l: int, fps_h: Union[None, int] = None) -> torch.Tensor:
     """
     Selects landmarks using Farthest-Point Sampling (bucket FPS).
 
@@ -32,6 +33,10 @@ def generate_landmarks(points: torch.Tensor, N_l: int) -> torch.Tensor:
             (CPU or GPU) and be of any floating-point dtype.
         N_l (int):
             The number of landmarks to sample (must be <= P and > 0).
+        fps_h (Union[None, int], optional):
+            h parameter (depth of kdtree) that is used for farthest point sampling to select the landmarks.
+            If None, then h is selected based on the size of the point cloud.
+            Defaults to None
 
     Returns:
         torch.Tensor:
@@ -42,8 +47,17 @@ def generate_landmarks(points: torch.Tensor, N_l: int) -> torch.Tensor:
     assert N_l > 0, "Number of landmarks must be positive."
     if N_l > points.shape[0]:
         N_l = points.shape[0]
+    N_p = len(points)
+    if fps_h == None:
+        if N_p > 200_000:
+            fps_h = 9
+        elif N_p > 80_000:
+            fps_h = 7
+        else:
+            fps_h = 5
+
     index_set = torch.tensor(
-        fpsample.bucket_fps_kdline_sampling(points.cpu(), N_l, h=5).astype(np.int64),
+        fpsample.bucket_fps_kdline_sampling(points.cpu(), N_l, h=fps_h, start_idx=0).astype(np.int64),
         device=points.device,
     )
     return points[index_set]
@@ -54,9 +68,11 @@ def flood_complex(
     witnesses: torch.Tensor,
     dim: Union[None, int] = None,
     num_rand: int = 512,
+    points_per_edge: Union[None, int] = None,
     batch_size: int = 256,
     use_triton: bool = True,
-    return_simplex_tree: bool = False
+    return_simplex_tree: bool = False,
+    fps_h: Union[None, int] = None
 ) -> Union[dict, gudhi.SimplexTree]:
     """
     Constructs a Flood complex from a set of landmark and witness points.
@@ -73,11 +89,18 @@ def flood_complex(
         num_rand (int, optional):
             Number of random points to sample for each simplex.
             Defaults to 512.
+        points_per_edge (int, optional):
+            If specified, filtration values will be computed from a grid instead of random points.
+            Defaults to None.
         batch_size (int, optional):
             Number of simplices to process per batch. Defaults to 32.
         use_triton (bool, optional):
             If True, Triton kernel is used
             Defaults to True.
+        fps_h (Union[None, int], optional):
+            h parameter (depth of kdtree) that is used for farthest point sampling to select the landmarks.
+            If None, then h is selected based on the size of the point cloud.
+            Defaults to None
         return_simplex_tree (bool, optional):
             I true, a gudhi.SimplexTree is returned, else a dictionary.
             Defaults to False
@@ -91,7 +114,7 @@ def flood_complex(
             each value is a float radius.
     """
     if dim is None:
-        dim = witnesses.shape[1]
+        dim = witnesses.shape[1]        
 
     max_range_dim = torch.argmax(
         witnesses.max(dim=0).values - witnesses.min(dim=0).values
@@ -100,17 +123,19 @@ def flood_complex(
     witnesses_search = witnesses[:, max_range_dim].contiguous()
 
     if isinstance(landmarks, int):
-        landmarks = generate_landmarks(witnesses, min(landmarks, witnesses.shape[0]))
+        landmarks = generate_landmarks(witnesses, min(landmarks, witnesses.shape[0]), fps_h)
     assert (
         landmarks.device == witnesses.device
     ), f"landmarks.device ({landmarks.device}) != witnesses.device {witnesses.device}"
+    if points_per_edge:
+        assert use_triton, "points_per_edge requires use_triton or cpu tensors"
     device = landmarks.device
-
-    if not landmarks.is_cuda:
+    if landmarks.is_cuda:
+        torch.cuda.set_device(device)
+    else:
         kdtree = KDTree(np.asarray(witnesses))
 
     dc = gudhi.DelaunayComplex(landmarks).create_simplex_tree()
-
     out_complex = {}
 
     # For now, the landmark points are always born at time 0.
@@ -121,8 +146,9 @@ def flood_complex(
         if len(simplex) == 1 or len(simplex) > dim + 1:
             continue
         list_simplices[len(simplex) - 2].append(tuple(simplex))
-
     for d in range(1, dim + 1):
+        if points_per_edge is not None and d < dim:  # If grid is used, filtration values of faces can be computed together with max dim simplices.
+            continue
         d_simplices = list_simplices[d - 1]
         num_simplices = len(d_simplices)
         if num_simplices == 0:
@@ -147,14 +173,12 @@ def flood_complex(
         simplex_centers_vec = simplex_centers_vec[splx_idx]
         simplex_radii_vec = simplex_radii_vec[splx_idx]
         d_simplices = [d_simplices[ii] for ii in splx_idx]
-
-        # Precompute random weights
-        weights = -torch.log(
-            1 - torch.rand(num_rand, d + 1).to(device)
-        )  # Random points are created on cpu for seed for consistency across devices, use 1 - torch.rand(..) to exclude 0.
-        weights = weights / weights.sum(dim=1, keepdim=True)
+        if points_per_edge is not None:
+            d_simplices = torch.tensor(d_simplices, device=device)
+            weights, vertex_ids, face_ids = generate_grid(points_per_edge, dim, device)
+        else:
+            weights = generate_uniform_weights(num_rand, d, device)
         all_random_points = weights.unsqueeze(0) @ all_simplex_points
-        del weights
 
         if landmarks.is_cpu:
             nn_dists, _ = kdtree.query(np.asarray(all_random_points))
@@ -187,37 +211,50 @@ def flood_complex(
                     row_idx, col_idx = torch.nonzero(
                         valid, as_tuple=True
                     )
-                    min_covering_radius = compute_filtration(
+                    distances = compute_filtration(
                         all_random_points[start:end],
                         witnesses[imin:imax],
                         row_idx,
                         col_idx,
                         BLOCK_W=BLOCK_W,
-                        BLOCK_R=BLOCK_R,
+                        BLOCK_R=BLOCK_R
                     )
-                    out_complex.update(zip(
-                        d_simplices[start:end],
-                        min_covering_radius.tolist())
-                    )
+                    if points_per_edge is None:
+                        min_covering_radius = torch.amax(
+                            distances, dim=1
+                        )
+                        out_complex.update(zip(
+                            d_simplices[start:end],
+                            min_covering_radius.tolist())
+                        )
+                    else:
+                        for face_id, vertex_id in zip(face_ids, vertex_ids):
+                            faces = d_simplices[start:end][
+                                :, vertex_id
+                            ].flatten(0, 1)
+                            distances_face = distances[:, face_id]
+                            min_covering_radius_faces = torch.amax(
+                                distances_face, dim=2
+                            ).flatten()
+                            out_complex.update(zip(map(tuple, faces.tolist()), min_covering_radius_faces.tolist()))  # By construction, each face gets the same filtration value irrespective of the simplex it was computed from. If this is violated (by modifying the grid), the code needs to be adapted to sort the simplex faces along axis 1 and take the maximum filtration value when updating the dictionary.
         elif landmarks.is_cuda and not use_triton:
             for i, simplex in enumerate(d_simplices):
                 valid_witnesses_mask = (
                     torch.cdist(simplex_centers_vec[i : i + 1], witnesses)
                     < simplex_radii_vec[i]
                 )
-                dists_valid = torch.cdist(
+                distances = torch.cdist(
                     all_random_points[i], witnesses[valid_witnesses_mask[0]]
                 )
-                out_complex[tuple(simplex)] = torch.amin(dists_valid, dim=1).max()
+                out_complex[tuple(simplex)] = torch.amin(distances, dim=1).max()
         else:
-            raise RuntimeError("device not supported.")
+            raise RuntimeError("Device not supported.")
 
     stree = gudhi.SimplexTree()
     for simplex in out_complex:
         stree.insert(simplex, float("inf"))
         stree.assign_filtration(simplex, out_complex[simplex])
     stree.make_filtration_non_decreasing()
-
     if return_simplex_tree:
         return stree
 
@@ -226,3 +263,69 @@ def flood_complex(
         (tuple(simplex), filtr) for (simplex, filtr) in stree.get_simplices()
     )
     return out_complex
+
+
+def generate_grid(n, dim, device):
+    """Generates a grid of points on the unit simplex based on the number of points per edge.
+
+    Args:
+        n (int):
+            Number of points per edge.
+        dim (int): 
+            Dimension of the simplex.
+        device (torch.device):
+            Device to create the tensors on.
+
+    Returns:
+        tuple:
+            - grid (torch.Tensor): A tensor of shape [C, dim + 1] containing the grid points (coordinate weights).
+            - vertex_ids (list): A list of tensors, each containing the vertex indices for each face.
+            - face_ids (list): A list of tensors, each containing the face indices for each face.
+    """
+
+    combs = torch.tensor(list(itertools.combinations(range(n + dim), dim)), device=device)  # shape [C, dim]
+    padded = torch.cat([
+        torch.full((combs.shape[0], 1), -1, device=device), 
+        combs,
+        torch.full((combs.shape[0], 1), n + dim, device=device) 
+    ], dim=1)  # shape [C, dim + 2]
+    grid = torch.diff(padded, dim=1) - 1  # shape [C, dim + 1]
+
+    face_ids = []
+    vertex_ids = []
+    all_axes = torch.arange(dim + 1, device=device)
+
+    for k in range(dim + 1):
+        face_ids_k = []
+        vertex_ids_k = []
+        for comb in itertools.combinations(range(dim + 1), k):
+            comb_tensor = torch.tensor(comb, device=device)
+            if len(comb) == 0:
+                mask = torch.ones(len(grid), dtype=bool, device=device)
+            else:
+                mask = (grid[:, comb_tensor] == 0).all(dim=1)
+            face_ids_k.append(torch.nonzero(mask).flatten())
+            idx = all_axes[~torch.isin(all_axes, comb_tensor)]
+            vertex_ids_k.append(idx)
+        face_ids.append(torch.stack(face_ids_k))
+        vertex_ids.append(torch.stack(vertex_ids_k))
+    grid = grid / n
+    return grid, vertex_ids, face_ids
+
+
+def generate_uniform_weights(num_rand, dim, device):
+    """Generates num_rand points from a uniform distribution on the unit simplex.
+    Args:
+        num_rand (int):
+            Number of random points to generate.
+        dim (int):
+            Dimension of the simplex.
+        device (torch.device):
+            Device to create the tensor on.
+    Returns:
+        torch.Tensor:
+            A tensor of shape [num_rand, dim + 1] containing the random points (coordinate weights).
+    """
+    weights = -torch.log(1 - torch.rand(num_rand, dim + 1)).to(device)  # For consistency with the cpu version, random points are generated on the CPU and then moved to the device.
+    weights = weights / weights.sum(dim=1, keepdim=True)
+    return weights
