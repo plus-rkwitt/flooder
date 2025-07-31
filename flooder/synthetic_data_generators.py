@@ -71,13 +71,13 @@ def generate_figure_eight_2D_points(
 @torch.no_grad()
 def generate_swiss_cheese_points(
     N: int = 1000,
-    rect_min: torch.tensor = torch.tensor([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-    rect_max: torch.tensor = torch.tensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0]),
+    rect_min: list = [0.0, 0.0, 0.0],
+    rect_max: list = [1.0, 1.0, 1.0],
     k: int = 6,
-    void_radius_rng: tuple = (0.1, 0.2),
-    rng: int = None,
+    void_radius_range: tuple = (0.1, 0.2),
+    seed: int = None,
     *,
-    device=None,
+    device="cpu",
     batch_factor=4,  # how many candidates to shoot each round
 ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     """
@@ -89,16 +89,15 @@ def generate_swiss_cheese_points(
 
     Args:
         N (int, optional): Number of points to generate. Defaults to 1000.
-        rect_min (torch.Tensor, optional): Minimum coordinates of the rectangular region.
-            Defaults to a tensor of six zeros.
-        rect_max (torch.Tensor, optional): Maximum coordinates of the rectangular region.
-            Defaults to a tensor of six ones.
+        rect_min (list, optional): Minimum coordinates of the rectangular region.
+            Defaults to a list of three zeros.
+        rect_max (list, optional): Maximum coordinates of the rectangular region.
+            Defaults to a list of three ones.
         k (int, optional): Number of spherical voids to generate. Defaults to 6.
-        void_radius_rng (Tuple[float, float], optional): Range `(min_radius, max_radius)`
+        void_radius_range (Tuple[float, float], optional): Range `(min_radius, max_radius)`
             for the void radii. Defaults to (0.1, 0.2).
-        rng (int, optional): Random seed for reproducibility. If None, randomness is not seeded.
-        device (torch.device, optional): Device to perform computations on. Defaults to None,
-            which uses the device of `rect_min`.
+        seed (int, optional): Random seed for reproducibility. If None, randomness is not seeded.
+        device (torch.device, optional): Device to perform computations on. Defaults to 'cpu'.
         batch_factor (int, optional): How many candidates to shoot each round. Defaults to 4.
 
     Returns:
@@ -107,26 +106,30 @@ def generate_swiss_cheese_points(
             - `void_radii` (torch.Tensor): Tensor of shape (k,) with the radii of the voids.
 
     Examples:
-        >>> rect_min = torch.tensor([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
-        >>> rect_max = torch.tensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
+        >>> rect_min = [0.0, 0.0, 0.0]
+        >>> rect_max = [1.0, 1.0, 1.0]
         >>> void_radius_range = (0.1, 0.2)
         >>> k = 5
         >>> points, _ = generate_swiss_cheese_points(
-        ...     1000000, rect_min[:3], rect_max[:3], k, void_radius_range
+        ...     1000000, rect_min, rect_max, k, void_radius_range
         ... )
         >>> points.shape
         torch.Size([1000000, 3])
     """
-    if rng:
-        torch.manual_seed(rng)
+    if seed:
+        torch.manual_seed(seed)
 
-    d = rect_min.numel()
-    device = device or rect_min.device
-    r_min, r_max = void_radius_rng
+    assert len(rect_min) == len(
+        rect_max
+    ), "rect_min and rect_max must have the same dimension."
+    d = len(rect_min)
+    r_min, r_max = void_radius_range
 
     # --- 1.  build non-overlapping voids ------------------------------------
     centres = torch.empty((0, d), device=device)
     radii = torch.empty((0,), device=device)
+    rect_min = torch.tensor(rect_min, dtype=torch.float32, device=device)
+    rect_max = torch.tensor(rect_max, dtype=torch.float32, device=device)
 
     while centres.shape[0] < k:
         # shoot a small batch of candidate voids

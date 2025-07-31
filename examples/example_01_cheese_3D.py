@@ -24,11 +24,11 @@ def main():
     n_l = 1000  # Number of landmarks to use
     b_sizes = [1024, 1024, 32, 2]  # Batch sizes for flood complex computation
 
-    rect_min = torch.tensor([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
-    rect_max = torch.tensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
+    rect_min = [0.0, 0.0, 0.0]
+    rect_max = [1.0, 1.0, 1.0]
     void_radius_range = (0.1, 0.2)
     k = 6  # Number of voids
-    dim = 3  # Swiss cheese dimension
+    dim = len(rect_min)
 
     results = []
     pdiagram_land_flood_s = []
@@ -38,8 +38,8 @@ def main():
     print(f"{YELLOW}--------------------------------------")
     for i, n_w in enumerate(n_ws):
         for rep in range(5):
-            points, _ = generate_swiss_cheese_points(
-                n_w, rect_min[:dim], rect_max[:dim], k, void_radius_range
+            points, _, _ = generate_swiss_cheese_points(
+                n_w, rect_min, rect_max, k, void_radius_range, device=DEVICE
             )
 
             startt = timer()
@@ -64,9 +64,7 @@ def main():
 
             points = points.to(DEVICE)
             # GPU warmup
-            out_complex = flood_complex(
-                n_l, points[:10000], batch_size=b_sizes[i]
-            )
+            out_complex = flood_complex(n_l, points[:10000], batch_size=b_sizes[i])
             torch.cuda.synchronize()
 
             startt = timer()

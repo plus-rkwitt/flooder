@@ -27,13 +27,13 @@ def test_generate_figure_eight_2D_points():
 
 
 def test_generate_swiss_cheese_points():
-    rect_min = torch.tensor([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
-    rect_max = torch.tensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
+    rect_min = [0.0, 0.0, 0.0]
+    rect_max = [1.0, 1.0, 1.0]
     void_radius_range = (0.1, 0.2)
     k = 6  # number of voids
-    dim = 3  # swiss cheese dimension
+    device = "cuda:0"
     pts, _, _ = generate_swiss_cheese_points(
-        1000, rect_min[:dim], rect_max[:dim], k, void_radius_range
+        1000, rect_min, rect_max, k, void_radius_range, device=device
     )
     assert pts.dtype == torch.float32, f"Wrong datatype {pts.dtype}"
     assert pts.shape == (1000, 3), f"Wrong shape {pts.shape}"
