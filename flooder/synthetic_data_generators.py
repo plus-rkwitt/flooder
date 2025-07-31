@@ -20,21 +20,21 @@ def generate_figure_eight_2D_points(
     """
     Generate 2D points uniformly sampled in a figure-eight shape, with optional noise.
 
-    This function samples `n_samples` points distributed across two circular lobes 
-    (forming a figure-eight shape) centered at specified coordinates. Optionally, 
+    This function samples `n_samples` points distributed across two circular lobes
+    (forming a figure-eight shape) centered at specified coordinates. Optionally,
     isotropic Gaussian or uniform noise can be added to the coordinates.
 
     Args:
         n_samples (int, optional): Number of 2D points to generate. Defaults to 1000.
-        r_bounds (Tuple[float, float], optional): Tuple specifying the minimum and maximum 
+        r_bounds (Tuple[float, float], optional): Tuple specifying the minimum and maximum
             radius for sampling within each lobe. Defaults to (0.2, 0.3).
-        centers (Tuple[Tuple[float, float], Tuple[float, float]], optional): Coordinates 
+        centers (Tuple[Tuple[float, float], Tuple[float, float]], optional): Coordinates
             of the centers of the two lobes. Defaults to ((0.3, 0.5), (0.7, 0.5)).
-        noise_std (float, optional): Standard deviation (for Gaussian) or half-width 
+        noise_std (float, optional): Standard deviation (for Gaussian) or half-width
             (for uniform) of noise to add to each point. Defaults to 0.0 (no noise).
-        noise_kind (Literal["gaussian", "uniform"], optional): Type of noise distribution 
+        noise_kind (Literal["gaussian", "uniform"], optional): Type of noise distribution
             to use if `noise_std > 0`. Defaults to "gaussian".
-        rng (Optional[np.random.Generator], optional): Optional NumPy random number 
+        rng (Optional[np.random.Generator], optional): Optional NumPy random number
             generator for reproducibility. If None, a new default generator is used.
 
     Returns:
@@ -68,14 +68,18 @@ def generate_figure_eight_2D_points(
     return torch.tensor(np.stack((x, y), axis=1), dtype=torch.float32)
 
 
+@torch.no_grad()
 def generate_swiss_cheese_points(
     N: int = 1000,
     rect_min: torch.tensor = torch.tensor([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
     rect_max: torch.tensor = torch.tensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0]),
     k: int = 6,
-    void_radius_range: tuple = (0.1, 0.2),
+    void_radius_rng: tuple = (0.1, 0.2),
     rng: int = None,
-) -> Tuple[torch.Tensor, torch.Tensor]:
+    *,
+    device=None,
+    batch_factor=4,  # how many candidates to shoot each round
+) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     """
     Generate points in a high-dimensional rectangular region with randomly placed spherical voids,
     forming a "Swiss cheese" structure.
@@ -85,21 +89,24 @@ def generate_swiss_cheese_points(
 
     Args:
         N (int, optional): Number of points to generate. Defaults to 1000.
-        rect_min (torch.Tensor, optional): Minimum coordinates of the rectangular region. 
+        rect_min (torch.Tensor, optional): Minimum coordinates of the rectangular region.
             Defaults to a tensor of six zeros.
-        rect_max (torch.Tensor, optional): Maximum coordinates of the rectangular region. 
+        rect_max (torch.Tensor, optional): Maximum coordinates of the rectangular region.
             Defaults to a tensor of six ones.
         k (int, optional): Number of spherical voids to generate. Defaults to 6.
-        void_radius_range (Tuple[float, float], optional): Range `(min_radius, max_radius)` 
+        void_radius_rng (Tuple[float, float], optional): Range `(min_radius, max_radius)`
             for the void radii. Defaults to (0.1, 0.2).
         rng (int, optional): Random seed for reproducibility. If None, randomness is not seeded.
+        device (torch.device, optional): Device to perform computations on. Defaults to None,
+            which uses the device of `rect_min`.
+        batch_factor (int, optional): How many candidates to shoot each round. Defaults to 4.
 
     Returns:
         Tuple[torch.Tensor, torch.Tensor]: A tuple containing:
             - `points` (torch.Tensor): Tensor of shape (N, dim) with generated sample points.
             - `void_radii` (torch.Tensor): Tensor of shape (k,) with the radii of the voids.
-    
-    Examples:    
+
+    Examples:
         >>> rect_min = torch.tensor([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
         >>> rect_max = torch.tensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
         >>> void_radius_range = (0.1, 0.2)
@@ -113,41 +120,52 @@ def generate_swiss_cheese_points(
     if rng:
         torch.manual_seed(rng)
 
-    void_centers = []
-    void_radii = []
-    for _ in range(k):
-        while True:
-            void_center = (rect_min + void_radius_range[1]) + (
-                rect_max - rect_min - 2 * void_radius_range[1]
-            ) * torch.rand(1, rect_min.shape[0])
-            void_radius = void_radius_range[0] + (
-                void_radius_range[1] - void_radius_range[0]
-            ) * torch.rand(1)
-            is_ok = True
-            for i in range(len(void_centers)):
-                if (
-                    torch.norm(void_center - void_centers[i])
-                    < void_radius + void_radii[i]
-                ):
-                    is_ok = False
-            if is_ok:
-                void_centers.append(void_center)
-                void_radii.append(void_radius)
-                break
-    void_centers = torch.cat(void_centers)
-    void_radii = torch.cat(void_radii)
+    d = rect_min.numel()
+    device = device or rect_min.device
+    r_min, r_max = void_radius_rng
 
-    points = []
-    while len(points) < N:
-        # Generate a random point in the rectangular region
-        point = rect_min + (rect_max - rect_min) * torch.rand(rect_min.shape[0])
+    # --- 1.  build non-overlapping voids ------------------------------------
+    centres = torch.empty((0, d), device=device)
+    radii = torch.empty((0,), device=device)
 
-        # Check if the point is inside any void
-        distances = torch.norm(point - void_centers, dim=1)
-        if not torch.any(distances < void_radii):
-            points.append(point)
+    while centres.shape[0] < k:
+        # shoot a small batch of candidate voids
+        B = max(8, 2 * (k - centres.shape[0]))  # a handful is enough
+        cand_centres = (rect_min + r_max) + (
+            rect_max - rect_min - 2 * r_max
+        ) * torch.rand(B, d, device=device)
+        cand_radii = r_min + (r_max - r_min) * torch.rand(B, device=device)
 
-    return torch.stack(points, dim=0), void_radii
+        if centres.numel() == 0:
+            ok = torch.ones(B, dtype=torch.bool, device=device)
+        else:
+            dist = torch.cdist(cand_centres, centres)  # B × |centres|
+            ok = (dist >= (cand_radii[:, None] + radii[None, :])).all(dim=1)
+
+        # keep as many as we still need
+        keep = ok.nonzero(as_tuple=False).squeeze()[: k - centres.shape[0]]
+        centres = torch.cat([centres, cand_centres[keep]], dim=0)
+        radii = torch.cat([radii, cand_radii[keep]], dim=0)
+
+    # --- 2.  rejection sample points in large vectorised batches ------------
+    pts = torch.empty((0, d), dtype=rect_min.dtype, device=device)
+    todo = N
+    while todo:
+        B = batch_factor * todo  # adaptive batch
+        cand = rect_min + (rect_max - rect_min) * torch.rand(B, d, device=device)
+
+        # distance of every candidate to every void centre:  B × k
+        if k:
+            dist = torch.cdist(cand, centres)
+            good = (dist >= radii[None, :]).all(dim=1)
+        else:  # no holes at all
+            good = torch.ones(B, dtype=torch.bool, device=device)
+
+        accepted = cand[good][:todo]  # at most 'todo'
+        pts = torch.cat([pts, accepted], dim=0)
+        todo = N - pts.shape[0]
+
+    return pts, centres, radii
 
 
 def generate_donut_points(
@@ -160,12 +178,12 @@ def generate_donut_points(
     """
     Generate 2D points uniformly distributed in a circular annulus (donut shape).
 
-    Points are sampled uniformly within a ring defined by an outer `radius` and 
+    Points are sampled uniformly within a ring defined by an outer `radius` and
     an inner radius of `radius - width`, centered at a specified 2D location.
 
     Args:
         N (int, optional): Number of points to generate. Defaults to 1000.
-        center (torch.Tensor, optional): Center of the annulus as a tensor of shape (2,). 
+        center (torch.Tensor, optional): Center of the annulus as a tensor of shape (2,).
             Defaults to [0.0, 0.0].
         radius (float, optional): Outer radius of the annulus. Must be positive. Defaults to 1.0.
         width (float, optional): Thickness of the annulus. Must be positive and less than `radius`.
@@ -212,11 +230,11 @@ def generate_noisy_torus_points(
 
     Args:
         num_points (int, optional): Number of points to generate. Defaults to 1000.
-        R (float, optional): Major radius of the torus (distance from the center of the tube 
+        R (float, optional): Major radius of the torus (distance from the center of the tube
             to the center of the torus). Must be positive. Defaults to 3.0.
-        r (float, optional): Minor radius of the torus (radius of the tube). Must be positive. 
+        r (float, optional): Minor radius of the torus (radius of the tube). Must be positive.
             Defaults to 1.0.
-        noise_std (float, optional): Standard deviation of the Gaussian noise added to the 
+        noise_std (float, optional): Standard deviation of the Gaussian noise added to the
             points. Defaults to 0.02.
         rng (int, optional): Random seed for reproducibility. If None, randomness is not seeded.
 

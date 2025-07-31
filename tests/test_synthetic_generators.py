@@ -32,7 +32,7 @@ def test_generate_swiss_cheese_points():
     void_radius_range = (0.1, 0.2)
     k = 6  # number of voids
     dim = 3  # swiss cheese dimension
-    pts, _ = generate_swiss_cheese_points(
+    pts, _, _ = generate_swiss_cheese_points(
         1000, rect_min[:dim], rect_max[:dim], k, void_radius_range
     )
     assert pts.dtype == torch.float32, f"Wrong datatype {pts.dtype}"
