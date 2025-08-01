@@ -45,8 +45,9 @@ def generate_landmarks(points: torch.Tensor, N_l: int, fps_h: Union[None, int] =
             as the input.
     """
     assert N_l > 0, "Number of landmarks must be positive."
-    if N_l > points.shape[0]:
-        N_l = points.shape[0]
+    N_p = len(points)
+    if N_l > N_p:
+        N_l = N_p
     N_p = len(points)
     if fps_h == None:
         if N_p > 200_000:
@@ -69,7 +70,7 @@ def flood_complex(
     dim: Union[None, int] = None,
     num_rand: int = 512,
     points_per_edge: Union[None, int] = None,
-    batch_size: int = 256,
+    batch_size: Union[None, int]= 256,
     use_triton: bool = True,
     return_simplex_tree: bool = False,
     fps_h: Union[None, int] = None
@@ -86,10 +87,10 @@ def flood_complex(
         dim (Union[None, int], optional):
             The top dimension of the simplices to construct.
             Defaults to None resulting in the dimension of the ambient space.
-        num_rand (int, optional):
+        num_rand (Union[None, int], optional):
             Number of random points to sample for each simplex.
             Defaults to 512.
-        points_per_edge (int, optional):
+        points_per_edge (Union[None, int], optional):
             If specified, filtration values will be computed from a grid instead of random points.
             Defaults to None.
         batch_size (int, optional):
@@ -114,7 +115,7 @@ def flood_complex(
             each value is a float radius.
     """
     if dim is None:
-        dim = witnesses.shape[1]        
+        dim = witnesses.shape[1]
 
     max_range_dim = torch.argmax(
         witnesses.max(dim=0).values - witnesses.min(dim=0).values
@@ -127,8 +128,6 @@ def flood_complex(
     assert (
         landmarks.device == witnesses.device
     ), f"landmarks.device ({landmarks.device}) != witnesses.device {witnesses.device}"
-    if points_per_edge:
-        assert use_triton, "points_per_edge requires use_triton or cpu tensors"
     device = landmarks.device
     if landmarks.is_cuda:
         torch.cuda.set_device(device)
@@ -147,9 +146,9 @@ def flood_complex(
             continue
         list_simplices[len(simplex) - 2].append(tuple(simplex))
     for d in range(1, dim + 1):
-        if points_per_edge is not None and d < dim:  # If grid is used, filtration values of faces can be computed together with max dim simplices.
+        if num_rand is None and d < dim:  # If grid is used, filtration values of faces can be computed together with max dim simplices.
             continue
-        d_simplices = list_simplices[d - 1]
+        d_simplices = torch.tensor(list_simplices[d - 1], device=device)
         num_simplices = len(d_simplices)
         if num_simplices == 0:
             continue
@@ -172,22 +171,26 @@ def flood_complex(
         all_simplex_points = all_simplex_points[splx_idx]
         simplex_centers_vec = simplex_centers_vec[splx_idx]
         simplex_radii_vec = simplex_radii_vec[splx_idx]
-        d_simplices = [d_simplices[ii] for ii in splx_idx]
-        if points_per_edge is not None:
-            d_simplices = torch.tensor(d_simplices, device=device)
+        d_simplices = d_simplices[splx_idx]
+        if num_rand is None:
             weights, vertex_ids, face_ids = generate_grid(points_per_edge, dim, device)
         else:
             weights = generate_uniform_weights(num_rand, d, device)
         all_random_points = weights.unsqueeze(0) @ all_simplex_points
 
         if landmarks.is_cpu:
-            nn_dists, _ = kdtree.query(np.asarray(all_random_points))
-            filt = np.max(nn_dists, axis=1)
-            out_complex.update(zip(d_simplices, filt))
+            batch_size = num_simplices
 
-        elif landmarks.is_cuda and use_triton:
-            for start in range(0, len(d_simplices), batch_size):
-                end = min(len(d_simplices), start + batch_size)
+        for start in range(0, num_simplices, batch_size):
+            end = min(num_simplices, start + batch_size)
+
+            #  Compute distances
+            if landmarks.is_cpu:
+                distances, _ = kdtree.query(
+                    np.asarray(all_random_points[start:end])
+                )
+
+            elif landmarks.is_cuda:
                 vmin = (
                     simplex_centers_vec[start:end, max_range_dim]
                     - simplex_radii_vec[start:end]
@@ -219,36 +222,37 @@ def flood_complex(
                         BLOCK_W=BLOCK_W,
                         BLOCK_R=BLOCK_R
                     )
-                    if points_per_edge is None:
-                        min_covering_radius = torch.amax(
-                            distances, dim=1
-                        )
-                        out_complex.update(zip(
-                            d_simplices[start:end],
-                            min_covering_radius.tolist())
-                        )
-                    else:
-                        for face_id, vertex_id in zip(face_ids, vertex_ids):
-                            faces = d_simplices[start:end][
-                                :, vertex_id
-                            ].flatten(0, 1)
-                            distances_face = distances[:, face_id]
-                            min_covering_radius_faces = torch.amax(
-                                distances_face, dim=2
-                            ).flatten()
-                            out_complex.update(zip(map(tuple, faces.tolist()), min_covering_radius_faces.tolist()))  # By construction, each face gets the same filtration value irrespective of the simplex it was computed from. If this is violated (by modifying the grid), the code needs to be adapted to sort the simplex faces along axis 1 and take the maximum filtration value when updating the dictionary.
-        elif landmarks.is_cuda and not use_triton:
-            for i, simplex in enumerate(d_simplices):
-                valid_witnesses_mask = (
-                    torch.cdist(simplex_centers_vec[i : i + 1], witnesses)
-                    < simplex_radii_vec[i]
+                else:
+                    distances = torch.full((end - start, len(weights)), torch.inf, device=device, dtype=torch.float32)
+                    for i in range(start, end):
+                        # avoid torch.cdist for numerical stability
+                        mask = (simplex_centers_vec[i] - witnesses[imin:imax]).norm(dim=1) < simplex_radii_vec[i]
+                        distance_preselect = (
+                            all_random_points[i:i+1] - witnesses[imin:imax][mask,None]).norm(dim=2)  
+                        distances[i-start] = torch.amin(distance_preselect, dim=0)
+    
+            else:
+                raise RuntimeError("Device not supported.")
+
+            # Extract filtration values 
+            if num_rand is None:
+                for face_id, vertex_id in zip(face_ids, vertex_ids):
+                    faces = d_simplices[start:end][
+                        :, vertex_id
+                    ].flatten(0, 1)
+                    distances_face = distances[:, face_id]
+                    min_covering_radius_faces = torch.amax(
+                        distances_face, dim=2
+                    ).flatten()
+                    out_complex.update(zip(map(tuple, faces.tolist()), min_covering_radius_faces.tolist()))  # By construction, each face gets the same filtration value irrespective of the simplex it was computed from. If this is violated (by modifying the grid), the code needs to be adapted to sort the simplex faces along axis 1 and take the maximum filtration value when updating the dictionary.
+            else:
+                min_covering_radius = torch.amax(
+                    distances, dim=1
                 )
-                distances = torch.cdist(
-                    all_random_points[i], witnesses[valid_witnesses_mask[0]]
+                out_complex.update(zip(
+                    d_simplices[start:end],
+                    min_covering_radius.tolist())
                 )
-                out_complex[tuple(simplex)] = torch.amin(distances, dim=1).max()
-        else:
-            raise RuntimeError("Device not supported.")
 
     stree = gudhi.SimplexTree()
     for simplex in out_complex:
