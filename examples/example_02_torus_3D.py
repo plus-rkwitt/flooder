@@ -1,4 +1,8 @@
-"""Example 02: Flood PH of a noisy torus sample (1M points)"""
+"""Example 02: Flood PH of a noisy torus sample (1M points)
+
+Copyright (c) 2025 Paolo Pellizzoni, Florian Graf, Martin Uray, Stefan Huber and Roland Kwitt
+SPDX-License-Identifier: MIT
+"""
 
 import time
 import torch
@@ -36,7 +40,9 @@ def main():
         t1_fps = time.perf_counter()
 
         t0_complex = time.perf_counter()
-        out_complex = flood_complex(lms.to(DEVICE), pts.to(DEVICE), batch_size=64, use_triton=True)
+        out_complex = flood_complex(
+            lms.to(DEVICE), pts.to(DEVICE), batch_size=64, use_triton=True
+        )
         t1_complex = time.perf_counter()
 
         t0_ph = time.perf_counter()

@@ -1,4 +1,8 @@
-"""Example 03: Flood PH of a noisy figure-eight sample (1M points)"""
+"""Example 03: Flood PH of a noisy figure-eight sample (1M points)
+
+Copyright (c) 2025 Paolo Pellizzoni, Florian Graf, Martin Uray, Stefan Huber and Roland Kwitt
+SPDX-License-Identifier: MIT
+"""
 
 import time
 import gudhi
