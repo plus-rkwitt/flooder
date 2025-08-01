@@ -15,9 +15,9 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 @pytest.mark.parametrize("use_triton", [True, False])
-@pytest.mark.parametrize("batch_size", [8, 32])
-@pytest.mark.parametrize("num_rand", [1024 * 8, 1024 * 16])
-def test_vs_alpha_1(use_triton, batch_size, num_rand):
+@pytest.mark.parametrize("batch_size", [8, 23])
+@pytest.mark.parametrize("use_rand", [True, False])
+def test_vs_alpha_1(use_triton, batch_size, use_rand):
     """
     Test the homotopy equivalence of the Alpha complex and the Flood complex
     when landmarks L are set equal to the dataset X.clear
@@ -30,18 +30,20 @@ def test_vs_alpha_1(use_triton, batch_size, num_rand):
 
     X = X.to(DEVICE)
     L = L.to(DEVICE)
+    num_rand = 20_000
+    points_per_edge = 125
+    if use_rand:
+        kwargs = {"num_rand": num_rand, "points_per_edge": None}
+    else:
+        kwargs = {"num_rand": None, "points_per_edge": points_per_edge}
 
-    # Test w and w/o kernel
-    fc = flood_complex(
-        L, X, num_rand=num_rand, batch_size=batch_size, use_triton=use_triton
+    stree = flood_complex(
+        L, X,
+        use_triton=use_triton, return_simplex_tree=True, batch_size=batch_size,
+        **kwargs
     )
-
-    st = gudhi.SimplexTree()
-    for simplex in fc:
-        st.insert(simplex, fc[simplex])
-    st.make_filtration_non_decreasing()
-    st.compute_persistence()
-    flood_complex_diags = [st.persistence_intervals_in_dimension(i) for i in range(2)]
+    stree.compute_persistence()
+    flood_complex_diags = [stree.persistence_intervals_in_dimension(i) for i in range(2)]
 
     alpha_complex = gudhi.AlphaComplex(X.cpu().numpy()).create_simplex_tree(
         output_squared_values=False
@@ -55,22 +57,16 @@ def test_vs_alpha_1(use_triton, batch_size, num_rand):
         dist = gudhi.bottleneck_distance(
             flood_complex_diags[dim], alpha_complex_diags[dim]
         )
-        assert dist < 1e-3, (
+        assert dist < 5e-4, (
             f"Bottleneck distance too high in dimension {dim} "
-            f"with use_triton={use_triton}: {dist}"
+            f"with use_rand={use_rand} and use_triton={use_triton}: {dist}"
         )
-
-    assert (
-        gudhi.bottleneck_distance(flood_complex_diags[0], alpha_complex_diags[0]) < 1e-3
-    )
-    assert (
-        gudhi.bottleneck_distance(flood_complex_diags[1], alpha_complex_diags[1]) < 1e-3
-    )
 
 
 @pytest.mark.parametrize("num_witnesses", [1000, 10_000])
-@pytest.mark.parametrize("num_landmarks", [20, 701, 1000, 2000])
-def test_triton(num_witnesses, num_landmarks):
+@pytest.mark.parametrize("num_landmarks", [20, 701, 2000])
+@pytest.mark.parametrize("use_rand", [True, False])
+def test_triton(num_witnesses, num_landmarks, use_rand):
     """
     Test consistency of the Flood complex between using and not using Triton
     kernels for different batch sizes, number of witnesses and number of landmarks.
@@ -78,7 +74,12 @@ def test_triton(num_witnesses, num_landmarks):
     """
 
     assert DEVICE.type == 'cuda'
-
+    num_rand = 512
+    points_per_edge = 20
+    if use_rand:
+        kwargs = {"num_rand": num_rand, "points_per_edge": None}
+    else:
+        kwargs = {"num_rand": None, "points_per_edge": points_per_edge}
     torch.manual_seed(42)
     np.random.seed(42)
 
@@ -89,14 +90,14 @@ def test_triton(num_witnesses, num_landmarks):
     torch.manual_seed(42)
     np.random.seed(42)
     fc_triton = flood_complex(
-        L, X, use_triton=True,
+        L, X, use_triton=True, **kwargs
     )
 
     # Test w/o kernel
     torch.manual_seed(42)
     np.random.seed(42)
     fc_no_triton = flood_complex(
-        L, X, use_triton=False,
+        L, X, use_triton=False, **kwargs
     )
 
     for simplex in fc_no_triton:
@@ -106,13 +107,20 @@ def test_triton(num_witnesses, num_landmarks):
 
 
 @pytest.mark.parametrize("num_witnesses", [1000, 10_000])
-@pytest.mark.parametrize("num_landmarks", [20, 701, 1000, 2000])
-def test_kdtree_vs_triton(num_witnesses, num_landmarks):
+@pytest.mark.parametrize("num_landmarks", [20, 701, 2000])
+@pytest.mark.parametrize("use_rand", [True, False])
+def test_kdtree_vs_triton(num_witnesses, num_landmarks, use_rand):
     """
     Test consistency of the Flood complex between kdtree and Triton computation
     for different batch sizes, number of witnesses and number of landmarks.
     Tests also number of landmars being equal or larger than number of witnesses.
     """
+    num_rand = 512
+    points_per_edge = 20
+    if use_rand:
+        kwargs = {"num_rand": num_rand, "points_per_edge": None}
+    else:
+        kwargs = {"num_rand": None, "points_per_edge": points_per_edge}
 
     assert DEVICE.type == 'cuda'
 
@@ -126,20 +134,20 @@ def test_kdtree_vs_triton(num_witnesses, num_landmarks):
     torch.manual_seed(42)
     np.random.seed(42)
     fc_triton = flood_complex(
-        L, X
+        L, X, **kwargs
     )
 
     # Test cpu version (kd-tree)
     torch.manual_seed(42)
     np.random.seed(42)
-    fc_naive = flood_complex(
-        L.cpu(), X.cpu()
+    fc_cpu = flood_complex(
+        L.cpu(), X.cpu(), **kwargs
     )
 
-    for simplex in fc_naive:
+    for simplex in fc_cpu:
         assert simplex in fc_triton
-        assert abs(fc_naive[simplex] - fc_triton[simplex]) < 1e-4, \
-            f"Simplex {simplex}: Naive {fc_naive[simplex]:.5f} and Triton {fc_triton[simplex]:.5f}"
+        assert abs(fc_cpu[simplex] - fc_triton[simplex]) < 1e-4, \
+            f"Simplex {simplex}: Naive {fc_cpu[simplex]:.5f} and Triton {fc_triton[simplex]:.5f}"
 
 
 @pytest.mark.parametrize("num_witnesses", [1000, 10_000])
