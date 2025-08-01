@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 import torch
 import numpy as np
-from typing import Tuple, Optional, Literal
+from typing import Tuple, Literal
 
 
 def generate_figure_eight_2D_points(
@@ -15,7 +15,6 @@ def generate_figure_eight_2D_points(
     centers: Tuple[Tuple[float, float], Tuple[float, float]] = ((0.3, 0.5), (0.7, 0.5)),
     noise_std: float = 0.0,
     noise_kind: Literal["gaussian", "uniform"] = "gaussian",
-    rng: Optional[np.random.Generator] = None,
 ) -> torch.tensor:
     """
     Generate 2D points uniformly sampled in a figure-eight shape, with optional noise.
@@ -40,28 +39,28 @@ def generate_figure_eight_2D_points(
     Returns:
         torch.Tensor: A tensor of shape (n_samples, 2) containing the sampled 2D points.
     """
-    rng = np.random.default_rng(rng)
+    # rng = np.random.default_rng(rng)
 
-    lobe_idx = rng.integers(0, 2, size=n_samples)
+    lobe_idx = np.random.randint(0, 2, size=n_samples)
     cx, cy = np.asarray(centers).T  # shape (2,)
     cx = cx[lobe_idx]  # (n_samples,)
     cy = cy[lobe_idx]
 
     r_min, r_max = r_bounds
-    r = np.sqrt(rng.uniform(r_min**2, r_max**2, size=n_samples))
-    theta = rng.uniform(0.0, 2 * np.pi, size=n_samples)
+    r = np.sqrt(np.random.uniform(r_min**2, r_max**2, size=n_samples))
+    theta = np.random.uniform(0.0, 2 * np.pi, size=n_samples)
 
     x = cx + r * np.cos(theta)
     y = cy + r * np.sin(theta)
 
     if noise_std > 0:
         if noise_kind == "gaussian":
-            x += rng.normal(0.0, noise_std, size=n_samples)
-            y += rng.normal(0.0, noise_std, size=n_samples)
+            x += np.random.normal(0.0, noise_std, size=n_samples)
+            y += np.random.normal(0.0, noise_std, size=n_samples)
         elif noise_kind == "uniform":
             half = noise_std
-            x += rng.uniform(-half, half, size=n_samples)
-            y += rng.uniform(-half, half, size=n_samples)
+            x += np.random.uniform(-half, half, size=n_samples)
+            y += np.random.uniform(-half, half, size=n_samples)
         else:
             raise ValueError("noise_kind must be 'gaussian' or 'uniform'")
 
