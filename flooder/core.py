@@ -52,7 +52,7 @@ def generate_landmarks(
     if N_l > points.shape[0]:
         N_l = points.shape[0]
     N_p = len(points)
-    if fps_h == None:
+    if fps_h is None:
         if N_p > 200_000:
             fps_h = 9
         elif N_p > 80_000:

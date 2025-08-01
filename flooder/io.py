@@ -19,17 +19,17 @@ def save_to_disk(
     """
     Save an object to disk using `torch.save`.
 
-    This function saves any Python object to a specified path. If the object is a 
-    dictionary and `metadata=True`, a `_meta` entry is added to the copy with 
-    timestamp and key information. If the file already exists and `overwrite=False`, 
+    This function saves any Python object to a specified path. If the object is a
+    dictionary and `metadata=True`, a `_meta` entry is added to the copy with
+    timestamp and key information. If the file already exists and `overwrite=False`,
     an error is raised.
 
     Args:
         obj (Any): The Python object to save (e.g., a tensor, dictionary, or model).
         path (Union[str, Path]): The file path where the object will be saved.
-        metadata (bool, optional): Whether to include metadata in the saved file 
+        metadata (bool, optional): Whether to include metadata in the saved file
             (only applicable if `obj` is a dictionary). Defaults to True.
-        overwrite (bool, optional): Whether to overwrite the file if it already exists. 
+        overwrite (bool, optional): Whether to overwrite the file if it already exists.
             Defaults to False.
 
     Raises:
