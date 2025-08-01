@@ -289,19 +289,28 @@ def generate_grid(
 ) -> Tuple[torch.Tensor, List[torch.Tensor], List[torch.Tensor]]:
     """Generates a grid of points on the unit simplex based on the number of points per edge.
 
-    Args:
-        n (int):
-            Number of points per edge.
-        dim (int):
-            Dimension of the simplex.
-        device (torch.device):
-            Device to create the tensors on.
+        Args:
+            n (int):
+                Number of points per edge.
+            dim (int):
+                Dimension of the simplex.
+            device (torch.device):
+                Device to create the tensors on.
 
-    Returns:
-        tuple:
-            - grid (torch.Tensor): A tensor of shape [C, dim + 1] containing the grid points (coordinate weights).
-            - vertex_idxs (list): A list of tensors, each containing the vertex indices for each face.
-            - face_idxs (list): A list of tensors, each containing the face indices for each face.
+        Returns:
+            tuple:
+    <<<<<<< HEAD
+                - grid (torch.Tensor): A tensor of shape [C, dim + 1] containing the grid points (coordinate weights).
+                - vertex_idxs (list): A list of tensors, each containing the vertex indices for each face.
+                - face_idxs (list): A list of tensors, each containing the face indices for each face.
+    =======
+                grid (torch.Tensor):
+                    Tensor of shape (C, dim + 1), containing the grid points (coordinate weights).
+                vertex_ids (list of torch.Tensor):
+                    A list of tensors, each containing the vertex indices for each face.
+                face_ids (list of torch.Tensor):
+                    A list of tensors, each containing the face indices for each face.
+    >>>>>>> 63f652bd3a6f50ba4055cf07baebef0476e434cb
     """
 
     combs = torch.tensor(
