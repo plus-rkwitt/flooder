@@ -10,11 +10,9 @@ import torch
 import numpy as np
 from gudhi import AlphaComplex, SimplexTree
 
-from flooder import generate_swiss_cheese_points, flood_complex, save_to_disk
+from flooder import generate_swiss_cheese_points, flood_complex
 
 DEVICE = torch.device("cuda")
-OUT_DIR = "/tmp/"
-OUT_FILE = "flooder_cheese_timing_for_varying_number_of_points.pt"
 
 # Custom colors for terminal output
 RED = "\033[91m"
@@ -94,20 +92,6 @@ def main():
 
             pdiagram_land2 = st.persistence_intervals_in_dimension(dim - 1)
             pdiagram_land_flood_s.append(pdiagram_land2)
-
-    save_to_disk(
-        {
-            "results": results,
-            "pdiagram_land_flood_s": pdiagram_land_flood_s,
-            "pdiagram_land_alpha_s": pdiagram_land_alpha_s,
-            "n_ws": n_ws,
-            "n_l": n_l,
-            "b_sizes": b_sizes,
-            "rect_min": rect_min.cpu().numpy(),
-            "rect_max": rect_max.cpu().numpy(),
-        },
-        "/tmp/example_01_cheese_3D_out.pt",
-    )
 
 
 if __name__ == "__main__":
