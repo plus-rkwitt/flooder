@@ -1,4 +1,8 @@
-"""Example 01: Runtime measurements for Alpha PH vs. Flood PH on 3D cheese data."""
+"""Example 01: Runtime measurements for Alpha PH vs. Flood PH on 3D cheese data.
+
+Copyright (c) 2025 Paolo Pellizzoni, Florian Graf, Martin Uray, Stefan Huber and Roland Kwitt
+SPDX-License-Identifier: MIT
+"""
 
 from timeit import default_timer as timer
 

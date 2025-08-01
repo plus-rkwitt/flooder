@@ -1,4 +1,4 @@
-"""Implementation of the triton kernel.
+"""Implementation of the Triton kernels.
 
 Copyright (c) 2025 Paolo Pellizzoni, Florian Graf, Martin Uray, Stefan Huber and Roland Kwitt
 SPDX-License-Identifier: MIT
@@ -35,15 +35,13 @@ def compute_filtration_kernel(
     dist2 = tl.zeros((BLOCK_R, BLOCK_W), dtype=tl.float32)
     for i in range(d):
         x_vals = tl.load(x_ptr + x_idx + i, mask=r_mask, other=0.0)
-        y_vals = tl.load(y_ptr + w_idx * d + i, mask=(w_idx < W), other=float('inf'))
+        y_vals = tl.load(y_ptr + w_idx * d + i, mask=(w_idx < W), other=float("inf"))
         diff = x_vals[:, None] - y_vals[None, :]
         dist2 += diff * diff
 
     # Use tl.min with axis=1 to compute the minimum along the BLOCK_W (tile) dimension.
     tile_min = tl.sqrt(tl.min(dist2, axis=1))
-    tl.atomic_min(
-        inter_ptr + id_s * R + r_offset, tile_min, mask=r_mask
-    )
+    tl.atomic_min(inter_ptr + id_s * R + r_offset, tile_min, mask=r_mask)
 
 
 def compute_filtration(
@@ -52,7 +50,7 @@ def compute_filtration(
     row_idx: torch.Tensor,
     col_idx: torch.Tensor,
     BLOCK_W,
-    BLOCK_R
+    BLOCK_R,
 ) -> torch.Tensor:
 
     S, R, d = x.shape
@@ -68,10 +66,16 @@ def compute_filtration(
     inter = torch.full((S, R), torch.inf, device=x.device, dtype=torch.float32)
 
     # Bounds check
-    assert row_idx.shape == col_idx.shape, f"row_idx.shape ({row_idx.shape}) does not match col_idx.shape ({col_idx.shape}"
-    assert col_idx.shape[0] == T * BLOCK_W, f"col_idx.shape[0] {col_idx.shape[0]} does not match T * BLOCK_W ({T} * {BLOCK_W} = {T * BLOCK_W})"
+    assert (
+        row_idx.shape == col_idx.shape
+    ), f"row_idx.shape ({row_idx.shape}) does not match col_idx.shape ({col_idx.shape}"
+    assert (
+        col_idx.shape[0] == T * BLOCK_W
+    ), f"col_idx.shape[0] {col_idx.shape[0]} does not match T * BLOCK_W ({T} * {BLOCK_W} = {T * BLOCK_W})"
 
-    row_idx = row_idx[::BLOCK_W]  # consecutive row_indices need to be constant in blocks of length BLOCK_W
+    row_idx = row_idx[
+        ::BLOCK_W
+    ]  # consecutive row_indices need to be constant in blocks of length BLOCK_W
     # make sure indexing is contiguous and of type int32 for triton
     row_idx = row_idx.to(torch.int32).contiguous()
     col_idx = col_idx.to(torch.int32).contiguous()
@@ -90,15 +94,17 @@ def compute_filtration(
 
 @triton.jit
 def compute_mask_kernel(
-    points_ptr,      # (m, d), row-major
-    mask_ptr,        # (n, m), flat index
-    counts_ptr,      # (n), Trues per row
-    cent_ptr,        # (n, d), center positions
-    radi_ptr,        # (n, 1) or (n,), radius
-    n, m, d,
+    points_ptr,  # (m, d), row-major
+    mask_ptr,  # (n, m), flat index
+    counts_ptr,  # (n), Trues per row
+    cent_ptr,  # (n, d), center positions
+    radi_ptr,  # (n, 1) or (n,), radius
+    n,
+    m,
+    d,
     BLOCK_N: tl.constexpr,
     BLOCK_M: tl.constexpr,
-    BLOCK_W: tl.constexpr
+    BLOCK_W: tl.constexpr,
 ):
     pid_m = tl.program_id(0)  # points
     pid_n = tl.program_id(1)  # centers
@@ -117,8 +123,12 @@ def compute_mask_kernel(
 
     sq_dist = tl.zeros((BLOCK_N, BLOCK_M), dtype=tl.float32)
     for i in range(d):
-        pt_i = tl.load(points_ptr + offs_m * pt_stride + i, mask=mask_m, other=0.0)  # [BLOCK_M]
-        cent_i = tl.load(cent_ptr + offs_n * cent_stride + i, mask=mask_n, other=0.0)  # [BLOCK_N]
+        pt_i = tl.load(
+            points_ptr + offs_m * pt_stride + i, mask=mask_m, other=0.0
+        )  # [BLOCK_M]
+        cent_i = tl.load(
+            cent_ptr + offs_n * cent_stride + i, mask=mask_n, other=0.0
+        )  # [BLOCK_N]
         diff_i = pt_i[None, :] - cent_i[:, None]  # [BLOCK_N, BLOCK_M]
         sq_dist += diff_i * diff_i  # [BLOCK_N, BLOCK_M]
 
@@ -135,7 +145,14 @@ def compute_mask_kernel(
     tl.atomic_add(counts_ptr + offs_n, counts_tile, mask=mask_n)
 
 
-def compute_mask(points: torch.Tensor, centers: torch.Tensor, radii: torch.Tensor, BLOCK_N, BLOCK_M, BLOCK_W) -> torch.Tensor:
+def compute_mask(
+    points: torch.Tensor,
+    centers: torch.Tensor,
+    radii: torch.Tensor,
+    BLOCK_N,
+    BLOCK_M,
+    BLOCK_W,
+) -> torch.Tensor:
     """
     Check which points are inside Euclidean balls with given radii.
 
@@ -173,12 +190,16 @@ def compute_mask(points: torch.Tensor, centers: torch.Tensor, radii: torch.Tenso
         counts,
         centers_flat,
         radii_flat,
-        n, m, d,
+        n,
+        m,
+        d,
         BLOCK_N=BLOCK_N,
         BLOCK_M=BLOCK_M,
-        BLOCK_W=BLOCK_W
+        BLOCK_W=BLOCK_W,
     )
     extra = ((-counts) % BLOCK_W).unsqueeze(1)  # [n, 1]
-    extra_range = torch.arange(BLOCK_W, device=counts.device).unsqueeze(0)  # [1, BLOCK_W]
+    extra_range = torch.arange(BLOCK_W, device=counts.device).unsqueeze(
+        0
+    )  # [1, BLOCK_W]
     mask[:, m : m + BLOCK_W] = extra_range < extra  # [n, BLOCK_W]
     return mask
