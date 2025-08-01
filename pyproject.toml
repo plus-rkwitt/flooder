@@ -8,7 +8,7 @@ include = ["flooder"]
 
 [project]
 name = "flooder"
-version = "0.1.7"
+version = "0.2"
 description = "Flood complex PH"
 readme = "README.md"
 license = "MIT"

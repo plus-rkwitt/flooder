@@ -11,6 +11,8 @@ import numpy as np
 import itertools
 from typing import Union
 from scipy.spatial import KDTree
+from typing import List, Tuple
+
 
 from .triton_kernels import compute_mask, compute_filtration
 
@@ -20,7 +22,9 @@ BLOCK_N = 16
 BLOCK_M = 512
 
 
-def generate_landmarks(points: torch.Tensor, N_l: int, fps_h: Union[None, int] = None) -> torch.Tensor:
+def generate_landmarks(
+    points: torch.Tensor, N_l: int, fps_h: Union[None, int] = None
+) -> torch.Tensor:
     """
     Selects landmarks using Farthest-Point Sampling (bucket FPS).
 
@@ -57,7 +61,9 @@ def generate_landmarks(points: torch.Tensor, N_l: int, fps_h: Union[None, int] =
             fps_h = 5
 
     index_set = torch.tensor(
-        fpsample.bucket_fps_kdline_sampling(points.cpu(), N_l, h=fps_h, start_idx=0).astype(np.int64),
+        fpsample.bucket_fps_kdline_sampling(
+            points.cpu(), N_l, h=fps_h, start_idx=0
+        ).astype(np.int64),
         device=points.device,
     )
     return points[index_set]
@@ -72,7 +78,7 @@ def flood_complex(
     batch_size: int = 256,
     use_triton: bool = True,
     return_simplex_tree: bool = False,
-    fps_h: Union[None, int] = None
+    fps_h: Union[None, int] = None,
 ) -> Union[dict, gudhi.SimplexTree]:
     """
     Constructs a Flood complex from a set of landmark and witness points.
@@ -114,7 +120,7 @@ def flood_complex(
             each value is a float radius.
     """
     if dim is None:
-        dim = witnesses.shape[1]        
+        dim = witnesses.shape[1]
 
     max_range_dim = torch.argmax(
         witnesses.max(dim=0).values - witnesses.min(dim=0).values
@@ -123,7 +129,9 @@ def flood_complex(
     witnesses_search = witnesses[:, max_range_dim].contiguous()
 
     if isinstance(landmarks, int):
-        landmarks = generate_landmarks(witnesses, min(landmarks, witnesses.shape[0]), fps_h)
+        landmarks = generate_landmarks(
+            witnesses, min(landmarks, witnesses.shape[0]), fps_h
+        )
     assert (
         landmarks.device == witnesses.device
     ), f"landmarks.device ({landmarks.device}) != witnesses.device {witnesses.device}"
@@ -147,7 +155,9 @@ def flood_complex(
             continue
         list_simplices[len(simplex) - 2].append(tuple(simplex))
     for d in range(1, dim + 1):
-        if points_per_edge is not None and d < dim:  # If grid is used, filtration values of faces can be computed together with max dim simplices.
+        if (
+            points_per_edge is not None and d < dim
+        ):  # If grid is used, filtration values of faces can be computed together with max dim simplices.
             continue
         d_simplices = list_simplices[d - 1]
         num_simplices = len(d_simplices)
@@ -164,9 +174,14 @@ def flood_complex(
             all_simplex_points[torch.arange(num_simplices), idx0]
             + all_simplex_points[torch.arange(num_simplices), idx1]
         ) / 2.0
-        simplex_radii_vec = torch.amax(
-            (all_simplex_points - simplex_centers_vec.unsqueeze(1)).norm(dim=2), dim=1
-        ) * (1.42 if d > 1 else 1.01) + 1e-3
+        simplex_radii_vec = (
+            torch.amax(
+                (all_simplex_points - simplex_centers_vec.unsqueeze(1)).norm(dim=2),
+                dim=1,
+            )
+            * (1.42 if d > 1 else 1.01)
+            + 1e-3
+        )
 
         splx_idx = torch.argsort(simplex_centers_vec[:, max_range_dim])
         all_simplex_points = all_simplex_points[splx_idx]
@@ -206,37 +221,35 @@ def flood_complex(
                         simplex_radii_vec[start:end],
                         BLOCK_N,
                         BLOCK_M,
-                        BLOCK_W
+                        BLOCK_W,
                     )
-                    row_idx, col_idx = torch.nonzero(
-                        valid, as_tuple=True
-                    )
+                    row_idx, col_idx = torch.nonzero(valid, as_tuple=True)
                     distances = compute_filtration(
                         all_random_points[start:end],
                         witnesses[imin:imax],
                         row_idx,
                         col_idx,
                         BLOCK_W=BLOCK_W,
-                        BLOCK_R=BLOCK_R
+                        BLOCK_R=BLOCK_R,
                     )
                     if points_per_edge is None:
-                        min_covering_radius = torch.amax(
-                            distances, dim=1
-                        )
-                        out_complex.update(zip(
-                            d_simplices[start:end],
-                            min_covering_radius.tolist())
+                        min_covering_radius = torch.amax(distances, dim=1)
+                        out_complex.update(
+                            zip(d_simplices[start:end], min_covering_radius.tolist())
                         )
                     else:
                         for face_id, vertex_id in zip(face_ids, vertex_ids):
-                            faces = d_simplices[start:end][
-                                :, vertex_id
-                            ].flatten(0, 1)
+                            faces = d_simplices[start:end][:, vertex_id].flatten(0, 1)
                             distances_face = distances[:, face_id]
                             min_covering_radius_faces = torch.amax(
                                 distances_face, dim=2
                             ).flatten()
-                            out_complex.update(zip(map(tuple, faces.tolist()), min_covering_radius_faces.tolist()))  # By construction, each face gets the same filtration value irrespective of the simplex it was computed from. If this is violated (by modifying the grid), the code needs to be adapted to sort the simplex faces along axis 1 and take the maximum filtration value when updating the dictionary.
+                            out_complex.update(
+                                zip(
+                                    map(tuple, faces.tolist()),
+                                    min_covering_radius_faces.tolist(),
+                                )
+                            )  # By construction, each face gets the same filtration value irrespective of the simplex it was computed from. If this is violated (by modifying the grid), the code needs to be adapted to sort the simplex faces along axis 1 and take the maximum filtration value when updating the dictionary.
         elif landmarks.is_cuda and not use_triton:
             for i, simplex in enumerate(d_simplices):
                 valid_witnesses_mask = (
@@ -265,30 +278,40 @@ def flood_complex(
     return out_complex
 
 
-def generate_grid(n, dim, device):
+def generate_grid(
+    n, dim, device
+) -> Tuple[torch.Tensor, List[torch.Tensor], List[torch.Tensor]]:
     """Generates a grid of points on the unit simplex based on the number of points per edge.
 
     Args:
         n (int):
             Number of points per edge.
-        dim (int): 
+        dim (int):
             Dimension of the simplex.
         device (torch.device):
             Device to create the tensors on.
 
     Returns:
         tuple:
-            - grid (torch.Tensor): A tensor of shape [C, dim + 1] containing the grid points (coordinate weights).
-            - vertex_ids (list): A list of tensors, each containing the vertex indices for each face.
-            - face_ids (list): A list of tensors, each containing the face indices for each face.
+            grid (torch.Tensor):
+                Tensor of shape (C, dim + 1), containing the grid points (coordinate weights).
+            vertex_ids (list of torch.Tensor):
+                A list of tensors, each containing the vertex indices for each face.
+            face_ids (list of torch.Tensor):
+                A list of tensors, each containing the face indices for each face.
     """
 
-    combs = torch.tensor(list(itertools.combinations(range(n + dim), dim)), device=device)  # shape [C, dim]
-    padded = torch.cat([
-        torch.full((combs.shape[0], 1), -1, device=device), 
-        combs,
-        torch.full((combs.shape[0], 1), n + dim, device=device) 
-    ], dim=1)  # shape [C, dim + 2]
+    combs = torch.tensor(
+        list(itertools.combinations(range(n + dim), dim)), device=device
+    )  # shape [C, dim]
+    padded = torch.cat(
+        [
+            torch.full((combs.shape[0], 1), -1, device=device),
+            combs,
+            torch.full((combs.shape[0], 1), n + dim, device=device),
+        ],
+        dim=1,
+    )  # shape [C, dim + 2]
     grid = torch.diff(padded, dim=1) - 1  # shape [C, dim + 1]
 
     face_ids = []
@@ -326,6 +349,8 @@ def generate_uniform_weights(num_rand, dim, device):
         torch.Tensor:
             A tensor of shape [num_rand, dim + 1] containing the random points (coordinate weights).
     """
-    weights = -torch.log(1 - torch.rand(num_rand, dim + 1)).to(device)  # For consistency with the cpu version, random points are generated on the CPU and then moved to the device.
+    weights = -torch.log(1 - torch.rand(num_rand, dim + 1)).to(
+        device
+    )  # For consistency with the cpu version, random points are generated on the CPU and then moved to the device.
     weights = weights / weights.sum(dim=1, keepdim=True)
     return weights
