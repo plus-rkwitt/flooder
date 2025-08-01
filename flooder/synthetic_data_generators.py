@@ -33,13 +33,10 @@ def generate_figure_eight_2D_points(
             (for uniform) of noise to add to each point. Defaults to 0.0 (no noise).
         noise_kind (Literal["gaussian", "uniform"], optional): Type of noise distribution
             to use if `noise_std > 0`. Defaults to "gaussian".
-        rng (Optional[np.random.Generator], optional): Optional NumPy random number
-            generator for reproducibility. If None, a new default generator is used.
 
     Returns:
         torch.Tensor: A tensor of shape (n_samples, 2) containing the sampled 2D points.
     """
-    # rng = np.random.default_rng(rng)
 
     lobe_idx = np.random.randint(0, 2, size=n_samples)
     cx, cy = np.asarray(centers).T  # shape (2,)

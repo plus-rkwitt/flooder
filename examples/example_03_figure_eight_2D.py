@@ -9,12 +9,7 @@ import gudhi
 import torch
 import numpy as np
 
-from flooder import (
-    generate_landmarks,
-    flood_complex,
-    generate_figure_eight_2D_points,
-    save_to_disk,
-)
+from flooder import generate_landmarks, flood_complex, generate_figure_eight_2D_points
 
 device = torch.device("cuda")
 
@@ -54,9 +49,7 @@ def main():
     print(f"{YELLOW}Flood PH of a noisy figure-eight sample 40M points)")
     print(f"{YELLOW}---------------------------------------------------")
 
-    pts = generate_figure_eight_2D_points(
-        N_w, noise_std=0.02, noise_kind="gaussian", rng=42
-    )
+    pts = generate_figure_eight_2D_points(N_w, noise_std=0.02, noise_kind="gaussian")
 
     t0_fps = time.perf_counter()
     lms = generate_landmarks(pts, N_l)
@@ -93,18 +86,6 @@ def main():
                 f"{BLUE}  {j + 1:2d}: (birth, death)=({b:.4f}, {d:.4f}), lifetime={(d - b):.4f} {RESET}"
             )
 
-    # Save the output to disk
-    save_to_disk(
-        {
-            "pts": pts.cpu().numpy(),
-            "lms": lms.cpu().numpy(),
-            "complex": out_complex,
-            "diags": diags,
-        },
-        "/tmp/example_03_figure_eight_2D_out.pt",
-        True,
-        True,
-    )
     print(
         f"{RED}Peak memory: {torch.cuda.max_memory_allocated() / 1024**2} MiB {RESET}"
     )

@@ -8,16 +8,9 @@ import time
 import torch
 import gudhi
 
-from flooder import (
-    generate_noisy_torus_points,
-    flood_complex,
-    generate_landmarks,
-    save_to_disk,
-)
+from flooder import generate_noisy_torus_points, flood_complex, generate_landmarks
 
 
-OUT_DIR = "/tmp/"
-OUT_FILE = "flooder_example_02_torus_3D_diagrams.pt"
 DEVICE = torch.device("cuda")
 
 RED = "\033[91m"
@@ -30,7 +23,7 @@ def main():
     print(f"{YELLOW}Flood PH of a noisy torus sample (1M points)")
     print(f"{YELLOW}--------------------------------------------")
     for i in range(3):
-        N_w = 10000  # Number of points sampled from torus
+        N_w = 1_000_000  # Number of points sampled from torus
         N_l = 2000  # Number of landmarks for Flood complex
 
         pts = generate_noisy_torus_points(N_w)
@@ -61,16 +54,6 @@ def main():
         )
 
         diags = [st.persistence_intervals_in_dimension(d) for d in range(3)]
-
-    save_to_disk(
-        {
-            "pts": pts.cpu().numpy(),
-            "lms": lms.cpu().numpy(),
-            "complex": out_complex,
-            "diags": diags,
-        },
-        "/tmp/example_02_torus_3D_out.pt",
-    )
 
 
 if __name__ == "__main__":
