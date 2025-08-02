@@ -13,34 +13,21 @@ construct the Flood complex on top of `N_l=1000` landmarks (see [Illustration](i
 homology (up to dimension 3) using `gudhi` based on the constructed filtered Flood simplicial complex.
 
 ``` py linenums="1"
-import gudhi
 from flooder import (
     generate_noisy_torus_points, 
     flood_complex, 
     generate_landmarks)
 
 DEVICE = "cuda"
-
-N_w = 1_000_000  # Number of points to sample from torus
+N_p = 1_000_000  # Number of points to sample from torus
 N_l = 1_000      # Number of landmarks for Flood complex
 
-pts = generate_noisy_torus_points(N_w)
+pts = generate_noisy_torus_points(N_w).to(DEVICE)
 lms = generate_landmarks(pts, N_l)
 
-out_complex = flood_complex(
-    lms.to(DEVICE), 
-    pts.to(DEVICE), 
-    dim=3, 
-    batch_size=16)
-
-st = gudhi.SimplexTree()
-for simplex in out_complex:
-    st.insert(simplex, out_complex[simplex])
-st.make_filtration_non_decreasing()
-st.compute_persistence()
-
-# Get persistence barcodes for 0-, 1- and 2-dim. holes
-diags = [st.persistence_intervals_in_dimension(i) for i in range(3)]
+stree = flood_complex(lms, pts, return_simplex_tree=True)
+stree.compute_persistence()
+ph = [stree.persistence_intervals_in_dimension(i) for i in range(3)]
 ```
 
 Importantly, one can either call `flood_complex` with the already pre-selected
@@ -48,11 +35,7 @@ Importantly, one can either call `flood_complex` with the already pre-selected
 via
 
 ```py linenums="1"
-out_complex = flood_complex(
-    1_000, 
-    pts.to(DEVICE), 
-    dim=3, 
-    batch_size=16)
+stree = flood_complex(1_000, pts, return_simplex_tree=True)
 ```
 
 in which case FPS is called internally.
