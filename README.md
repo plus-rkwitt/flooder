@@ -49,29 +49,21 @@ pip install persim
 In the following example, we compute **Flood PH** on 2M points from a standard multivariate Gaussian in 3D, using 1k landmarks, and finally plot the diagrams up to dimension 2. You could, e.g., just copy-paste the following code into a Jupyter notebook (note that, in case you just checked out the GitHub repository and did not do a `pip install flooder`, the notebook would need to be in the top-level directory for all imports to work).
 
 ```python
-import torch
-import gudhi
-from persim import plot_diagrams
-from flooder import flood_complex, generate_landmarks
+from flooder import (
+    generate_noisy_torus_points, 
+    flood_complex, 
+    generate_landmarks)
 
-device = torch.device("cuda")
+DEVICE = "cuda"
+N_p = 1_000_000  # Number of points to sample from torus
+N_l = 1_000      # Number of landmarks for Flood complex
 
-pts = torch.randn((2000000,3), device=device)
-lms = generate_landmarks(pts, 1000)
-out_complex = flood_complex(
-    lms.to(device), 
-    pts.to(device), 
-    dim=3, 
-    batch_size=16)
+pts = generate_noisy_torus_points(N_w).to(DEVICE)
+lms = generate_landmarks(pts, N_l)
 
-st = gudhi.SimplexTree()
-for simplex in out_complex:
-    st.insert(simplex, out_complex[simplex])
-st.make_filtration_non_decreasing()
-st.compute_persistence()
-
-diags = [st.persistence_intervals_in_dimension(i) for i in range(3)]
-plot_diagrams(diags)
+stree = flood_complex(lms, pts, return_simplex_tree=True)
+stree.compute_persistence()
+ph = [stree.persistence_intervals_in_dimension(i) for i in range(3)]
 ```
 
 ## License
