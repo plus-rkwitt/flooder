@@ -20,10 +20,10 @@ RESET = "\033[0m"
 
 
 def main():
-    print(f"{YELLOW}Flood PH of a noisy torus sample (1M points)")
-    print(f"{YELLOW}--------------------------------------------")
+    print(f"{YELLOW}Flood PH of a noisy torus sample (20M points)")
+    print(f"{YELLOW}---------------------------------------------")
     for i in range(3):
-        N_w = 1_000_000  # Number of points sampled from torus
+        N_w = 20_000_000  # Number of points sampled from torus
         N_l = 2000  # Number of landmarks for Flood complex
 
         pts = generate_noisy_torus_points(N_w)

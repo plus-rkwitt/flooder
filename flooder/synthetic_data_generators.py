@@ -15,6 +15,7 @@ def generate_figure_eight_2D_points(
     centers: Tuple[Tuple[float, float], Tuple[float, float]] = ((0.3, 0.5), (0.7, 0.5)),
     noise_std: float = 0.0,
     noise_kind: Literal["gaussian", "uniform"] = "gaussian",
+    seed: int = None,
 ) -> torch.tensor:
     """
     Generate 2D points uniformly sampled in a figure-eight shape, with optional noise.
@@ -33,10 +34,13 @@ def generate_figure_eight_2D_points(
             (for uniform) of noise to add to each point. Defaults to 0.0 (no noise).
         noise_kind (Literal["gaussian", "uniform"], optional): Type of noise distribution
             to use if `noise_std > 0`. Defaults to "gaussian".
+        seed (int, optional): Random seed for reproducibility. If None, randomness is not seeded.
 
     Returns:
         torch.Tensor: A tensor of shape (n_samples, 2) containing the sampled 2D points.
     """
+    if seed is not None:
+        np.random.seed(seed)
 
     lobe_idx = np.random.randint(0, 2, size=n_samples)
     cx, cy = np.asarray(centers).T  # shape (2,)
@@ -172,7 +176,7 @@ def generate_donut_points(
     center: torch.tensor = torch.tensor([0.0, 0.0]),
     radius: float = 1.0,
     width: float = 0.2,
-    rng: int = None,
+    seed: int = None,
 ) -> torch.tensor:
     """
     Generate 2D points uniformly distributed in a circular annulus (donut shape).
@@ -187,22 +191,22 @@ def generate_donut_points(
         radius (float, optional): Outer radius of the annulus. Must be positive. Defaults to 1.0.
         width (float, optional): Thickness of the annulus. Must be positive and less than `radius`.
             Defaults to 0.2.
-        rng (int, optional): Random seed for reproducibility. If None, randomness is not seeded.
+        seed (int, optional): Random seed for reproducibility. If None, randomness is not seeded.
 
     Returns:
         torch.Tensor: A tensor of shape (N, 2) containing the sampled 2D points.
 
     Examples:
         >>> center = torch.tensor([0.0, 0.0])
-        >>> points = generate_donut_points(N=500, center=center, radius=1.0, width=0.3, rng=42)
+        >>> points = generate_donut_points(N=500, center=center, radius=1.0, width=0.3, seed=42)
         >>> points.shape
         torch.Size([500, 2])
     """
     assert center.shape == (2,), "Center must be a 2D point."
     assert radius > 0 and width > 0, "Radius and width must be positive."
 
-    if rng:
-        torch.manual_seed(rng)
+    if seed is not None:
+        torch.manual_seed(seed)
 
     angles = torch.rand(N) * 2 * torch.pi  # Random angles
     r = (
@@ -218,7 +222,7 @@ def generate_noisy_torus_points(
     R: float = 3.0,
     r: float = 1.0,
     noise_std: float = 0.02,
-    rng: int = None,
+    seed: int = None,
 ) -> torch.tensor:
     """
     Generate 3D points on a torus with added Gaussian noise.
@@ -235,18 +239,18 @@ def generate_noisy_torus_points(
             Defaults to 1.0.
         noise_std (float, optional): Standard deviation of the Gaussian noise added to the
             points. Defaults to 0.02.
-        rng (int, optional): Random seed for reproducibility. If None, randomness is not seeded.
+        seed (int, optional): Random seed for reproducibility. If None, randomness is not seeded.
 
     Returns:
         torch.Tensor: A tensor of shape (num_points, 3) containing the generated noisy 3D points.
 
     Examples:
-        >>> points = generate_noisy_torus_points(num_points=500, R=3.0, r=1.0, noise_std=0.05, rng=123)
+        >>> points = generate_noisy_torus_points(num_points=500, R=3.0, r=1.0, noise_std=0.05, seed=123)
         >>> points.shape
         torch.Size([500, 3])
     """
-    if rng:
-        torch.manual_seed(rng)
+    if seed is not None:
+        torch.manual_seed(seed)
 
     theta = torch.rand(num_points) * 2 * torch.pi
     phi = torch.rand(num_points) * 2 * torch.pi
