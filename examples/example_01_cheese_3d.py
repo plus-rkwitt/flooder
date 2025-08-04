@@ -7,6 +7,7 @@ SPDX-License-Identifier: MIT
 from timeit import default_timer as timer
 
 import torch
+import pandas as pd
 from gudhi import AlphaComplex, SimplexTree  # pylint: disable=no-name-in-module
 
 from flooder import generate_swiss_cheese_points, flood_complex
@@ -57,18 +58,24 @@ def main():  # pylint: disable=missing-function-docstring
                 f"PH (Alpha): {t2:6.2f} sec{RESET}"
             )
             results.append(
-                {"rep": rep, "N_p": n_p, "method": "Alpha", "tA": t1, "tB": t2}
+                {
+                    "rep": rep,
+                    "n_p": n_p,
+                    "method": "Alpha",
+                    "complex_time": t1,
+                    "ph_time": t2,
+                }
             )
 
             pdiagram_alpha_s.append(alpha.persistence_intervals_in_dimension(dim - 1))
 
             points = points.to(DEVICE)
             # GPU warmup
-            out_complex = flood_complex(n_l, points[:10000], batch_size=b_sizes[i])
+            out_complex = flood_complex(points[:10000], n_l, batch_size=b_sizes[i])
             torch.cuda.synchronize()
 
             startt = timer()
-            out_complex = flood_complex(n_l, points, batch_size=b_sizes[i])
+            out_complex = flood_complex(points, n_l, batch_size=b_sizes[i])
 
             st = SimplexTree()
             for simplex in out_complex:
@@ -94,6 +101,30 @@ def main():  # pylint: disable=missing-function-docstring
                 }
             )
             pdiagram_flood_s.append(st.persistence_intervals_in_dimension(dim - 1))
+
+    # Summary of results with mean and standard deviation
+    print(f"\n{YELLOW}Summary of Timings (mean ± std over 5 repetitions){RESET}")
+    print("-" * 100)
+    print(
+        f"{'N_points':>10} | {'Method':>6} | {'Complex Time (s)':>30} | {'PH Time (s)':>30}"
+    )
+    print("-" * 100)
+
+    df = pd.DataFrame(results)
+    for n_p in sorted(df["n_p"].unique()):
+        for method in ["Alpha", "Flood"]:
+            method_df = df[(df["n_p"] == n_p) & (df["method"] == method)]
+            if method_df.empty:
+                continue
+            complex_mean = method_df["complex_time"].mean()
+            complex_std = method_df["complex_time"].std()
+            ph_mean = method_df["ph_time"].mean()
+            ph_std = method_df["ph_time"].std()
+            print(
+                f"{int(n_p):10d} | {method:>6} | "
+                f"{complex_mean:8.2f} ± {complex_std:<8.2f} {' ':>10} | "
+                f"{ph_mean:8.2f} ± {ph_std:<8.2f}"
+            )
 
 
 if __name__ == "__main__":

@@ -34,7 +34,7 @@ def main():  # pylint: disable=missing-function-docstring
 
         t0_complex = time.perf_counter()
         out_complex = flood_complex(
-            lms.to(DEVICE), pts.to(DEVICE), batch_size=64, use_triton=True
+            pts.to(DEVICE), lms.to(DEVICE), batch_size=64, use_triton=True
         )
         t1_complex = time.perf_counter()
 

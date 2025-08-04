@@ -70,8 +70,8 @@ def generate_landmarks(
 
 
 def flood_complex(
-    landmarks: Union[int, torch.Tensor],
     points: torch.Tensor,
+    landmarks: Union[int, torch.Tensor],
     max_dimension: Union[None, int] = None,
     points_per_edge: Union[None, int] = 30,
     num_rand: int = None,
@@ -84,10 +84,10 @@ def flood_complex(
     Constructs a Flood complex from a set of landmark and witness points.
 
     Args:
-        landmarks (Union[int, torch.Tensor]):
-            Either an integer indicating the number of landmarks to randomly sample from `points`, or a tensor of shape (N_l, d) specifying explicit landmark coordinates.
         points (torch.Tensor):
             A (N, d) tensor containing witness points used as sources in the flood process.
+        landmarks (Union[int, torch.Tensor]):
+            Either an integer indicating the number of landmarks to randomly sample from `points`, or a tensor of shape (N_l, d) specifying explicit landmark coordinates.
         max_dimension (Union[None, int], optional):
             The top dimension of the simplices to construct.
             Defaults to None resulting in the dimension of the ambient space.

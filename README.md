@@ -61,7 +61,7 @@ N_l = 1_000      # Number of landmarks for Flood complex
 pts = generate_noisy_torus_points(N_p).to(DEVICE)
 lms = generate_landmarks(pts, N_l)
 
-stree = flood_complex(lms, pts, return_simplex_tree=True)
+stree = flood_complex(pts, lms, return_simplex_tree=True)
 stree.compute_persistence()
 ph = [stree.persistence_intervals_in_dimension(i) for i in range(3)]
 ```
