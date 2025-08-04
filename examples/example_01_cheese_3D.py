@@ -7,7 +7,6 @@ SPDX-License-Identifier: MIT
 from timeit import default_timer as timer
 
 import torch
-import numpy as np
 from gudhi import AlphaComplex, SimplexTree
 
 from flooder import generate_swiss_cheese_points, flood_complex
@@ -22,7 +21,7 @@ RESET = "\033[0m"
 
 
 def main():
-    n_ws = [10000, 100000, 1000000, 10000000]  # Number of flood sources / data points
+    n_ps = [10000, 100000, 1000000, 10000000]  # Number of flood sources / data points
     n_l = 1000  # Number of landmarks to use
     b_sizes = [1024, 1024, 32, 2]  # Batch sizes for flood complex computation
 
@@ -33,36 +32,34 @@ def main():
     dim = len(rect_min)
 
     results = []
-    pdiagram_land_flood_s = []
-    pdiagram_land_alpha_s = []
+    pdiagram_flood_s = []
+    pdiagram_alpha_s = []
 
     print(f"{YELLOW}Alpha PH vs. Flood PH timing on cheese")
     print(f"{YELLOW}--------------------------------------")
-    for i, n_w in enumerate(n_ws):
+    for i, n_p in enumerate(n_ps):
         for rep in range(5):
             points, _, _ = generate_swiss_cheese_points(
-                n_w, rect_min, rect_max, k, void_radius_range, device=DEVICE
+                n_p, rect_min, rect_max, k, void_radius_range, device=DEVICE
             )
 
             startt = timer()
-            alpha = AlphaComplex(points).create_simplex_tree()
+            alpha = AlphaComplex(points).create_simplex_tree(output_squared_values=False)
             t1 = timer() - startt
 
             alpha.compute_persistence()
             t2 = timer() - startt
             print(
-                f"{RED}{n_w:8d} points (try {rep}) | "
+                f"{RED}{n_p:8d} points (try {rep}) | "
                 f"Complex (Alpha): {t1:6.2f} sec | "
                 f"PH (Alpha): {t2:6.2f} sec{RESET}"
             )
             results.append(
-                {"rep": rep, "W": n_w, "method": "Alpha", "tA": t1, "tB": t2}
+                {"rep": rep, "N_p": n_p, "method": "Alpha", "tA": t1, "tB": t2}
             )
 
-            pdiagram_land2_alpha = np.sqrt(
-                alpha.persistence_intervals_in_dimension(dim - 1)
-            )
-            pdiagram_land_alpha_s.append(pdiagram_land2_alpha)
+            pdiagram_alpha_s.append(
+                alpha.persistence_intervals_in_dimension(dim - 1))
 
             points = points.to(DEVICE)
             # GPU warmup
@@ -82,16 +79,14 @@ def main():
             st.compute_persistence()
             t2 = timer() - startt
             print(
-                f"{BLUE}{n_w:8d} points (try {rep}) | "
+                f"{BLUE}{n_p:8d} points (try {rep}) | "
                 f"Complex (Flood): {t1:6.2f} sec | "
                 f"PH (Flood): {t2:6.2f} sec{RESET}"
             )
             results.append(
-                {"rep": rep, "W": n_w, "method": "Flood", "tA": t1, "tB": t2}
+                {"rep": rep, "N_p": n_p, "method": "Flood", "complex_time": t1, "ph_time": t2}
             )
-
-            pdiagram_land2 = st.persistence_intervals_in_dimension(dim - 1)
-            pdiagram_land_flood_s.append(pdiagram_land2)
+            pdiagram_flood_s.append(st.persistence_intervals_in_dimension(dim - 1))
 
 
 if __name__ == "__main__":
