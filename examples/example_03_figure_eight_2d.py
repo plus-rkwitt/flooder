@@ -20,39 +20,35 @@ RESET = "\033[0m"
 
 
 def top_k_longest(bd: np.array, k: int = 10):
-    """
-    Sort (N,2) array of persistence (birth, death) pairs by lifetime
+    """Return the top-k longest persistence bars based on lifetime.
 
-    Parameters
-    ----------
-    bd : np.array
-        Array of shape (N, 2) containing birth and death times.
-    k : int
-        Number of longest bars to return.
-    Returns
-    -------
-    np.array
-        Array of shape (k, 2) containing the k longest bars sorted by lifetime.
+    Sorts a (N, 2) array of (birth, death) pairs by their lifetime (death - birth)
+    and returns the `k` longest bars.
+
+    Args:
+        bd (np.array): A NumPy array of shape (N, 2) containing birth and death times.
+        k (int, optional): Number of longest bars to return. Defaults to 10.
+
+    Returns:
+        np.array: A NumPy array of shape (k, 2) containing the `k` longest bars,
+                sorted in descending order of lifetime.
     """
     lifetimes = bd[:, 1] - bd[:, 0]
     idx = np.argsort(lifetimes)[-k:][::-1]
     return bd[idx]
 
 
-def main():
-
-    torch.cuda.reset_peak_memory_stats()
-
-    N_w = 40_000_000  # Number of points sampled from figure-eight
-    N_l = 2000  # Number of landmarks for Flood complex
+def main():  # pylint: disable=missing-function-docstring
+    n_p = 40_000_000  # Number of points sampled from figure-eight
+    n_l = 2000  # Number of landmarks for Flood complex
 
     print(f"{YELLOW}Flood PH of a noisy figure-eight sample 40M points)")
     print(f"{YELLOW}---------------------------------------------------")
 
-    pts = generate_figure_eight_2D_points(N_w, noise_std=0.02, noise_kind="gaussian")
+    pts = generate_figure_eight_2D_points(n_p, noise_std=0.02, noise_kind="gaussian")
 
     t0_fps = time.perf_counter()
-    lms = generate_landmarks(pts, N_l)
+    lms = generate_landmarks(pts, n_l)
     t1_fps = time.perf_counter()
 
     lms = lms.to(device)
@@ -63,7 +59,7 @@ def main():
     t1_complex = time.perf_counter()
 
     t0_ph = time.perf_counter()
-    st = gudhi.SimplexTree()
+    st = gudhi.SimplexTree()  # pylint: disable=no-member
     for simplex in out_complex:
         st.insert(simplex, out_complex[simplex])
     st.make_filtration_non_decreasing()
@@ -71,7 +67,7 @@ def main():
     t1_ph = time.perf_counter()
 
     print(
-        f"{BLUE}{N_w:8d} points ({N_l} landmarks) | "
+        f"{BLUE}{n_p:8d} points ({n_l} landmarks) | "
         f"Complex (Flood): {(t1_complex - t0_complex):6.2f} sec | "
         f"PH (Flood): {t1_ph - t0_ph:6.2f} sec | "
         f"FPS: {t1_fps - t0_fps:6.2f} sec{RESET}"
@@ -80,15 +76,11 @@ def main():
     diags = [st.persistence_intervals_in_dimension(i) for i in range(2)]
     for i in range(2):
         print(f"{RED}10 longest bars (sorted by lifetime) in dimension {i}: {RESET}")
-        topk_Hi = top_k_longest(diags[i], k=10)
-        for j, (b, d) in enumerate(topk_Hi):
+        topk_hi = top_k_longest(diags[i], k=10)
+        for j, (b, d) in enumerate(topk_hi):
             print(
                 f"{BLUE}  {j + 1:2d}: (birth, death)=({b:.4f}, {d:.4f}), lifetime={(d - b):.4f} {RESET}"
             )
-
-    print(
-        f"{RED}Peak memory: {torch.cuda.max_memory_allocated() / 1024**2} MiB {RESET}"
-    )
 
 
 if __name__ == "__main__":

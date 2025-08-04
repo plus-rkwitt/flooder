@@ -19,17 +19,17 @@ YELLOW = "\033[93m"
 RESET = "\033[0m"
 
 
-def main():
-    print(f"{YELLOW}Flood PH of a noisy torus sample (20M points)")
-    print(f"{YELLOW}---------------------------------------------")
-    for i in range(3):
-        N_w = 20_000_000  # Number of points sampled from torus
-        N_l = 2000  # Number of landmarks for Flood complex
+def main():  # pylint: disable=missing-function-docstring
+    print(f"{YELLOW}Flood PH of a noisy torus sample (1M points)")
+    print(f"{YELLOW}--------------------------------------------")
+    for _ in range(3):
+        n_p = 1_000_000  # Number of points sampled from torus
+        n_l = 2000  # Number of landmarks for Flood complex
 
-        pts = generate_noisy_torus_points(N_w)
+        pts = generate_noisy_torus_points(n_p)
 
         t0_fps = time.perf_counter()
-        lms = generate_landmarks(pts, N_l)
+        lms = generate_landmarks(pts, n_l)
         t1_fps = time.perf_counter()
 
         t0_complex = time.perf_counter()
@@ -39,7 +39,7 @@ def main():
         t1_complex = time.perf_counter()
 
         t0_ph = time.perf_counter()
-        st = gudhi.SimplexTree()
+        st = gudhi.SimplexTree()  # pylint: disable=no-member
         for simplex in out_complex:
             st.insert(simplex, out_complex[simplex])
         st.make_filtration_non_decreasing()
@@ -47,13 +47,11 @@ def main():
         t1_ph = time.perf_counter()
 
         print(
-            f"{BLUE}{N_w:8d} points ({N_l} landmarks) | "
+            f"{BLUE}{n_p:8d} points ({n_l} landmarks) | "
             f"Complex (Flood): {(t1_complex - t0_complex):6.2f} sec | "
             f"PH (Flood): {t1_ph - t0_ph:6.2f} sec | "
             f"FPS: {t1_fps - t0_fps:6.2f} sec{RESET}"
         )
-
-        diags = [st.persistence_intervals_in_dimension(d) for d in range(3)]
 
 
 if __name__ == "__main__":

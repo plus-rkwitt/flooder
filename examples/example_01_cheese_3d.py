@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 from timeit import default_timer as timer
 
 import torch
-from gudhi import AlphaComplex, SimplexTree
+from gudhi import AlphaComplex, SimplexTree  # pylint: disable=no-name-in-module
 
 from flooder import generate_swiss_cheese_points, flood_complex
 
@@ -20,7 +20,7 @@ YELLOW = "\033[93m"
 RESET = "\033[0m"
 
 
-def main():
+def main():  # pylint: disable=missing-function-docstring
     n_ps = [10000, 100000, 1000000, 10000000]  # Number of flood sources / data points
     n_l = 1000  # Number of landmarks to use
     b_sizes = [1024, 1024, 32, 2]  # Batch sizes for flood complex computation
@@ -44,7 +44,9 @@ def main():
             )
 
             startt = timer()
-            alpha = AlphaComplex(points).create_simplex_tree(output_squared_values=False)
+            alpha = AlphaComplex(points).create_simplex_tree(
+                output_squared_values=False
+            )
             t1 = timer() - startt
 
             alpha.compute_persistence()
@@ -58,8 +60,7 @@ def main():
                 {"rep": rep, "N_p": n_p, "method": "Alpha", "tA": t1, "tB": t2}
             )
 
-            pdiagram_alpha_s.append(
-                alpha.persistence_intervals_in_dimension(dim - 1))
+            pdiagram_alpha_s.append(alpha.persistence_intervals_in_dimension(dim - 1))
 
             points = points.to(DEVICE)
             # GPU warmup
@@ -84,7 +85,13 @@ def main():
                 f"PH (Flood): {t2:6.2f} sec{RESET}"
             )
             results.append(
-                {"rep": rep, "N_p": n_p, "method": "Flood", "complex_time": t1, "ph_time": t2}
+                {
+                    "rep": rep,
+                    "n_p": n_p,
+                    "method": "Flood",
+                    "complex_time": t1,
+                    "ph_time": t2,
+                }
             )
             pdiagram_flood_s.append(st.persistence_intervals_in_dimension(dim - 1))
 
