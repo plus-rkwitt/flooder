@@ -70,7 +70,7 @@ def generate_figure_eight_2D_points(
 
 @torch.no_grad()
 def generate_swiss_cheese_points(
-    N: int = 1000,
+    n: int = 1000,
     rect_min: list = [0.0, 0.0, 0.0],
     rect_max: list = [1.0, 1.0, 1.0],
     k: int = 6,
@@ -88,7 +88,7 @@ def generate_swiss_cheese_points(
     excluding k randomly positioned spherical voids with radii sampled from `void_radius_range`.
 
     Args:
-        N (int, optional): Number of points to generate. Defaults to 1000.
+        n (int, optional): Number of points to generate. Defaults to 1000.
         rect_min (list, optional): Minimum coordinates of the rectangular region.
             Defaults to a list of three zeros.
         rect_max (list, optional): Maximum coordinates of the rectangular region.
@@ -152,7 +152,7 @@ def generate_swiss_cheese_points(
 
     # --- 2.  rejection sample points in large vectorised batches ------------
     pts = torch.empty((0, d), dtype=rect_min.dtype, device=device)
-    todo = N
+    todo = n
     while todo:
         B = batch_factor * todo  # adaptive batch
         cand = rect_min + (rect_max - rect_min) * torch.rand(B, d, device=device)
@@ -166,7 +166,7 @@ def generate_swiss_cheese_points(
 
         accepted = cand[good][:todo]  # at most 'todo'
         pts = torch.cat([pts, accepted], dim=0)
-        todo = N - pts.shape[0]
+        todo = n - pts.shape[0]
 
     return pts, centres, radii
 
@@ -245,7 +245,8 @@ def generate_noisy_torus_points(
         torch.Tensor: A tensor of shape (num_points, 3) containing the generated noisy 3D points.
 
     Examples:
-        >>> points = generate_noisy_torus_points(num_points=500, R=3.0, r=1.0, noise_std=0.05, seed=123)
+        >>> points = generate_noisy_torus_points(
+                num_points=500, R=3.0, r=1.0, noise_std=0.05, seed=123)
         >>> points.shape
         torch.Size([500, 3])
     """
