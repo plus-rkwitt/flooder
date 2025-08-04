@@ -22,9 +22,7 @@ RESET = "\033[0m"
 
 
 def main():  # pylint: disable=missing-function-docstring
-    n_ps = [
-        10000
-    ]  # , 100000, 1000000, 10000000]  # Number of flood sources / data points
+    n_ps = [10000, 100000, 1000000, 10000000]  # Number of flood sources / data points
     n_l = 1000  # Number of landmarks to use
     b_sizes = [1024, 1024, 32, 2]  # Batch sizes for flood complex computation
 
@@ -116,15 +114,12 @@ def main():  # pylint: disable=missing-function-docstring
         .reset_index()
     )
 
-    # Combine mean ± std into strings
     summary["Complex Time (s)"] = summary.apply(
         lambda row: f"{row['complex_mean']:.2f} ± {row['complex_std']:.2f}", axis=1
     )
     summary["PH Time (s)"] = summary.apply(
         lambda row: f"{row['ph_mean']:.2f} ± {row['ph_std']:.2f}", axis=1
     )
-
-    # Display only relevant columns
     print(f"\n{YELLOW}Summary of Timings (mean ± std over 5 repetitions){RESET}")
     print(
         summary[["n_p", "method", "Complex Time (s)", "PH Time (s)"]].to_string(
