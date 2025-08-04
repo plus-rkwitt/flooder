@@ -22,7 +22,9 @@ RESET = "\033[0m"
 
 
 def main():  # pylint: disable=missing-function-docstring
-    n_ps = [10000, 100000, 1000000, 10000000]  # Number of flood sources / data points
+    n_ps = [
+        10000
+    ]  # , 100000, 1000000, 10000000]  # Number of flood sources / data points
     n_l = 1000  # Number of landmarks to use
     b_sizes = [1024, 1024, 32, 2]  # Batch sizes for flood complex computation
 
@@ -102,29 +104,33 @@ def main():  # pylint: disable=missing-function-docstring
             )
             pdiagram_flood_s.append(st.persistence_intervals_in_dimension(dim - 1))
 
-    # Summary of results with mean and standard deviation
-    print(f"\n{YELLOW}Summary of Timings (mean ± std over 5 repetitions){RESET}")
-    print("-" * 100)
-    print(
-        f"{'N_points':>10} | {'Method':>6} | {'Complex Time (s)':>30} | {'PH Time (s)':>30}"
-    )
-    print("-" * 100)
-
     df = pd.DataFrame(results)
-    for n_p in sorted(df["n_p"].unique()):
-        for method in ["Alpha", "Flood"]:
-            method_df = df[(df["n_p"] == n_p) & (df["method"] == method)]
-            if method_df.empty:
-                continue
-            complex_mean = method_df["complex_time"].mean()
-            complex_std = method_df["complex_time"].std()
-            ph_mean = method_df["ph_time"].mean()
-            ph_std = method_df["ph_time"].std()
-            print(
-                f"{int(n_p):10d} | {method:>6} | "
-                f"{complex_mean:8.2f} ± {complex_std:<8.2f} {' ':>10} | "
-                f"{ph_mean:8.2f} ± {ph_std:<8.2f}"
-            )
+    summary = (
+        df.groupby(["n_p", "method"])
+        .agg(
+            complex_mean=("complex_time", "mean"),
+            complex_std=("complex_time", "std"),
+            ph_mean=("ph_time", "mean"),
+            ph_std=("ph_time", "std"),
+        )
+        .reset_index()
+    )
+
+    # Combine mean ± std into strings
+    summary["Complex Time (s)"] = summary.apply(
+        lambda row: f"{row['complex_mean']:.2f} ± {row['complex_std']:.2f}", axis=1
+    )
+    summary["PH Time (s)"] = summary.apply(
+        lambda row: f"{row['ph_mean']:.2f} ± {row['ph_std']:.2f}", axis=1
+    )
+
+    # Display only relevant columns
+    print(f"\n{YELLOW}Summary of Timings (mean ± std over 5 repetitions){RESET}")
+    print(
+        summary[["n_p", "method", "Complex Time (s)", "PH Time (s)"]].to_string(
+            index=False
+        )
+    )
 
 
 if __name__ == "__main__":
