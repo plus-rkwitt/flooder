@@ -25,13 +25,13 @@ def main():  # pylint: disable=missing-function-docstring
     print(f"{YELLOW}--------------------------------------------")
     results = []
     for rep in range(5):  # Repeat the experiment 5 times
-        n_p = 1_000_000  # Number of points sampled from torus
-        n_l = 2000  # Number of landmarks for Flood complex
+        n_pts = 1_000_000  # Number of points sampled from torus
+        n_lms = 2000  # Number of landmarks for Flood complex
 
-        pts = generate_noisy_torus_points(n_p)
+        pts = generate_noisy_torus_points(n_pts)
 
         t0_fps = time.perf_counter()
-        lms = generate_landmarks(pts, n_l)
+        lms = generate_landmarks(pts, n_lms)
         t1_fps = time.perf_counter()
 
         # GPU warmup
@@ -48,14 +48,14 @@ def main():  # pylint: disable=missing-function-docstring
 
         t0_ph = time.perf_counter()
         st = gudhi.SimplexTree()  # pylint: disable=no-member
-        for simplex in out_complex:
-            st.insert(simplex, out_complex[simplex])
+        for simplex, filtration_value in out_complex.items():
+            st.insert(simplex, filtration_value)
         st.make_filtration_non_decreasing()
         st.compute_persistence()
         t1_ph = time.perf_counter()
 
         print(
-            f"{BLUE}{n_p:8d} points ({n_l} landmarks) | "
+            f"{BLUE}{n_pts:8d} points ({n_lms} landmarks) | "
             f"Complex (Flood): {(t1_complex - t0_complex):6.2f} sec | "
             f"PH (Flood): {t1_ph - t0_ph:6.2f} sec | "
             f"FPS: {t1_fps - t0_fps:6.2f} sec{RESET}"
@@ -64,7 +64,8 @@ def main():  # pylint: disable=missing-function-docstring
         results.append(
             {
                 "rep": rep,
-                "n_p": n_p,
+                "n_pts": n_pts,
+                "n_lms": n_lms,
                 "method": "Flood",
                 "complex_time": t1_complex - t0_complex,
                 "fps_time": t1_fps - t0_fps,
@@ -74,7 +75,7 @@ def main():  # pylint: disable=missing-function-docstring
 
     df = pd.DataFrame(results)
     summary = (
-        df.groupby(["n_p", "method"])
+        df.groupby(["n_pts", "method"])
         .agg(
             fps_time_mean=("fps_time", "mean"),
             fps_time_std=("fps_time", "std"),
@@ -100,7 +101,7 @@ def main():  # pylint: disable=missing-function-docstring
     print(f"\n{YELLOW}Summary of Timings (mean ± std over 5 repetitions){RESET}")
     print(
         summary[
-            ["n_p", "method", "FPS Time (s)", "Complex Time (s)", "PH Time (s)"]
+            ["n_pts", "method", "FPS Time (s)", "Complex Time (s)", "PH Time (s)"]
         ].to_string(index=False)
     )
 

@@ -9,7 +9,7 @@ import gudhi
 import torch
 import numpy as np
 
-from flooder import generate_landmarks, flood_complex, generate_figure_eight_2D_points
+from flooder import generate_landmarks, flood_complex, generate_figure_eight_2d_points
 
 device = torch.device("cuda")
 
@@ -39,16 +39,16 @@ def top_k_longest(bd: np.array, k: int = 10):
 
 
 def main():  # pylint: disable=missing-function-docstring
-    n_p = 40_000_000  # Number of points sampled from figure-eight
-    n_l = 2000  # Number of landmarks for Flood complex
+    n_pts = 40_000_000  # Number of points sampled from figure-eight
+    n_lms = 2000  # Number of landmarks for Flood complex
 
     print(f"{YELLOW}Flood PH of a noisy figure-eight sample 40M points)")
     print(f"{YELLOW}---------------------------------------------------")
 
-    pts = generate_figure_eight_2D_points(n_p, noise_std=0.02, noise_kind="gaussian")
+    pts = generate_figure_eight_2d_points(n_pts, noise_std=0.02, noise_kind="gaussian")
 
     t0_fps = time.perf_counter()
-    lms = generate_landmarks(pts, n_l)
+    lms = generate_landmarks(pts, n_lms)
     t1_fps = time.perf_counter()
 
     lms = lms.to(device)
@@ -67,7 +67,7 @@ def main():  # pylint: disable=missing-function-docstring
     t1_ph = time.perf_counter()
 
     print(
-        f"{BLUE}{n_p:8d} points ({n_l} landmarks) | "
+        f"{BLUE}{n_pts:8d} points ({n_lms} landmarks) | "
         f"Complex (Flood): {(t1_complex - t0_complex):6.2f} sec | "
         f"PH (Flood): {t1_ph - t0_ph:6.2f} sec | "
         f"FPS: {t1_fps - t0_fps:6.2f} sec{RESET}"

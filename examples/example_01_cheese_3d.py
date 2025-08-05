@@ -4,8 +4,7 @@ Copyright (c) 2025 Paolo Pellizzoni, Florian Graf, Martin Uray, Stefan Huber and
 SPDX-License-Identifier: MIT
 """
 
-from timeit import default_timer as timer
-
+import time
 import torch
 import pandas as pd
 from gudhi import AlphaComplex, SimplexTree  # pylint: disable=no-name-in-module
@@ -49,14 +48,14 @@ def main():  # pylint: disable=missing-function-docstring
                 n_pts, rect_min, rect_max, k, void_radius_range, device=DEVICE
             )
 
-            startt = timer()
+            startt = time.perf_counter()
             alpha = AlphaComplex(points).create_simplex_tree(
                 output_squared_values=False
             )
-            t1 = timer() - startt
+            t1 = time.perf_counter() - startt
 
             alpha.compute_persistence()
-            t2 = timer() - startt
+            t2 = time.perf_counter() - startt
             print(
                 f"{RED}{n_pts:8d} points (try {rep}) | "
                 f"Complex (Alpha): {t1:6.2f} sec | "
@@ -81,7 +80,7 @@ def main():  # pylint: disable=missing-function-docstring
             )
             torch.cuda.synchronize()
 
-            startt = timer()
+            startt = time.perf_counter()
             out_complex = flood_complex(points, n_lms, batch_size=batch_sizes[i])
 
             st = SimplexTree()
@@ -89,10 +88,10 @@ def main():  # pylint: disable=missing-function-docstring
                 st.insert(simplex, out_complex[simplex])
             st.make_filtration_non_decreasing()
             torch.cuda.synchronize()
-            t1 = timer() - startt
+            t1 = time.perf_counter() - startt
 
             st.compute_persistence()
-            t2 = timer() - startt
+            t2 = time.perf_counter() - startt
             print(
                 f"{BLUE}{n_pts:8d} points (try {rep}) | "
                 f"Complex (Flood): {t1:6.2f} sec | "
