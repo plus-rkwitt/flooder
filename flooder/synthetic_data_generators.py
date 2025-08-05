@@ -4,12 +4,13 @@ Copyright (c) 2025 Paolo Pellizzoni, Florian Graf, Martin Uray, Stefan Huber and
 SPDX-License-Identifier: MIT
 """
 
-import torch
-import numpy as np
 from typing import Tuple, Literal
 
+import torch
+import numpy as np
 
-def generate_figure_eight_2D_points(
+
+def generate_figure_eight_2d_points(
     n_samples: int = 1000,
     r_bounds: Tuple[float, float] = (0.2, 0.3),
     centers: Tuple[Tuple[float, float], Tuple[float, float]] = ((0.3, 0.5), (0.7, 0.5)),
@@ -71,8 +72,8 @@ def generate_figure_eight_2D_points(
 @torch.no_grad()
 def generate_swiss_cheese_points(
     n: int = 1000,
-    rect_min: list = [0.0, 0.0, 0.0],
-    rect_max: list = [1.0, 1.0, 1.0],
+    rect_min: tuple = (0.0, 0.0, 0.0),
+    rect_max: tuple = (1.0, 1.0, 1.0),
     k: int = 6,
     void_radius_range: tuple = (0.1, 0.2),
     seed: int = None,
@@ -89,10 +90,10 @@ def generate_swiss_cheese_points(
 
     Args:
         n (int, optional): Number of points to generate. Defaults to 1000.
-        rect_min (list, optional): Minimum coordinates of the rectangular region.
-            Defaults to a list of three zeros.
-        rect_max (list, optional): Maximum coordinates of the rectangular region.
-            Defaults to a list of three ones.
+        rect_min (tuple, optional): Minimum coordinates of the rectangular region.
+            Defaults to a tuple of three zeros.
+        rect_max (tuple, optional): Maximum coordinates of the rectangular region.
+            Defaults to a tuple of three ones.
         k (int, optional): Number of spherical voids to generate. Defaults to 6.
         void_radius_range (Tuple[float, float], optional): Range `(min_radius, max_radius)`
             for the void radii. Defaults to (0.1, 0.2).
@@ -106,8 +107,8 @@ def generate_swiss_cheese_points(
             - `void_radii` (torch.Tensor): Tensor of shape (k,) with the radii of the voids.
 
     Examples:
-        >>> rect_min = [0.0, 0.0, 0.0]
-        >>> rect_max = [1.0, 1.0, 1.0]
+        >>> rect_min = (0.0, 0.0, 0.0)
+        >>> rect_max = (1.0, 1.0, 1.0)
         >>> void_radius_range = (0.1, 0.2)
         >>> k = 5
         >>> points, _ = generate_swiss_cheese_points(

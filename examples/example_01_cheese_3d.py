@@ -26,8 +26,8 @@ def main():  # pylint: disable=missing-function-docstring
     n_l = 1000  # Number of landmarks to use
     b_sizes = [1024, 1024, 32, 2]  # Batch sizes for flood complex computation
 
-    rect_min = [0.0, 0.0, 0.0]
-    rect_max = [1.0, 1.0, 1.0]
+    rect_min = (0.0, 0.0, 0.0)
+    rect_max = (1.0, 1.0, 1.0)
     void_radius_range = (0.1, 0.2)
     k = 6  # Number of voids
     dim = len(rect_min)

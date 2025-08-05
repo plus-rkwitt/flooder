@@ -4,7 +4,7 @@ from .synthetic_data_generators import (
     generate_swiss_cheese_points,
     generate_donut_points,
     generate_noisy_torus_points,
-    generate_figure_eight_2D_points,
+    generate_figure_eight_2d_points,
 )
 
 __all__ = [
@@ -14,5 +14,5 @@ __all__ = [
     "generate_swiss_cheese_points",
     "generate_donut_points",
     "generate_noisy_torus_points",
-    "generate_figure_eight_2D_points",
+    "generate_figure_eight_2d_points",
 ]
