@@ -79,7 +79,8 @@ def main():  # pylint: disable=missing-function-docstring
         topk_hi = top_k_longest(diags[i], k=10)
         for j, (b, d) in enumerate(topk_hi):
             print(
-                f"{BLUE}  {j + 1:2d}: (birth, death)=({b:.4f}, {d:.4f}), lifetime={(d - b):.4f} {RESET}"
+                f"{BLUE}  {j + 1:2d}: (birth, death)=({b:.4f}, {d:.4f}), \
+                    lifetime={(d - b):.4f} {RESET}"
             )
 
 
