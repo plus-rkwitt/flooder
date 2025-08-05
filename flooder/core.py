@@ -373,7 +373,8 @@ def generate_uniform_weights(num_rand, dim, device):
             Device to create the tensor on.
     Returns:
         torch.Tensor:
-            A tensor of shape [num_rand, dim + 1] containing the random points (coordinate weights).
+            A tensor of shape [num_rand, dim + 1] containing the random points
+            (coordinate weights).
     """
     if dim == 0:
         weights = torch.ones((num_rand, 1), device=device)
