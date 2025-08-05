@@ -4,17 +4,19 @@ Copyright (c) 2025 Paolo Pellizzoni, Florian Graf, Martin Uray, Stefan Huber and
 SPDX-License-Identifier: MIT
 """
 
-import torch
-import numpy as np
 from typing import Tuple, Literal
 
+import torch
+import numpy as np
 
-def generate_figure_eight_2D_points(
-    n_samples: int = 1000,
+
+def generate_figure_eight_2d_points(
+    n: int = 1000,
     r_bounds: Tuple[float, float] = (0.2, 0.3),
     centers: Tuple[Tuple[float, float], Tuple[float, float]] = ((0.3, 0.5), (0.7, 0.5)),
     noise_std: float = 0.0,
     noise_kind: Literal["gaussian", "uniform"] = "gaussian",
+    seed: int = None,
 ) -> torch.tensor:
     """
     Generate 2D points uniformly sampled in a figure-eight shape, with optional noise.
@@ -24,7 +26,7 @@ def generate_figure_eight_2D_points(
     isotropic Gaussian or uniform noise can be added to the coordinates.
 
     Args:
-        n_samples (int, optional): Number of 2D points to generate. Defaults to 1000.
+        n (int, optional): Number of 2D points to generate. Defaults to 1000.
         r_bounds (Tuple[float, float], optional): Tuple specifying the minimum and maximum
             radius for sampling within each lobe. Defaults to (0.2, 0.3).
         centers (Tuple[Tuple[float, float], Tuple[float, float]], optional): Coordinates
@@ -33,31 +35,34 @@ def generate_figure_eight_2D_points(
             (for uniform) of noise to add to each point. Defaults to 0.0 (no noise).
         noise_kind (Literal["gaussian", "uniform"], optional): Type of noise distribution
             to use if `noise_std > 0`. Defaults to "gaussian".
+        seed (int, optional): Random seed for reproducibility. If None, randomness is not seeded.
 
     Returns:
         torch.Tensor: A tensor of shape (n_samples, 2) containing the sampled 2D points.
     """
+    if seed is not None:
+        np.random.seed(seed)
 
-    lobe_idx = np.random.randint(0, 2, size=n_samples)
+    lobe_idx = np.random.randint(0, 2, size=n)
     cx, cy = np.asarray(centers).T  # shape (2,)
     cx = cx[lobe_idx]  # (n_samples,)
     cy = cy[lobe_idx]
 
     r_min, r_max = r_bounds
-    r = np.sqrt(np.random.uniform(r_min**2, r_max**2, size=n_samples))
-    theta = np.random.uniform(0.0, 2 * np.pi, size=n_samples)
+    r = np.sqrt(np.random.uniform(r_min**2, r_max**2, size=n))
+    theta = np.random.uniform(0.0, 2 * np.pi, size=n)
 
     x = cx + r * np.cos(theta)
     y = cy + r * np.sin(theta)
 
     if noise_std > 0:
         if noise_kind == "gaussian":
-            x += np.random.normal(0.0, noise_std, size=n_samples)
-            y += np.random.normal(0.0, noise_std, size=n_samples)
+            x += np.random.normal(0.0, noise_std, size=n)
+            y += np.random.normal(0.0, noise_std, size=n)
         elif noise_kind == "uniform":
             half = noise_std
-            x += np.random.uniform(-half, half, size=n_samples)
-            y += np.random.uniform(-half, half, size=n_samples)
+            x += np.random.uniform(-half, half, size=n)
+            y += np.random.uniform(-half, half, size=n)
         else:
             raise ValueError("noise_kind must be 'gaussian' or 'uniform'")
 
@@ -66,9 +71,9 @@ def generate_figure_eight_2D_points(
 
 @torch.no_grad()
 def generate_swiss_cheese_points(
-    N: int = 1000,
-    rect_min: list = [0.0, 0.0, 0.0],
-    rect_max: list = [1.0, 1.0, 1.0],
+    n: int = 1000,
+    rect_min: tuple = (0.0, 0.0, 0.0),
+    rect_max: tuple = (1.0, 1.0, 1.0),
     k: int = 6,
     void_radius_range: tuple = (0.1, 0.2),
     seed: int = None,
@@ -84,11 +89,11 @@ def generate_swiss_cheese_points(
     excluding k randomly positioned spherical voids with radii sampled from `void_radius_range`.
 
     Args:
-        N (int, optional): Number of points to generate. Defaults to 1000.
-        rect_min (list, optional): Minimum coordinates of the rectangular region.
-            Defaults to a list of three zeros.
-        rect_max (list, optional): Maximum coordinates of the rectangular region.
-            Defaults to a list of three ones.
+        n (int, optional): Number of points to generate. Defaults to 1000.
+        rect_min (tuple, optional): Minimum coordinates of the rectangular region.
+            Defaults to a tuple of three zeros.
+        rect_max (tuple, optional): Maximum coordinates of the rectangular region.
+            Defaults to a tuple of three ones.
         k (int, optional): Number of spherical voids to generate. Defaults to 6.
         void_radius_range (Tuple[float, float], optional): Range `(min_radius, max_radius)`
             for the void radii. Defaults to (0.1, 0.2).
@@ -102,8 +107,8 @@ def generate_swiss_cheese_points(
             - `void_radii` (torch.Tensor): Tensor of shape (k,) with the radii of the voids.
 
     Examples:
-        >>> rect_min = [0.0, 0.0, 0.0]
-        >>> rect_max = [1.0, 1.0, 1.0]
+        >>> rect_min = (0.0, 0.0, 0.0)
+        >>> rect_max = (1.0, 1.0, 1.0)
         >>> void_radius_range = (0.1, 0.2)
         >>> k = 5
         >>> points, _ = generate_swiss_cheese_points(
@@ -148,7 +153,7 @@ def generate_swiss_cheese_points(
 
     # --- 2.  rejection sample points in large vectorised batches ------------
     pts = torch.empty((0, d), dtype=rect_min.dtype, device=device)
-    todo = N
+    todo = n
     while todo:
         B = batch_factor * todo  # adaptive batch
         cand = rect_min + (rect_max - rect_min) * torch.rand(B, d, device=device)
@@ -162,17 +167,17 @@ def generate_swiss_cheese_points(
 
         accepted = cand[good][:todo]  # at most 'todo'
         pts = torch.cat([pts, accepted], dim=0)
-        todo = N - pts.shape[0]
+        todo = n - pts.shape[0]
 
     return pts, centres, radii
 
 
 def generate_donut_points(
-    N: int = 1000,
+    n: int = 1000,
     center: torch.tensor = torch.tensor([0.0, 0.0]),
     radius: float = 1.0,
     width: float = 0.2,
-    rng: int = None,
+    seed: int = None,
 ) -> torch.tensor:
     """
     Generate 2D points uniformly distributed in a circular annulus (donut shape).
@@ -181,32 +186,32 @@ def generate_donut_points(
     an inner radius of `radius - width`, centered at a specified 2D location.
 
     Args:
-        N (int, optional): Number of points to generate. Defaults to 1000.
+        n (int, optional): Number of points to generate. Defaults to 1000.
         center (torch.Tensor, optional): Center of the annulus as a tensor of shape (2,).
             Defaults to [0.0, 0.0].
         radius (float, optional): Outer radius of the annulus. Must be positive. Defaults to 1.0.
         width (float, optional): Thickness of the annulus. Must be positive and less than `radius`.
             Defaults to 0.2.
-        rng (int, optional): Random seed for reproducibility. If None, randomness is not seeded.
+        seed (int, optional): Random seed for reproducibility. If None, randomness is not seeded.
 
     Returns:
         torch.Tensor: A tensor of shape (N, 2) containing the sampled 2D points.
 
     Examples:
         >>> center = torch.tensor([0.0, 0.0])
-        >>> points = generate_donut_points(N=500, center=center, radius=1.0, width=0.3, rng=42)
+        >>> points = generate_donut_points(n=500, center=center, radius=1.0, width=0.3, seed=42)
         >>> points.shape
         torch.Size([500, 2])
     """
     assert center.shape == (2,), "Center must be a 2D point."
     assert radius > 0 and width > 0, "Radius and width must be positive."
 
-    if rng:
-        torch.manual_seed(rng)
+    if seed is not None:
+        torch.manual_seed(seed)
 
-    angles = torch.rand(N) * 2 * torch.pi  # Random angles
+    angles = torch.rand(n) * 2 * torch.pi  # Random angles
     r = (
-        radius - width + width * torch.sqrt(torch.rand(N))
+        radius - width + width * torch.sqrt(torch.rand(n))
     )  # Random radii (sqrt ensures uniform distribution in annulus)
     x = center[0] + r * torch.cos(angles)
     y = center[1] + r * torch.sin(angles)
@@ -214,11 +219,11 @@ def generate_donut_points(
 
 
 def generate_noisy_torus_points(
-    num_points=1000,
+    n=1000,
     R: float = 3.0,
     r: float = 1.0,
     noise_std: float = 0.02,
-    rng: int = None,
+    seed: int = None,
 ) -> torch.tensor:
     """
     Generate 3D points on a torus with added Gaussian noise.
@@ -228,28 +233,31 @@ def generate_noisy_torus_points(
     to each point independently in x, y, and z dimensions.
 
     Args:
-        num_points (int, optional): Number of points to generate. Defaults to 1000.
-        R (float, optional): Major radius of the torus (distance from the center of the tube
-            to the center of the torus). Must be positive. Defaults to 3.0.
-        r (float, optional): Minor radius of the torus (radius of the tube). Must be positive.
-            Defaults to 1.0.
-        noise_std (float, optional): Standard deviation of the Gaussian noise added to the
-            points. Defaults to 0.02.
-        rng (int, optional): Random seed for reproducibility. If None, randomness is not seeded.
+        n (int, optional): Number of points to generate. Defaults to 1000.
+            R (float, optional): Major radius of the torus (distance from the center of
+            the tube to the center of the torus). Must be positive. Defaults to 3.0.
+        r (float, optional): Minor radius of the torus (radius of the tube).
+            Must be positive. Defaults to 1.0.
+        noise_std (float, optional): Standard deviation of the Gaussian noise added to
+            the points. Defaults to 0.02.
+        seed (int, optional): Random seed for reproducibility. If None, randomness
+            is not seeded.
 
     Returns:
-        torch.Tensor: A tensor of shape (num_points, 3) containing the generated noisy 3D points.
+        torch.Tensor: A tensor of shape (num_points, 3) containing the generated
+            noisy 3D points.
 
     Examples:
-        >>> points = generate_noisy_torus_points(num_points=500, R=3.0, r=1.0, noise_std=0.05, rng=123)
+        >>> points = generate_noisy_torus_points(
+                n=500, R=3.0, r=1.0, noise_std=0.05, seed=123)
         >>> points.shape
         torch.Size([500, 3])
     """
-    if rng:
-        torch.manual_seed(rng)
+    if seed is not None:
+        torch.manual_seed(seed)
 
-    theta = torch.rand(num_points) * 2 * torch.pi
-    phi = torch.rand(num_points) * 2 * torch.pi
+    theta = torch.rand(n) * 2 * torch.pi
+    phi = torch.rand(n) * 2 * torch.pi
 
     x = (R + r * torch.cos(phi)) * torch.cos(theta)
     y = (R + r * torch.cos(phi)) * torch.sin(theta)

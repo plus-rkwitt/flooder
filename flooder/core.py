@@ -4,14 +4,15 @@ Copyright (c) 2025 Paolo Pellizzoni, Florian Graf, Martin Uray, Stefan Huber and
 SPDX-License-Identifier: MIT
 """
 
+import itertools
+from typing import Union
+from typing import List, Tuple
+
 import torch
 import gudhi
 import fpsample
 import numpy as np
-import itertools
-from typing import Union
 from scipy.spatial import KDTree
-from typing import List, Tuple
 
 from .triton_kernels import compute_mask, compute_filtration
 
@@ -21,57 +22,9 @@ BLOCK_N = 16
 BLOCK_M = 512
 
 
-def generate_landmarks(
-    points: torch.Tensor, N_l: int, fps_h: Union[None, int] = None
-) -> torch.Tensor:
-    """
-    Selects landmarks using Farthest-Point Sampling (bucket FPS).
-
-    This method implements a variant of Farthest-Point Sampling from
-    [here](https://dl.acm.org/doi/abs/10.1109/TCAD.2023.3274922).
-
-    Args:
-        points (torch.Tensor):
-            A (P, d) tensor representing a point cloud. The tensor may reside on any device
-            (CPU or GPU) and be of any floating-point dtype.
-        N_l (int):
-            The number of landmarks to sample (must be <= P and > 0).
-        fps_h (Union[None, int], optional):
-            h parameter (depth of kdtree) that is used for farthest point sampling to select the landmarks.
-            If None, then h is selected based on the size of the point cloud.
-            Defaults to None
-
-    Returns:
-        torch.Tensor:
-            A (N_l, d) tensor containing a subset of the input `points`, representing the
-            sampled landmarks. Returned tensor is on the same device and has the same dtype
-            as the input.
-    """
-    assert N_l > 0, "Number of landmarks must be positive."
-    N_p = len(points)
-    if N_l > N_p:
-        N_l = N_p
-    N_p = len(points)
-    if fps_h is None:
-        if N_p > 200_000:
-            fps_h = 9
-        elif N_p > 80_000:
-            fps_h = 7
-        else:
-            fps_h = 5
-
-    index_set = torch.tensor(
-        fpsample.bucket_fps_kdline_sampling(
-            points.cpu(), N_l, h=fps_h, start_idx=0
-        ).astype(np.int64),
-        device=points.device,
-    )
-    return points[index_set]
-
-
 def flood_complex(
-    landmarks: Union[int, torch.Tensor],
     points: torch.Tensor,
+    landmarks: Union[int, torch.Tensor],
     max_dimension: Union[None, int] = None,
     points_per_edge: Union[None, int] = 30,
     num_rand: int = None,
@@ -79,36 +32,42 @@ def flood_complex(
     use_triton: bool = True,
     return_simplex_tree: bool = False,
     fps_h: Union[None, int] = None,
-) -> Union[dict, gudhi.SimplexTree]:
+    start_idx: Union[int, None] = 0,
+) -> Union[dict, gudhi.SimplexTree]:  # pylint: disable=no-member
     """
-    Constructs a Flood complex from a set of landmark and witness points.
+    Constructs a Flood complex from a set of witness points and landmarks.
 
     Args:
-        landmarks (Union[int, torch.Tensor]):
-            Either an integer indicating the number of landmarks to randomly sample from `points`, or a tensor of shape (N_l, d) specifying explicit landmark coordinates.
         points (torch.Tensor):
             A (N, d) tensor containing witness points used as sources in the flood process.
+        landmarks (Union[int, torch.Tensor]):
+            Either an integer indicating the number of landmarks to randomly sample from
+            `points`, or a tensor of shape (N_l, d) specifying explicit landmark
+            coordinates.
         max_dimension (Union[None, int], optional):
             The top dimension of the simplices to construct.
             Defaults to None resulting in the dimension of the ambient space.
         points_per_edge (Union[None, int], optional):
-            Specifies resolution on simplices used for computing filtration values. Tradeoff in accuracy vs. speed.
-            Defaults to 30.
+            Specifies resolution on simplices used for computing filtration values.
+            Tradeoff in accuracy vs. speed. Defaults to 30.
         num_rand (Union[None, int], optional):
-            If specified, filtration values are computed from a fixed number of random points per simplex.
-            Defaults to None.
+            If specified, filtration values are computed from a fixed number of
+            random points per simplex. Defaults to None.
         batch_size (int, optional):
             Number of simplices to process per batch. Defaults to 32.
         use_triton (bool, optional):
-            If True, Triton kernel is used
+            If True, Triton kernel is used.
             Defaults to True.
         fps_h (Union[None, int], optional):
-            h parameter (depth of kdtree) that is used for farthest point sampling to select the landmarks.
-            If None, then h is selected based on the size of the point cloud.
-            Defaults to None
+            h parameter (depth of kdtree) that is used for farthest point sampling to
+            select the landmarks. If None, then h is selected based on the size of the
+            point cloud. Defaults to None.
         return_simplex_tree (bool, optional):
             I true, a gudhi.SimplexTree is returned, else a dictionary.
             Defaults to False
+        start_idx (int | None, optional):
+            If provided, FPS starts from this index in the point cloud. If not,
+            the start index will be randomly picked from the point cloud. Defaults to 0.
 
     Returns:
         Union[dict, gudhi.SimplexTree]
@@ -122,7 +81,9 @@ def flood_complex(
         max_dimension = points.shape[1]
 
     if isinstance(landmarks, int):
-        landmarks = generate_landmarks(points, min(landmarks, points.shape[0]), fps_h)
+        landmarks = generate_landmarks(
+            points, min(landmarks, points.shape[0]), fps_h, start_idx=start_idx
+        )
     assert (
         landmarks.device == points.device
     ), f"landmarks.device ({landmarks.device}) != points.device {points.device}"
@@ -132,7 +93,9 @@ def flood_complex(
     else:
         kdtree = KDTree(np.asarray(points))
 
-    dc = gudhi.DelaunayComplex(landmarks).create_simplex_tree()
+    dc = gudhi.DelaunayComplex(  # pylint: disable=no-member
+        landmarks
+    ).create_simplex_tree()
     out_complex = {}
 
     simplices = [[] for _ in range(max_dimension + 1)]
@@ -147,9 +110,9 @@ def flood_complex(
     points_search = points[:, max_range_dim].contiguous()
 
     for d in range(max_dimension + 1):
-        if (
-            num_rand is None and d < max_dimension
-        ):  # If grid is used, filtration values of faces can be computed together with max dim simplices.
+        # If grid is used, filtration values of faces can be computed
+        # together with max dim simplices.
+        if num_rand is None and d < max_dimension:
             continue
         d_simplices = torch.tensor(simplices[d], device=device)
         num_simplices = len(d_simplices)
@@ -234,9 +197,10 @@ def flood_complex(
                         device=device,
                         dtype=torch.float32,
                     )
-                    for i in range(
-                        start, end
-                    ):  # surpisingly the loop is faster than scatter_reduce or segment_coo for large numbers of points
+
+                    for i in range(start, end):
+                        # Surprisingly the loop is faster than scatter_reduce or
+                        # segment_coo for large numbers of points.
                         # avoid torch.cdist for numerical stability
                         valid = (simplex_centers[i] - points[imin:imax]).norm(
                             dim=1
@@ -262,55 +226,105 @@ def flood_complex(
                             map(tuple, faces.tolist()),
                             min_covering_radius_faces.tolist(),
                         )
-                    )  # By construction, each face gets the same filtration value irrespective of the simplex it was computed from. If this is violated (by modifying the grid), the code needs to be adapted to sort the simplex faces along axis 1 and take the maximum filtration value when updating the dictionary.
+                    )
+                    # By construction, each face gets the same filtration value
+                    # irrespective of the simplex it was computed from. If this is violated
+                    # (by modifying the grid), the code needs to be adapted to sort the
+                    # simplex faces along axis 1 and take the maximum filtration value
+                    # when updating the dictionary.
             else:
                 min_covering_radius = torch.amax(distances, dim=1)
                 out_complex.update(
                     zip(d_simplices[start:end], min_covering_radius.tolist())
                 )
 
-    stree = gudhi.SimplexTree()
-    for simplex in out_complex:
+    stree = gudhi.SimplexTree()  # pylint: disable=no-member
+    for simplex, filtration_val in out_complex.items():
         stree.insert(simplex, float("inf"))
-        stree.assign_filtration(simplex, out_complex[simplex])
+        stree.assign_filtration(simplex, filtration_val)
     stree.make_filtration_non_decreasing()
     if return_simplex_tree:
         return stree
 
-    out_complex = {}
-    out_complex.update(
+    out_complex = dict(
         (tuple(simplex), filtr) for (simplex, filtr) in stree.get_simplices()
     )
     return out_complex
 
 
+def generate_landmarks(
+    points: torch.Tensor,
+    n_lms: int,
+    fps_h: Union[None, int] = None,
+    start_idx: Union[int, None] = None,
+) -> torch.Tensor:
+    """
+    Selects landmarks using Farthest-Point Sampling (bucket FPS).
+
+    This method implements a variant of Farthest-Point Sampling from
+    [here](https://dl.acm.org/doi/abs/10.1109/TCAD.2023.3274922).
+
+    Args:
+        points (torch.Tensor):
+            A (P, d) tensor representing a point cloud. The tensor may reside on any
+            device (CPU or GPU) and be of any floating-point dtype.
+        n_lms (int):
+            The number of landmarks to sample (must be <= P and > 0).
+        fps_h (Union[None, int], optional):
+            h parameter (depth of kdtree) that is used for farthest point sampling to
+            select the landmarks. If None, then h is selected based on the size of the
+            point cloud. Defaults to None.
+        start_idx (int | None, optional):
+            If provided, the sampling starts from this index in the point cloud. If not,
+            the start index will be randomly picked from the point cloud.
+
+    Returns:
+        torch.Tensor:
+            A (n_l, d) tensor containing a subset of the input `points`, representing the
+            sampled landmarks. Returned tensor is on the same device and has the same dtype
+            as the input.
+    """
+    assert n_lms > 0, "Number of landmarks must be positive."
+    n_pts = len(points)
+    n_lms = min(n_lms, n_pts)
+    if fps_h is None:
+        if n_pts > 200_000:
+            fps_h = 9
+        elif n_pts > 80_000:
+            fps_h = 7
+        else:
+            fps_h = 5
+
+    index_set = torch.tensor(
+        fpsample.bucket_fps_kdline_sampling(
+            points.cpu(), n_lms, h=fps_h, start_idx=start_idx
+        ).astype(np.int64),
+        device=points.device,
+    )
+    return points[index_set]
+
+
 def generate_grid(
-    n, dim, device
+    n: int, dim: int, device: torch.device
 ) -> Tuple[torch.Tensor, List[torch.Tensor], List[torch.Tensor]]:
     """Generates a grid of points on the unit simplex based on the number of points per edge.
 
-        Args:
-            n (int):
-                Number of points per edge.
-            dim (int):
-                Dimension of the simplex.
-            device (torch.device):
-                Device to create the tensors on.
+    Args:
+        n (int):
+            Number of points per edge.
+        dim (int):
+            Dimension of the simplex.
+        device (torch.device):
+            Device to create the tensors on.
 
-        Returns:
-            tuple:
-    <<<<<<< HEAD
-                - grid (torch.Tensor): A tensor of shape [C, dim + 1] containing the grid points (coordinate weights).
-                - vertex_idxs (list): A list of tensors, each containing the vertex indices for each face.
-                - face_idxs (list): A list of tensors, each containing the face indices for each face.
-    =======
-                grid (torch.Tensor):
-                    Tensor of shape (C, dim + 1), containing the grid points (coordinate weights).
-                vertex_ids (list of torch.Tensor):
-                    A list of tensors, each containing the vertex indices for each face.
-                face_ids (list of torch.Tensor):
-                    A list of tensors, each containing the face indices for each face.
-    >>>>>>> 63f652bd3a6f50ba4055cf07baebef0476e434cb
+    Returns:
+        tuple:
+            grid (torch.Tensor):
+                Tensor of shape (C, dim + 1), containing the grid points (coordinate weights).
+            vertex_ids (list of torch.Tensor):
+                A list of tensors, each containing the vertex indices for each face.
+            face_ids (list of torch.Tensor):
+                A list of tensors, each containing the face indices for each face.
     """
 
     combs = torch.tensor(
@@ -359,13 +373,14 @@ def generate_uniform_weights(num_rand, dim, device):
             Device to create the tensor on.
     Returns:
         torch.Tensor:
-            A tensor of shape [num_rand, dim + 1] containing the random points (coordinate weights).
+            A tensor of shape [num_rand, dim + 1] containing the random points
+            (coordinate weights).
     """
     if dim == 0:
         weights = torch.ones((num_rand, 1), device=device)
     else:
-        weights = -torch.log(1 - torch.rand(num_rand, dim + 1)).to(
-            device
-        )  # For consistency with the cpu version, random points are generated on the CPU and then moved to the device.
+        # For consistency with the cpu version, random points are generated on the
+        # CPU and then moved to the device.
+        weights = -torch.log(1 - torch.rand(num_rand, dim + 1)).to(device)
         weights = weights / weights.sum(dim=1, keepdim=True)
     return weights

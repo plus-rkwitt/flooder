@@ -42,3 +42,8 @@ git clone https://github.com/plus-rkwitt/flooder
 cd flooder
 PYTHONPATH=. python examples/example_01_cheese_3D.py
 ```
+
+## GPU requirements
+
+Our implementation relies heavily on custom Triton kernels (although we support CPU computation as well) for maximum performance. According to the official [Triton compatibility](https://github.com/triton-lang/triton?tab=readme-ov-file#compatibility) page, you need a NVIDIA GPU with compute capabilty (check  
+[here](https://developer.nvidia.com/cuda-gpus)) of at least 8.0 (e.g., GTX 3080, etc.).

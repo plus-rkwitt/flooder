@@ -4,10 +4,11 @@ Copyright (c) 2025 Paolo Pellizzoni, Florian Graf, Martin Uray, Stefan Huber and
 SPDX-License-Identifier: MIT
 """
 
-import torch
 import datetime
 from pathlib import Path
 from typing import Any, Union
+
+import torch
 
 
 def save_to_disk(
