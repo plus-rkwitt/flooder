@@ -5,7 +5,7 @@ import numpy as np
 
 from flooder import (
     flood_complex,
-    generate_figure_eight_2D_points,
+    generate_figure_eight_2d_points,
     generate_noisy_torus_points,
     generate_landmarks,
 )
@@ -25,7 +25,7 @@ def test_vs_alpha_1(use_triton, batch_size, use_rand):
     torch.manual_seed(42)
     np.random.seed(42)
 
-    X = generate_figure_eight_2D_points(1000)
+    X = generate_figure_eight_2d_points(1000)
     L = X
 
     X = X.to(DEVICE)
