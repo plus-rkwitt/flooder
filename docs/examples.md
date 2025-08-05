@@ -22,7 +22,7 @@ DEVICE = "cuda"
 n_pts = 1_000_000  # Number of points to sample from torus
 n_lms = 1_000      # Number of landmarks for Flood complex
 
-pts = generate_noisy_torus_points(n_p).to(DEVICE)
+pts = generate_noisy_torus_points(n_pts).to(DEVICE)
 lms = generate_landmarks(pts, n_lms)
 
 stree = flood_complex(pts, lms, return_simplex_tree=True)
