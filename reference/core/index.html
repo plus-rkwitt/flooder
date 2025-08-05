@@ -768,8 +768,8 @@ SPDX-License-Identifier: MIT</p>
 
 </h3>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">flood_complex</span><span class="p">(</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">landmarks</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">],</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">points</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">points</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">landmarks</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">],</span>
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">max_dimension</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">points_per_edge</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span>
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">num_rand</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -777,12 +777,13 @@ SPDX-License-Identifier: MIT</p>
 </span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">use_triton</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 </span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">return_simplex_tree</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 </span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="n">fps_h</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="n">gudhi</span><span class="o">.</span><span class="n">SimplexTree</span><span class="p">]</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="n">start_idx</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="n">gudhi</span><span class="o">.</span><span class="n">SimplexTree</span><span class="p">]</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Constructs a Flood complex from a set of landmark and witness points.</p>
+        <p>Constructs a Flood complex from a set of witness points and landmarks.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -798,22 +799,6 @@ SPDX-License-Identifier: MIT</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>landmarks</code>
-            </td>
-            <td>
-                  <code><span title="typing.Union">Union</span>[<span title="int">int</span>, <span title="torch.Tensor">Tensor</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Either an integer indicating the number of landmarks to randomly sample from <code>points</code>, or a tensor of shape (N_l, d) specifying explicit landmark coordinates.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
                 <code>points</code>
             </td>
             <td>
@@ -822,6 +807,24 @@ SPDX-License-Identifier: MIT</p>
             <td>
               <div class="doc-md-description">
                 <p>A (N, d) tensor containing witness points used as sources in the flood process.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>landmarks</code>
+            </td>
+            <td>
+                  <code><span title="typing.Union">Union</span>[<span title="int">int</span>, <span title="torch.Tensor">Tensor</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Either an integer indicating the number of landmarks to randomly sample from
+<code>points</code>, or a tensor of shape (N_l, d) specifying explicit landmark
+coordinates.</p>
               </div>
             </td>
             <td>
@@ -854,8 +857,8 @@ Defaults to None resulting in the dimension of the ambient space.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Specifies resolution on simplices used for computing filtration values. Tradeoff in accuracy vs. speed.
-Defaults to 30.</p>
+                <p>Specifies resolution on simplices used for computing filtration values.
+Tradeoff in accuracy vs. speed. Defaults to 30.</p>
               </div>
             </td>
             <td>
@@ -871,8 +874,8 @@ Defaults to 30.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>If specified, filtration values are computed from a fixed number of random points per simplex.
-Defaults to None.</p>
+                <p>If specified, filtration values are computed from a fixed number of
+random points per simplex. Defaults to None.</p>
               </div>
             </td>
             <td>
@@ -904,7 +907,7 @@ Defaults to None.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>If True, Triton kernel is used
+                <p>If True, Triton kernel is used.
 Defaults to True.</p>
               </div>
             </td>
@@ -921,9 +924,9 @@ Defaults to True.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>h parameter (depth of kdtree) that is used for farthest point sampling to select the landmarks.
-If None, then h is selected based on the size of the point cloud.
-Defaults to None</p>
+                <p>h parameter (depth of kdtree) that is used for farthest point sampling to
+select the landmarks. If None, then h is selected based on the size of the
+point cloud. Defaults to None.</p>
               </div>
             </td>
             <td>
@@ -945,6 +948,23 @@ Defaults to False</p>
             </td>
             <td>
                   <code>False</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>start_idx</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If provided, FPS starts from this index in the point cloud. If not,
+the start index will be randomly picked from the point cloud. Defaults to 0.</p>
+              </div>
+            </td>
+            <td>
+                  <code>0</code>
             </td>
           </tr>
       </tbody>
@@ -992,7 +1012,7 @@ each value is a float radius.</p>
 
 </h3>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">generate_grid</span><span class="p">(</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">n</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">device</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">device</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span>
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span>
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">]</span>
@@ -1001,43 +1021,97 @@ each value is a float radius.</p>
     <div class="doc doc-contents ">
 
         <p>Generates a grid of points on the unit simplex based on the number of points per edge.</p>
-<div class="language-text highlight"><pre><span></span><code>Args:
-    n (int):
-        Number of points per edge.
-    dim (int):
-        Dimension of the simplex.
-    device (torch.device):
-        Device to create the tensors on.
 
-Returns:
-    tuple:
-</code></pre></div>
-<p>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
-            - grid (torch.Tensor): A tensor of shape [C, dim + 1] containing the grid points (coordinate weights).
-            - vertex_idxs (list): A list of tensors, each containing the vertex indices for each face.
-            - face_idxs (list): A list of tensors, each containing the face indices for each face.
-=======
-            grid (torch.Tensor):
-                Tensor of shape (C, dim + 1), containing the grid points (coordinate weights).
-            vertex_ids (list of torch.Tensor):
-                A list of tensors, each containing the vertex indices for each face.
-            face_ids (list of torch.Tensor):
-                A list of tensors, each containing the face indices for each face.</p>
-<blockquote>
-<blockquote>
-<blockquote>
-<blockquote>
-<blockquote>
-<blockquote>
-<blockquote>
-<p>63f652bd3a6f50ba4055cf07baebef0476e434cb</p>
-</blockquote>
-</blockquote>
-</blockquote>
-</blockquote>
-</blockquote>
-</blockquote>
-</blockquote>
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>n</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of points per edge.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>dim</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Dimension of the simplex.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>device</code>
+            </td>
+            <td>
+                  <code><span title="torch.device">device</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Device to create the tensors on.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>tuple</code></td>            <td>
+                  <code><span title="typing.Tuple">Tuple</span>[<span title="torch.Tensor">Tensor</span>, <span title="typing.List">List</span>[<span title="torch.Tensor">Tensor</span>], <span title="typing.List">List</span>[<span title="torch.Tensor">Tensor</span>]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>grid (torch.Tensor):
+    Tensor of shape (C, dim + 1), containing the grid points (coordinate weights).
+vertex_ids (list of torch.Tensor):
+    A list of tensors, each containing the vertex indices for each face.
+face_ids (list of torch.Tensor):
+    A list of tensors, each containing the face indices for each face.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>
@@ -1053,8 +1127,11 @@ Returns:
 
 </h3>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">generate_landmarks</span><span class="p">(</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">points</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">N_l</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">fps_h</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">points</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">n_lms</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">fps_h</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">start_idx</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1084,8 +1161,8 @@ Returns:
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A (P, d) tensor representing a point cloud. The tensor may reside on any device
-(CPU or GPU) and be of any floating-point dtype.</p>
+                <p>A (P, d) tensor representing a point cloud. The tensor may reside on any
+device (CPU or GPU) and be of any floating-point dtype.</p>
               </div>
             </td>
             <td>
@@ -1094,7 +1171,7 @@ Returns:
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>N_l</code>
+                <code>n_lms</code>
             </td>
             <td>
                   <code><span title="int">int</span></code>
@@ -1117,9 +1194,26 @@ Returns:
             </td>
             <td>
               <div class="doc-md-description">
-                <p>h parameter (depth of kdtree) that is used for farthest point sampling to select the landmarks.
-If None, then h is selected based on the size of the point cloud.
-Defaults to None</p>
+                <p>h parameter (depth of kdtree) that is used for farthest point sampling to
+select the landmarks. If None, then h is selected based on the size of the
+point cloud. Defaults to None.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>start_idx</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If provided, the sampling starts from this index in the point cloud. If not,
+the start index will be randomly picked from the point cloud.</p>
               </div>
             </td>
             <td>
@@ -1146,7 +1240,7 @@ Defaults to None</p>
             <td>
               <div class="doc-md-description">
                 <p>torch.Tensor:
-A (N_l, d) tensor containing a subset of the input <code>points</code>, representing the
+A (n_l, d) tensor containing a subset of the input <code>points</code>, representing the
 sampled landmarks. Returned tensor is on the same device and has the same dtype
 as the input.</p>
               </div>
@@ -1183,7 +1277,8 @@ Args:
         Device to create the tensor on.
 Returns:
     torch.Tensor:
-        A tensor of shape [num_rand, dim + 1] containing the random points (coordinate weights).</p>
+        A tensor of shape [num_rand, dim + 1] containing the random points
+        (coordinate weights).</p>
 
 
     </div>

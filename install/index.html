@@ -439,6 +439,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#gpu-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      GPU requirements
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -663,6 +672,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#gpu-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      GPU requirements
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -714,6 +732,9 @@ from within the checked-out folder by specifying <code>PYTHONPATH</code>as</p>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2"></a><span class="nb">cd</span><span class="w"> </span>flooder
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3"></a><span class="nv">PYTHONPATH</span><span class="o">=</span>.<span class="w"> </span>python<span class="w"> </span>examples/example_01_cheese_3D.py
 </span></code></pre></div></td></tr></table></div>
+<h2 id="gpu-requirements">GPU requirements</h2>
+<p>Our implementation relies heavily on custom Triton kernels (although we support CPU computation as well) for maximum performance. According to the official <a href="https://github.com/triton-lang/triton?tab=readme-ov-file#compatibility">Triton compatibility</a> page, you need a NVIDIA GPU with compute capabilty (check<br />
+<a href="https://developer.nvidia.com/cuda-gpus">here</a>) of at least 8.0 (e.g., GTX 3080, etc.).</p>
 
 
 
