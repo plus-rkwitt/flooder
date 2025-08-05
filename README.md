@@ -55,11 +55,11 @@ from flooder import (
     generate_landmarks)
 
 DEVICE = "cuda"
-N_p = 1_000_000  # Number of points to sample from torus
-N_l = 1_000      # Number of landmarks for Flood complex
+n_pts = 1_000_000  # Number of points to sample from torus
+n_lms = 1_000      # Number of landmarks for Flood complex
 
-pts = generate_noisy_torus_points(N_p).to(DEVICE)
-lms = generate_landmarks(pts, N_l)
+pts = generate_noisy_torus_points(n_pts).to(DEVICE)
+lms = generate_landmarks(pts, n_lms)
 
 stree = flood_complex(pts, lms, return_simplex_tree=True)
 stree.compute_persistence()
@@ -71,7 +71,8 @@ Importantly, one can either call `flood_complex` with the already pre-selected
 via
 
 ```py linenums="1"
-stree = flood_complex(1_000, pts, return_simplex_tree=True)
+n_lms = 1_000
+stree = flood_complex(pts, n_lms, return_simplex_tree=True)
 ```
 
 ## License

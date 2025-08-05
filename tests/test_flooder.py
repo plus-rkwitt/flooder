@@ -1,3 +1,9 @@
+"""Test cases for the Flooder library, which implements the Flood complex.
+
+Copyright (c) 2025 Paolo Pellizzoni, Florian Graf, Martin Uray, Stefan Huber and Roland Kwitt
+SPDX-License-Identifier: MIT
+"""
+
 import torch
 import gudhi
 import pytest
@@ -50,16 +56,16 @@ def test_vs_alpha_1(use_triton, batch_size, use_rand):
         stree.persistence_intervals_in_dimension(i) for i in range(2)
     ]
 
-    alpha_complex = gudhi.AlphaComplex(X.cpu().numpy()).create_simplex_tree(
-        output_squared_values=False
-    )
+    alpha_complex = gudhi.AlphaComplex(  # pylint: disable=no-member
+        X.cpu().numpy()
+    ).create_simplex_tree(output_squared_values=False)
     alpha_complex.compute_persistence()
     alpha_complex_diags = [
         alpha_complex.persistence_intervals_in_dimension(i) for i in range(2)
     ]
 
     for dim in range(2):
-        dist = gudhi.bottleneck_distance(
+        dist = gudhi.bottleneck_distance(  # pylint: disable=no-member
             flood_complex_diags[dim], alpha_complex_diags[dim]
         )
         assert dist < 5e-4, (
@@ -105,7 +111,8 @@ def test_triton(num_witnesses, num_landmarks, use_rand):
         assert simplex in fc_triton
         assert (
             abs(fc_no_triton[simplex] - fc_triton[simplex]) < 1e-4
-        ), f"Simplex {simplex}: Naive {fc_no_triton[simplex]:.5f} and Triton {fc_triton[simplex]:.5f}"
+        ), f"Simplex {simplex}: Naive {fc_no_triton[simplex]:.5f} \
+            and Triton {fc_triton[simplex]:.5f}"
 
 
 @pytest.mark.parametrize("num_witnesses", [1000, 10_000])
@@ -178,7 +185,7 @@ def test_filtration_condition(num_witnesses, num_landmarks, mode, return_simplex
 
     if not return_simplex_tree:
         fc = flood_complex(X, L, use_triton=use_triton, return_simplex_tree=False)
-        st = gudhi.SimplexTree()
+        st = gudhi.SimplexTree()  # pylint: disable=no-member
         for simplex in fc:
             st.insert(simplex, float("inf"))
             st.assign_filtration(simplex, fc[simplex])
@@ -199,4 +206,5 @@ def test_filtration_condition(num_witnesses, num_landmarks, mode, return_simplex
         for face, face_filtration in faces:
             assert (
                 face_filtration <= filtration
-            ), f"Simplex {simplex} has filtr. value {filtration:.5f} and its face {face} has {face_filtration:.5f}"
+            ), f"Simplex {simplex} has filtr. value {filtration:.5f} \
+                and its face {face} has {face_filtration:.5f}"
