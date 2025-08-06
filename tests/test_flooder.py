@@ -11,8 +11,8 @@ import numpy as np
 
 from flooder import (
     flood_complex,
-    generate_figure_eight_2d_points,
-    generate_noisy_torus_points,
+    generate_figure_eight_points_2d,
+    generate_noisy_torus_points_3d,
     generate_landmarks,
 )
 
@@ -31,7 +31,7 @@ def test_vs_alpha_1(use_triton, batch_size, use_rand):
     torch.manual_seed(42)
     np.random.seed(42)
 
-    X = generate_figure_eight_2d_points(1000)
+    X = generate_figure_eight_points_2d(1000)
     L = X
 
     X = X.to(DEVICE)
@@ -94,7 +94,7 @@ def test_triton(num_witnesses, num_landmarks, use_rand):
     torch.manual_seed(42)
     np.random.seed(42)
 
-    X = generate_noisy_torus_points(num_witnesses).to(DEVICE)
+    X = generate_noisy_torus_points_3d(num_witnesses).to(DEVICE)
     L = generate_landmarks(X, num_landmarks)
 
     # Test w kernel
@@ -136,7 +136,7 @@ def test_kdtree_vs_triton(num_witnesses, num_landmarks, use_rand):
     torch.manual_seed(42)
     np.random.seed(42)
 
-    X = generate_noisy_torus_points(num_witnesses).to(DEVICE)
+    X = generate_noisy_torus_points_3d(num_witnesses).to(DEVICE)
     L = generate_landmarks(X, num_landmarks)
 
     # Test using triton kernel
@@ -180,7 +180,7 @@ def test_filtration_condition(num_witnesses, num_landmarks, mode, return_simplex
 
     torch.manual_seed(42)
     np.random.seed(42)
-    X = generate_noisy_torus_points(num_witnesses).to(device)
+    X = generate_noisy_torus_points_3d(num_witnesses).to(device)
     L = generate_landmarks(X, num_landmarks)
 
     if not return_simplex_tree:

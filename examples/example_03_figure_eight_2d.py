@@ -9,7 +9,7 @@ import gudhi
 import torch
 import numpy as np
 
-from flooder import generate_landmarks, flood_complex, generate_figure_eight_2d_points
+from flooder import generate_landmarks, flood_complex, generate_figure_eight_points_2d
 
 device = torch.device("cuda")
 
@@ -45,7 +45,7 @@ def main():  # pylint: disable=missing-function-docstring
     print(f"{YELLOW}Flood PH of a noisy figure-eight sample 40M points)")
     print(f"{YELLOW}---------------------------------------------------")
 
-    pts = generate_figure_eight_2d_points(n_pts, noise_std=0.02, noise_kind="gaussian")
+    pts = generate_figure_eight_points_2d(n_pts, noise_std=0.02, noise_kind="gaussian")
 
     t0_fps = time.perf_counter()
     lms = generate_landmarks(pts, n_lms)

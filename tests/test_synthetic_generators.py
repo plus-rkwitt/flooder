@@ -1,27 +1,29 @@
 import torch
 from flooder.synthetic_data_generators import (
-    generate_donut_points,
-    generate_noisy_torus_points,
-    generate_figure_eight_2d_points,
+    generate_noisy_torus_points_3d,
+    generate_figure_eight_points_2d,
+    generate_annulus_points_2d,
     generate_swiss_cheese_points,
 )
 
 
-def test_generate_donut_points():
-    pts = generate_donut_points(1000, torch.tensor([0.0, 0.0]), radius=1.0, width=0.2)
+def test_generate_annulus_points_2d():
+    pts = generate_annulus_points_2d(
+        1000, torch.tensor([0.0, 0.0]), radius=1.0, width=0.2
+    )
     assert pts.dtype == torch.float32, f"Wrong datatype {pts.dtype}"
     assert pts.shape == (1000, 2), f"Wrong shape {pts.shape}"
 
 
-def test_generate_noisy_torus_points():
-    pts = generate_noisy_torus_points(1000)
+def test_generate_noisy_torus_points_3d():
+    pts = generate_noisy_torus_points_3d(1000)
     assert pts.dtype == torch.float32
     assert pts.dtype == torch.float32, f"Wrong datatype {pts.dtype}"
     assert pts.shape == (1000, 3), f"Wrong shape {pts.shape}"
 
 
-def test_generate_figure_eight_2d_points():
-    pts = generate_figure_eight_2d_points(1000)
+def test_generate_figure_eight_points_2d():
+    pts = generate_figure_eight_points_2d(1000)
     assert pts.dtype == torch.float32, f"Wrong datatype {pts.dtype}"
     assert pts.shape == (1000, 2), f"Wrong shape {pts.shape}"
 

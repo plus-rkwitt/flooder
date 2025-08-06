@@ -9,7 +9,7 @@ import torch
 import gudhi
 import pandas as pd
 
-from flooder import generate_noisy_torus_points, flood_complex, generate_landmarks
+from flooder import generate_noisy_torus_points_3d, flood_complex, generate_landmarks
 
 
 DEVICE = torch.device("cuda")
@@ -28,7 +28,7 @@ def main():  # pylint: disable=missing-function-docstring
         n_pts = 1_000_000  # Number of points sampled from torus
         n_lms = 2000  # Number of landmarks for Flood complex
 
-        pts = generate_noisy_torus_points(n_pts)
+        pts = generate_noisy_torus_points_3d(n_pts)
 
         t0_fps = time.perf_counter()
         lms = generate_landmarks(pts, n_lms)

@@ -14,7 +14,7 @@ homology (up to dimension 3) using `gudhi` based on the constructed filtered Flo
 
 ``` py linenums="1"
 from flooder import (
-    generate_noisy_torus_points, 
+    generate_noisy_torus_points_3d, 
     flood_complex, 
     generate_landmarks)
 
@@ -22,12 +22,12 @@ DEVICE = "cuda"
 n_pts = 1_000_000  # Number of points to sample from torus
 n_lms = 1_000      # Number of landmarks for Flood complex
 
-pts = generate_noisy_torus_points(n_pts).to(DEVICE)
+pts = generate_noisy_torus_points_3d(n_pts).to(DEVICE)
 lms = generate_landmarks(pts, n_lms)
 
 stree = flood_complex(pts, lms, return_simplex_tree=True)
 stree.compute_persistence()
-ph = [stree.persistence_intervals_in_dimension(i) for i in range(3)]
+ph_diags = [stree.persistence_intervals_in_dimension(i) for i in range(3)]
 ```
 
 Importantly, one can either call `flood_complex` with the already pre-selected

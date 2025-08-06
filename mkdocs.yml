@@ -1,4 +1,4 @@
-site_name: flooder - Lightspeed Flood Complex (for Persistent Homology)
+site_name: flooder - Lightspeed Persistent Homology
 site_url: https://mydomain.org/mysite
 nav:
   - Home: index.md
@@ -20,7 +20,8 @@ theme:
     - navigation.tabs.sticky
     - content.code.copy
   palette:
-    primary: orange
+    primary: amber
+    accent: indigo
 markdown_extensions:
   - footnotes
   - pymdownx.highlight:

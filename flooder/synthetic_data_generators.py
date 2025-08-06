@@ -10,7 +10,7 @@ import torch
 import numpy as np
 
 
-def generate_figure_eight_2d_points(
+def generate_figure_eight_points_2d(
     n: int = 1000,
     r_bounds: Tuple[float, float] = (0.2, 0.3),
     centers: Tuple[Tuple[float, float], Tuple[float, float]] = ((0.3, 0.5), (0.7, 0.5)),
@@ -172,7 +172,7 @@ def generate_swiss_cheese_points(
     return pts, centres, radii
 
 
-def generate_donut_points(
+def generate_annulus_points_2d(
     n: int = 1000,
     center: torch.tensor = torch.tensor([0.0, 0.0]),
     radius: float = 1.0,
@@ -180,10 +180,9 @@ def generate_donut_points(
     seed: int = None,
 ) -> torch.tensor:
     """
-    Generate 2D points uniformly distributed in a circular annulus (donut shape).
+    Generate 2D points uniformly distributed in the region between two concentric circles.
 
-    Points are sampled uniformly within a ring defined by an outer `radius` and
-    an inner radius of `radius - width`, centered at a specified 2D location.
+    In particulr, points are sampled uniformly within a ring defined by an outer `radius` and an inner radius of `radius - width`, centered at a specified 2D location.
 
     Args:
         n (int, optional): Number of points to generate. Defaults to 1000.
@@ -199,7 +198,7 @@ def generate_donut_points(
 
     Examples:
         >>> center = torch.tensor([0.0, 0.0])
-        >>> points = generate_donut_points(n=500, center=center, radius=1.0, width=0.3, seed=42)
+        >>> points = generate_annulus_points_2d(n=500, center=center, radius=1.0, width=0.3, seed=42)
         >>> points.shape
         torch.Size([500, 2])
     """
@@ -218,7 +217,7 @@ def generate_donut_points(
     return torch.stack((x, y), dim=1)
 
 
-def generate_noisy_torus_points(
+def generate_noisy_torus_points_3d(
     n=1000,
     R: float = 3.0,
     r: float = 1.0,
@@ -248,7 +247,7 @@ def generate_noisy_torus_points(
             noisy 3D points.
 
     Examples:
-        >>> points = generate_noisy_torus_points(
+        >>> points = generate_noisy_torus_points_3d(
                 n=500, R=3.0, r=1.0, noise_std=0.05, seed=123)
         >>> points.shape
         torch.Size([500, 3])

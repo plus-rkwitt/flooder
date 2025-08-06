@@ -7,7 +7,7 @@ hide:
 
 ## Environment setup
 
-We recommend installing **flooder** in a clean new Anaconda environment
+We recommend installing **flooder** in a clean new [Anaconda](https://www.anaconda.com/) environment
 as described below:
 
 ``` bash linenums="1"
@@ -18,7 +18,7 @@ conda install pip git -y
 
 ## Via Pip (recommended)
 
-**flooder** is available on PyPi and can be installed via:
+**flooder** is available on PyPi ([here](https://pypi.org/project/flooder/)) and can be installed via:
 
 ```bash linenums="1"
 pip install flooder
@@ -40,7 +40,7 @@ from within the checked-out folder by specifying `PYTHONPATH`as
 ```bash linenums="1"
 git clone https://github.com/plus-rkwitt/flooder
 cd flooder
-PYTHONPATH=. python examples/example_01_cheese_3D.py
+PYTHONPATH=. python examples/example_01_cheese_3d.py
 ```
 
 ## GPU requirements
