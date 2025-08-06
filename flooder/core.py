@@ -364,6 +364,7 @@ def generate_grid(
 
 def generate_uniform_weights(num_rand, dim, device):
     """Generates num_rand points from a uniform distribution on the unit simplex.
+
     Args:
         num_rand (int):
             Number of random points to generate.

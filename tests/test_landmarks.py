@@ -4,7 +4,7 @@ import numpy as np
 
 from flooder import (
     generate_landmarks,
-    generate_figure_eight_2d_points,
+    generate_figure_eight_points_2d,
 )
 
 
@@ -16,7 +16,7 @@ def test_generate_landmarks(n_lms):
     torch.manual_seed(42)
     np.random.seed(42)
 
-    X = generate_figure_eight_2d_points(10000)
+    X = generate_figure_eight_points_2d(10000)
     L = generate_landmarks(X, n_lms)
 
     assert L.shape == (n_lms, 2), f"Wrong shape {L.shape}"

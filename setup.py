@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="flooder",
-    version="1.0rc2",
+    version="1.0rc3",
     description="Flood complex PH",
     author="Paolo Pellizzoni, Florian Graf, Martin Uray, Stefan Huber, Roland Kwitt",
     author_email="roland.kwitt@gmail.com",

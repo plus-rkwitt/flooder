@@ -9,11 +9,11 @@ Here's a step-by-step example of how to contribute to `flooder`.
 
 ## Fork the repository
 
-   On GitHub, click **"Fork"** to create your personal copy of the repository, then
+   On GitHub, click **"Fork"** to create your personal copy of the repository in your GitHub account, then
    clone your fork. In the following, lets call the fork `flooder-devel`.
 
    ```bash
-   https://github.com/rkwitt/flooder-devel.git
+   git clone https://github.com/rkwitt/flooder-devel.git
    cd flooder-devel
    ```
 
@@ -73,7 +73,7 @@ Here's a step-by-step example of how to contribute to `flooder`.
 
 ## Open a PR on GitHub
 
-Finally, we create a pull request on GitHub.
+Finally, create a pull request on GitHub.
 
 * Navigate to your fork on GitHub.
 * Click "Compare & pull request".
@@ -83,7 +83,7 @@ Finally, we create a pull request on GitHub.
 
 ## Cleanup
 
-Finally, we cleanup the branch in the forked repo.
+Once the PR is merged, we cleanup the branch in the forked repo.
 
    ```bash
    git branch -d fix-typos
