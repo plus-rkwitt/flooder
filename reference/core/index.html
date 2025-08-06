@@ -20,7 +20,7 @@
     
     
       
-        <title>Core - flooder - Lightspeed Flood Complex (for Persistent Homology)</title>
+        <title>Core - flooder - Lightspeed Persistent Homology</title>
       
     
     
@@ -63,7 +63,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="orange" data-md-color-accent="indigo">
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="amber" data-md-color-accent="indigo">
   
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
@@ -88,7 +88,7 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="flooder - Lightspeed Flood Complex (for Persistent Homology)" class="md-header__button md-logo" aria-label="flooder - Lightspeed Flood Complex (for Persistent Homology)" data-md-component="logo">
+    <a href="../.." title="flooder - Lightspeed Persistent Homology" class="md-header__button md-logo" aria-label="flooder - Lightspeed Persistent Homology" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -102,7 +102,7 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            flooder - Lightspeed Flood Complex (for Persistent Homology)
+            flooder - Lightspeed Persistent Homology
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
@@ -307,13 +307,13 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="flooder - Lightspeed Flood Complex (for Persistent Homology)" class="md-nav__button md-logo" aria-label="flooder - Lightspeed Flood Complex (for Persistent Homology)" data-md-component="logo">
+    <a href="../.." title="flooder - Lightspeed Persistent Homology" class="md-nav__button md-logo" aria-label="flooder - Lightspeed Persistent Homology" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
-    flooder - Lightspeed Flood Complex (for Persistent Homology)
+    flooder - Lightspeed Persistent Homology
   </label>
   
     <div class="md-nav__source">
@@ -1267,15 +1267,71 @@ as the input.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Generates num_rand points from a uniform distribution on the unit simplex.
-Args:
-    num_rand (int):
-        Number of random points to generate.
-    dim (int):
-        Dimension of the simplex.
-    device (torch.device):
-        Device to create the tensor on.
-Returns:
+        <p>Generates num_rand points from a uniform distribution on the unit simplex.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>num_rand</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of random points to generate.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>dim</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Dimension of the simplex.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>device</code>
+            </td>
+            <td>
+                  <code><span title="torch.device">device</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Device to create the tensor on.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+        <p>Returns:
     torch.Tensor:
         A tensor of shape [num_rand, dim + 1] containing the random points
         (coordinate weights).</p>

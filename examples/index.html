@@ -22,7 +22,7 @@
     
     
       
-        <title>Examples - flooder - Lightspeed Flood Complex (for Persistent Homology)</title>
+        <title>Examples - flooder - Lightspeed Persistent Homology</title>
       
     
     
@@ -65,7 +65,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="orange" data-md-color-accent="indigo">
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="amber" data-md-color-accent="indigo">
   
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
@@ -90,7 +90,7 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href=".." title="flooder - Lightspeed Flood Complex (for Persistent Homology)" class="md-header__button md-logo" aria-label="flooder - Lightspeed Flood Complex (for Persistent Homology)" data-md-component="logo">
+    <a href=".." title="flooder - Lightspeed Persistent Homology" class="md-header__button md-logo" aria-label="flooder - Lightspeed Persistent Homology" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -104,7 +104,7 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            flooder - Lightspeed Flood Complex (for Persistent Homology)
+            flooder - Lightspeed Persistent Homology
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
@@ -311,13 +311,13 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href=".." title="flooder - Lightspeed Flood Complex (for Persistent Homology)" class="md-nav__button md-logo" aria-label="flooder - Lightspeed Flood Complex (for Persistent Homology)" data-md-component="logo">
+    <a href=".." title="flooder - Lightspeed Persistent Homology" class="md-nav__button md-logo" aria-label="flooder - Lightspeed Persistent Homology" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
-    flooder - Lightspeed Flood Complex (for Persistent Homology)
+    flooder - Lightspeed Persistent Homology
   </label>
   
     <div class="md-nav__source">
@@ -669,7 +669,7 @@ homology (up to dimension 3) using <code>gudhi</code> based on the constructed f
 <span class="normal"><a href="#__codelineno-0-13">13</a></span>
 <span class="normal"><a href="#__codelineno-0-14">14</a></span>
 <span class="normal"><a href="#__codelineno-0-15">15</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">flooder</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2"></a>    <span class="n">generate_noisy_torus_points</span><span class="p">,</span> 
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2"></a>    <span class="n">generate_noisy_torus_points_3d</span><span class="p">,</span> 
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3"></a>    <span class="n">flood_complex</span><span class="p">,</span> 
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4"></a>    <span class="n">generate_landmarks</span><span class="p">)</span>
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5"></a>
@@ -677,12 +677,12 @@ homology (up to dimension 3) using <code>gudhi</code> based on the constructed f
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7"></a><span class="n">n_pts</span> <span class="o">=</span> <span class="mi">1_000_000</span>  <span class="c1"># Number of points to sample from torus</span>
 </span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8"></a><span class="n">n_lms</span> <span class="o">=</span> <span class="mi">1_000</span>      <span class="c1"># Number of landmarks for Flood complex</span>
 </span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9"></a>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10"></a><span class="n">pts</span> <span class="o">=</span> <span class="n">generate_noisy_torus_points</span><span class="p">(</span><span class="n">n_pts</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10"></a><span class="n">pts</span> <span class="o">=</span> <span class="n">generate_noisy_torus_points_3d</span><span class="p">(</span><span class="n">n_pts</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
 </span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11"></a><span class="n">lms</span> <span class="o">=</span> <span class="n">generate_landmarks</span><span class="p">(</span><span class="n">pts</span><span class="p">,</span> <span class="n">n_lms</span><span class="p">)</span>
 </span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12"></a>
 </span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13"></a><span class="n">stree</span> <span class="o">=</span> <span class="n">flood_complex</span><span class="p">(</span><span class="n">pts</span><span class="p">,</span> <span class="n">lms</span><span class="p">,</span> <span class="n">return_simplex_tree</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14"></a><span class="n">stree</span><span class="o">.</span><span class="n">compute_persistence</span><span class="p">()</span>
-</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15"></a><span class="n">ph</span> <span class="o">=</span> <span class="p">[</span><span class="n">stree</span><span class="o">.</span><span class="n">persistence_intervals_in_dimension</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)]</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15"></a><span class="n">ph_diags</span> <span class="o">=</span> <span class="p">[</span><span class="n">stree</span><span class="o">.</span><span class="n">persistence_intervals_in_dimension</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)]</span>
 </span></code></pre></div></td></tr></table></div>
 <p>Importantly, one can either call <code>flood_complex</code> with the already pre-selected
 (here via FPS) landmarks, or one can just specify the number of desired landmarks, e.g.,
