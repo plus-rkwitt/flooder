@@ -10,18 +10,33 @@ nav:
       - Synthetic data generators: reference/synthetic_data_generators.md
       - Core: reference/core.md
 theme:
+  name: material
   font:
     text: Lato
     code: Roboto Mono
-  name: material
   features:
     - navigation.instant
     - navigation.tabs
     - navigation.tabs.sticky
     - content.code.copy
   palette:
-    primary: amber
-    accent: indigo
+    # Light mode (default)
+    - scheme: default
+      primary: amber
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+
+    # Dark mode (auto-activated if user's browser prefers it)
+    - scheme: slate
+      primary: amber
+      accent: indigo
+      media: "(prefers-color-scheme: dark)"
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
 markdown_extensions:
   - footnotes
   - pymdownx.highlight:

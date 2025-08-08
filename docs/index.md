@@ -11,13 +11,16 @@ This is the project page of **flooder**, an easy-to-use Python package for const
 
 ## Illustration
 
-Below is an illustrative animation on how the (filtered) *Flood complex* is built (on a noisy sample of a figure-eight shape in 2D), starting from a collection of points and a Delaunay triangulation of a small subset of *landmarks* (in blue). In short, a simplex of the Delaunay triangulation is added to the Flood complex at time $t\geq 0$, if it is fully covered by balls of radius $t$, centered at *all* data points.
+Below is an illustrative animation on how the (filtered) *Flood complex* is built (on a noisy sample of a figure-eight shape in 2D), starting from a collection of points and a Delaunay triangulation of a small subset of *landmarks* (in yellow). In short, a simplex of the Delaunay triangulation is added to the Flood complex at time $t\geq 0$, if it is fully covered by balls of radius $t$, centered at *all* data points.
 
 <style>
   #canvas-container canvas {
     width: auto;
     height: 400px;
     max-width: 100%;
+  }
+  #radiusSlider {
+  accent-color: rgb(160, 170, 180); 
   }
 </style>
 <body>
@@ -32,6 +35,7 @@ Below is an illustrative animation on how the (filtered) *Flood complex* is buil
   <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
   <script src="animation/flood_triangle.js"></script>
 </body>
+
 
 ## Runtime teaser
 
