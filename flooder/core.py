@@ -328,13 +328,13 @@ def generate_grid(
     """
 
     combs = torch.tensor(
-        list(itertools.combinations(range(n + dim), dim)), device=device
+        list(itertools.combinations(range(n + dim - 1), dim)), device=device
     )  # shape [C, dim]
     padded = torch.cat(
         [
             torch.full((combs.shape[0], 1), -1, device=device),
             combs,
-            torch.full((combs.shape[0], 1), n + dim, device=device),
+            torch.full((combs.shape[0], 1), n + dim - 1, device=device),
         ],
         dim=1,
     )  # shape [C, dim + 2]
@@ -358,7 +358,7 @@ def generate_grid(
             vertex_idxs_k.append(idx)
         face_idxs.append(torch.stack(face_idxs_k))
         vertex_idxs.append(torch.stack(vertex_idxs_k))
-    grid = grid / n
+    grid = grid / (n -1)
     return grid, vertex_idxs, face_idxs
 
 
