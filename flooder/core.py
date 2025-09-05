@@ -93,13 +93,13 @@ def flood_complex(
     else:
         kdtree = KDTree(np.asarray(points))
 
-    dc = gudhi.DelaunayComplex(  # pylint: disable=no-member
+    stree = gudhi.DelaunayComplex(  # pylint: disable=no-member
         landmarks
     ).create_simplex_tree()
     out_complex = {}
 
     simplices = [[] for _ in range(max_dimension + 1)]
-    for simplex, _ in dc.get_simplices():
+    for simplex, _ in stree.get_simplices():
         if len(simplex) <= max_dimension + 1:
             simplices[len(simplex) - 1].append(tuple(simplex))
 
@@ -238,9 +238,7 @@ def flood_complex(
                     zip(map(tuple, d_simplices[start:end].tolist()), min_covering_radius.tolist())
                 )
 
-    stree = gudhi.SimplexTree()  # pylint: disable=no-member
     for simplex, filtration_val in out_complex.items():
-        stree.insert(simplex, float("inf"))
         stree.assign_filtration(simplex, filtration_val)
     stree.make_filtration_non_decreasing()
     if return_simplex_tree:
