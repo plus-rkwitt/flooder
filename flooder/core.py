@@ -12,6 +12,7 @@ import torch
 import gudhi
 import fpsample
 import numpy as np
+from numbers import Integral
 from scipy.spatial import KDTree
 
 from .triton_kernels import compute_mask, compute_filtration
@@ -79,8 +80,7 @@ def flood_complex(
     """
     if max_dimension is None:
         max_dimension = points.shape[1]
-
-    if isinstance(landmarks, int):
+    if isinstance(landmarks, Integral):
         landmarks = generate_landmarks(
             points, min(landmarks, points.shape[0]), fps_h, start_idx=start_idx
         )
@@ -358,7 +358,7 @@ def generate_grid(
             vertex_idxs_k.append(idx)
         face_idxs.append(torch.stack(face_idxs_k))
         vertex_idxs.append(torch.stack(vertex_idxs_k))
-    grid = grid / (n -1)
+    grid = grid / (n - 1)
     return grid, vertex_idxs, face_idxs
 
 
