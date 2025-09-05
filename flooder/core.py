@@ -235,7 +235,7 @@ def flood_complex(
             else:
                 min_covering_radius = torch.amax(distances, dim=1)
                 out_complex.update(
-                    zip(d_simplices[start:end], min_covering_radius.tolist())
+                    zip(map(tuple, d_simplices[start:end].tolist()), min_covering_radius.tolist())
                 )
 
     stree = gudhi.SimplexTree()  # pylint: disable=no-member
