@@ -12,6 +12,7 @@ import torch
 import gudhi
 import fpsample
 import numpy as np
+from numbers import Integral
 from scipy.spatial import KDTree
 
 from .triton_kernels import compute_mask, compute_filtration
@@ -79,8 +80,7 @@ def flood_complex(
     """
     if max_dimension is None:
         max_dimension = points.shape[1]
-
-    if isinstance(landmarks, int):
+    if isinstance(landmarks, Integral):
         landmarks = generate_landmarks(
             points, min(landmarks, points.shape[0]), fps_h, start_idx=start_idx
         )
@@ -93,13 +93,13 @@ def flood_complex(
     else:
         kdtree = KDTree(np.asarray(points))
 
-    dc = gudhi.DelaunayComplex(  # pylint: disable=no-member
+    stree = gudhi.DelaunayComplex(  # pylint: disable=no-member
         landmarks
     ).create_simplex_tree()
     out_complex = {}
 
     simplices = [[] for _ in range(max_dimension + 1)]
-    for simplex, _ in dc.get_simplices():
+    for simplex, _ in stree.get_simplices():
         if len(simplex) <= max_dimension + 1:
             simplices[len(simplex) - 1].append(tuple(simplex))
 
@@ -235,12 +235,10 @@ def flood_complex(
             else:
                 min_covering_radius = torch.amax(distances, dim=1)
                 out_complex.update(
-                    zip(d_simplices[start:end], min_covering_radius.tolist())
+                    zip(map(tuple, d_simplices[start:end].tolist()), min_covering_radius.tolist())
                 )
 
-    stree = gudhi.SimplexTree()  # pylint: disable=no-member
     for simplex, filtration_val in out_complex.items():
-        stree.insert(simplex, float("inf"))
         stree.assign_filtration(simplex, filtration_val)
     stree.make_filtration_non_decreasing()
     if return_simplex_tree:
@@ -358,7 +356,7 @@ def generate_grid(
             vertex_idxs_k.append(idx)
         face_idxs.append(torch.stack(face_idxs_k))
         vertex_idxs.append(torch.stack(vertex_idxs_k))
-    grid = grid / (n -1)
+    grid = grid / (n - 1)
     return grid, vertex_idxs, face_idxs
 
 
