@@ -29,7 +29,7 @@ def flood_complex(
     max_dimension: Union[None, int] = None,
     points_per_edge: Union[None, int] = 30,
     num_rand: int = None,
-    batch_size: Union[None, int] = 256,
+    batch_size: Union[None, int] = 64,
     use_triton: bool = True,
     return_simplex_tree: bool = False,
     fps_h: Union[None, int] = None,
@@ -119,7 +119,7 @@ def flood_complex(
         if num_simplices == 0:
             continue
         # precompute simplex centers
-        simplex_vertices = landmarks[[d_simplices]]
+        simplex_vertices = landmarks[d_simplices]
         max_flat_idx = torch.argmax(
             torch.cdist(simplex_vertices, simplex_vertices).flatten(1),
             dim=1,
@@ -235,7 +235,10 @@ def flood_complex(
             else:
                 min_covering_radius = torch.amax(distances, dim=1)
                 out_complex.update(
-                    zip(map(tuple, d_simplices[start:end].tolist()), min_covering_radius.tolist())
+                    zip(
+                        map(tuple, d_simplices[start:end].tolist()),
+                        min_covering_radius.tolist(),
+                    )
                 )
 
     for simplex, filtration_val in out_complex.items():
