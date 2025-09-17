@@ -244,6 +244,7 @@ def flood_complex(
     for simplex, filtration_val in out_complex.items():
         stree.assign_filtration(simplex, filtration_val)
     stree.make_filtration_non_decreasing()
+    torch.cuda.empty_cache()
     if return_simplex_tree:
         return stree
 
