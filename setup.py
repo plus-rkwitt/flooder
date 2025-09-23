@@ -8,4 +8,9 @@ setup(
     author_email="roland.kwitt@gmail.com",
     packages=find_packages(),
     python_requires=">=3.8",
+    entry_points={
+        "console_scripts": [
+            "flooder = flooder.cli:main",
+        ],
+    },
 )

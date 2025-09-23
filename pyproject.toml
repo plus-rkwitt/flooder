@@ -22,3 +22,6 @@ dependencies = [
     "scipy",
 ]
 requires-python = ">=3.8"
+
+[project.scripts]
+flooder = "flooder.cli:main"
