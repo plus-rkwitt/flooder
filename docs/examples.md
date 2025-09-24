@@ -74,5 +74,5 @@ flooder \
   --points-per-edge 30 \
    --device cuda:0 \
   --cuda-events \
-  --stats-json lucy.json \
+  --stats-json lucy.json
 ```
