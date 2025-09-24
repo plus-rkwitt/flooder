@@ -24,6 +24,12 @@ conda install pip git -y
 pip install flooder
 ```
 
+To test the command-line interface (CLI) use 
+
+```bash linenums="1"
+flooder --help 
+```
+
 ## Development installation
 
 In case you want to contribute to **flooder**, clone the [GitHub repo](https://github.com/plus-rkwitt/flooder) and run

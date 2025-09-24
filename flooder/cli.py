@@ -439,7 +439,7 @@ def main() -> None:
     stats: List[StepStats] = []
 
     with console.status("Loading point cloud...", spinner="dots"):
-        with StepTimer("Load", device, use_cuda_events=args.cuda_events) as t:
+        with StepTimer("Loading", device, use_cuda_events=args.cuda_events) as t:
             pc_cpu, n_pts, dim = load_point_cloud(Path(args.input_file))
         stats.append(t.stats)
     console.print(f"✓ Loading point cloud ({n_pts},{dim}) done")
