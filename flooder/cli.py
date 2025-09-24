@@ -10,6 +10,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import os
+import re
 import argparse
 import pickle
 import json
@@ -145,6 +146,17 @@ def print_stats_table(steps: List[StepStats], console):
     console.print(tbl)
 
 
+def device_type(value: str) -> str:
+    if value == "cpu":
+        return value
+    match = re.fullmatch(r"cuda:\d+", value)
+    if match:
+        return value
+    raise argparse.ArgumentTypeError(
+        f"Invalid device '{value}'. Must be 'cpu' or 'cuda:<id>' with <id> an integer."
+    )
+
+
 def dump_stats_json(steps: List[StepStats], out_path: Optional[str]):
     if not out_path:
         return
@@ -204,22 +216,21 @@ def setup_cmdline_parsing() -> argparse.ArgumentParser:
         dest="fps_height",
         metavar="INT",
         type=int,
-        default=5,
+        default=9,
         help="Farthest-Point Sampling height (default: %(default)s)",
     )
     g0.add_argument(
         "--batch-size",
         metavar="INT",
         type=int,
-        default=32,
+        default=64,
         help="Batch size for Flood complex (default: %(default)s)",
     )
     g0.add_argument(
         "--device",
-        metavar="STR",
-        type=str,
-        default="cuda",
-        help='Device: "cpu", "cuda", or "cuda:N" (default: %(default)s)',
+        type=device_type,
+        default="cuda:0",
+        help='Device: "cpu", or "cuda:N" (default: %(default)s)',
     )
     g0.add_argument(
         "--seed",
@@ -302,9 +313,9 @@ def validate_device(device_str: str) -> torch.device:
         if not torch.cuda.is_available():
             raise RuntimeError("CUDA requested but not available. Use --device cpu.")
         major, minor = torch.cuda.get_device_capability(dev)
-        if major < 8:
+        if (major, minor) <= (7, 5):
             raise RuntimeError(
-                f"CUDA compute capability {major}.{minor} detected; " "requires >= 8.0."
+                f"CUDA compute capability {major}.{minor} detected; " "requires >= 7.5."
             )
         torch.cuda.set_device(dev)
     return dev
@@ -421,6 +432,8 @@ def main() -> None:
     if args.verbose:
         console.print(vars(args))
 
+    if args.device == "cuda":
+        args.device = "cuda:0"
     device = validate_device(args.device)
 
     stats: List[StepStats] = []
