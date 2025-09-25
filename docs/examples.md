@@ -70,7 +70,7 @@ flooder \
   --input-file lucy.npy \
   --output-file lucy-diagrams.pkl \
   --num-landmarks 5000 \
-  --batch-size 64
+  --batch-size 64 \
   --max-dimension 3 \
   --points-per-edge 30 \
    --device cuda:0 \

@@ -18,7 +18,7 @@ import time
 import math
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Optional, Sequence, Tuple
+from typing import Optional, List, Tuple
 
 import numpy as np
 import torch
@@ -27,8 +27,6 @@ from rich.table import Table
 from rich import box
 from rich.console import Console
 from rich_argparse import RichHelpFormatter
-
-from typing import Optional, List
 
 try:
     import psutil
