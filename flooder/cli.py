@@ -48,6 +48,24 @@ class StepStats:
     cuda_ms: Optional[float]
 
 
+# Meta data for writing to output file
+@dataclass
+class RunMeta:
+    input_file: str
+    output_file: Optional[str]
+    num_landmarks: int
+    max_dimension: int
+    fps_height: int
+    batch_size: int
+    device: str
+    points_per_edge: Optional[int]
+    num_rand: Optional[int]
+    seed: Optional[int]
+    use_triton: bool
+    n_points: int
+    ambient_dim: int
+
+
 class StepTimer:
     def __init__(self, name: str, device: torch.device, use_cuda_events: bool = False):
         self.name = name
@@ -163,24 +181,6 @@ def dump_stats_json(steps: List[StepStats], out_path: Optional[str]):
     p.parent.mkdir(parents=True, exist_ok=True)
     with p.open("w") as f:
         json.dump(payload, f, indent=2)
-
-
-# Meta data for writing to output file
-@dataclass
-class RunMeta:
-    input_file: str
-    output_file: Optional[str]
-    num_landmarks: int
-    max_dimension: int
-    fps_height: int
-    batch_size: int
-    device: str
-    points_per_edge: Optional[int]
-    num_rand: Optional[int]
-    seed: Optional[int]
-    use_triton: bool
-    n_points: int
-    ambient_dim: int
 
 
 def setup_cmdline_parsing() -> argparse.ArgumentParser:
