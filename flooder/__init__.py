@@ -7,6 +7,8 @@ from .synthetic_data_generators import (
     generate_figure_eight_points_2d,
 )
 
+__version__ = "1.0rc6"
+
 __all__ = [
     "flood_complex",
     "generate_landmarks",

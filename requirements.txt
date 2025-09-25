@@ -4,3 +4,5 @@ numpy
 fpsample
 pandas
 scipy
+rich
+rich_argparse

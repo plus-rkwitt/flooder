@@ -99,13 +99,21 @@ def compute_mask_kernel(
     counts_ptr,  # (n), Trues per row
     cent_ptr,  # (n, d), center positions
     radi_ptr,  # (n, 1) or (n,), radius
-    n,
-    m,
-    d,
+    n_32b,
+    m_32b,
+    d_32b,
     BLOCK_N: tl.constexpr,
     BLOCK_M: tl.constexpr,
     BLOCK_W: tl.constexpr,
 ):
+
+    # According to https://triton-lang.org/main/python-api/triton-semantics.html, any
+    # operation with where one tensor is of a dtype of a higher kind, the other tensor
+    # is promoted to this dtype
+    n = tl.full((), n_32b, tl.int64)
+    m = tl.full((), m_32b, tl.int64)
+    d = tl.full((), d_32b, tl.int64)
+
     pid_m = tl.program_id(0)  # points
     pid_n = tl.program_id(1)  # centers
 

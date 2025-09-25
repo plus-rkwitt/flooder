@@ -24,6 +24,12 @@ conda install pip git -y
 pip install flooder
 ```
 
+To test the command-line interface (CLI) use 
+
+```bash linenums="1"
+flooder --help 
+```
+
 ## Development installation
 
 In case you want to contribute to **flooder**, clone the [GitHub repo](https://github.com/plus-rkwitt/flooder) and run
@@ -46,4 +52,4 @@ PYTHONPATH=. python examples/example_01_cheese_3d.py
 ## GPU requirements
 
 Our implementation relies heavily on custom Triton kernels (although we support CPU computation as well) for maximum performance. According to the official [Triton compatibility](https://github.com/triton-lang/triton?tab=readme-ov-file#compatibility) page, you need a NVIDIA GPU with compute capabilty (check  
-[here](https://developer.nvidia.com/cuda-gpus)) of at least 8.0 (e.g., GTX 3080, etc.).
+[here](https://developer.nvidia.com/cuda-gpus)) of at least 7.5 (e.g., GTX 3080, etc.).
