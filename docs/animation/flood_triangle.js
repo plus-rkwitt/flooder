@@ -3,7 +3,7 @@ let landmarks = [];      // from landmarks.csv (subset points)
 let edges = [];          // edges between landmarks
 let radiusSlider;
 let animating = true;
-const animationSpeed = 0.01;
+const animationSpeed = 0.006;
 
 function preload() {
   tablePoints = loadTable('animation/points.csv', 'csv', 'noHeader');

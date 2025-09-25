@@ -56,20 +56,21 @@ and first convert it (using the Open3D library; install via `pip install open3d`
 `(N,3)` numpy array:
 
 ```py linenums="1"
+import numpy as np
 import open3d as o3d
 X_ply = o3d.io.read_point_cloud("lucy.ply")
-X_np = np.asarray(pcd.points, dtype=np.float32)
-np.save("lucy.npy", a)
+X_np = np.asarray(X_ply.points, dtype=np.float32)
+np.save("lucy.npy", X_np)
 ```
 
-Finally, we execute the Flooder CLI, using 4k landmarks, 30 points per edge and a batch size of 256 (note that this is fairly large-scale setting, so this will consume around 30GB of VRAM, tested on a NVIDIA H100 NVL):
+Finally, we execute the Flooder CLI, using 5k landmarks, 30 points per edge and a batch size of 64:
 
 ``` bash linenums="1"
 flooder \
   --input-file lucy.npy \
   --output-file lucy-diagrams.pkl \
   --num-landmarks 5000 \
-  --batch-size 256
+  --batch-size 64
   --max-dimension 3 \
   --points-per-edge 30 \
    --device cuda:0 \
