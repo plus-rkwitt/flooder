@@ -744,25 +744,28 @@ as described below:</p>
 <p><strong>flooder</strong> is available on PyPi (<a href="https://pypi.org/project/flooder/">here</a>) and can be installed via:</p>
 <div class="language-bash highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-1-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1"></a>pip<span class="w"> </span>install<span class="w"> </span>flooder
 </span></code></pre></div></td></tr></table></div>
+<p>To test the command-line interface (CLI) use </p>
+<div class="language-bash highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-2-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1"></a>flooder<span class="w"> </span>--help<span class="w"> </span>
+</span></code></pre></div></td></tr></table></div>
 <h2 id="development-installation">Development installation</h2>
 <p>In case you want to contribute to <strong>flooder</strong>, clone the <a href="https://github.com/plus-rkwitt/flooder">GitHub repo</a> and run</p>
-<div class="language-bash highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-2-1">1</a></span>
-<span class="normal"><a href="#__codelineno-2-2">2</a></span>
-<span class="normal"><a href="#__codelineno-2-3">3</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/plus-rkwitt/flooder
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2"></a><span class="nb">cd</span><span class="w"> </span>flooder
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3"></a>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
-</span></code></pre></div></td></tr></table></div>
-<p>In case you do not want to install anything, you can also execute examples or tests
-from within the checked-out folder by specifying <code>PYTHONPATH</code>as</p>
 <div class="language-bash highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-3-1">1</a></span>
 <span class="normal"><a href="#__codelineno-3-2">2</a></span>
 <span class="normal"><a href="#__codelineno-3-3">3</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/plus-rkwitt/flooder
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2"></a><span class="nb">cd</span><span class="w"> </span>flooder
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3"></a><span class="nv">PYTHONPATH</span><span class="o">=</span>.<span class="w"> </span>python<span class="w"> </span>examples/example_01_cheese_3d.py
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3"></a>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</span></code></pre></div></td></tr></table></div>
+<p>In case you do not want to install anything, you can also execute examples or tests
+from within the checked-out folder by specifying <code>PYTHONPATH</code>as</p>
+<div class="language-bash highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-4-1">1</a></span>
+<span class="normal"><a href="#__codelineno-4-2">2</a></span>
+<span class="normal"><a href="#__codelineno-4-3">3</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/plus-rkwitt/flooder
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2"></a><span class="nb">cd</span><span class="w"> </span>flooder
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3"></a><span class="nv">PYTHONPATH</span><span class="o">=</span>.<span class="w"> </span>python<span class="w"> </span>examples/example_01_cheese_3d.py
 </span></code></pre></div></td></tr></table></div>
 <h2 id="gpu-requirements">GPU requirements</h2>
 <p>Our implementation relies heavily on custom Triton kernels (although we support CPU computation as well) for maximum performance. According to the official <a href="https://github.com/triton-lang/triton?tab=readme-ov-file#compatibility">Triton compatibility</a> page, you need a NVIDIA GPU with compute capabilty (check<br />
-<a href="https://developer.nvidia.com/cuda-gpus">here</a>) of at least 8.0 (e.g., GTX 3080, etc.).</p>
+<a href="https://developer.nvidia.com/cuda-gpus">here</a>) of at least 7.5 (e.g., GTX 3080, etc.).</p>
 
 
 

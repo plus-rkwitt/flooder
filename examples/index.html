@@ -471,6 +471,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#flooder-cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      Flooder CLI
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -655,6 +664,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#flooder-cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      Flooder CLI
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -718,6 +736,48 @@ via</p>
 <div class="language-py highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-1-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1"></a><span class="n">stree</span> <span class="o">=</span> <span class="n">flood_complex</span><span class="p">(</span><span class="n">pts</span><span class="p">,</span> <span class="n">n_lms</span><span class="p">,</span> <span class="n">return_simplex_tree</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div></td></tr></table></div>
 <p>in which case FPS is called internally.</p>
+<h2 id="flooder-cli">Flooder CLI</h2>
+<p>If you installed flooder via <code>pip install flooder</code>, you not only have the API 
+available but also a command-line interface (CLI), which you can execute as 
+follows: for demonstration, we will download a PLY file of the <em>Lucy</em> angel (&gt;14M points, available 
+from the <em>Stanford 3D Scanning Repository</em>) </p>
+<div class="language-bash highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-2-1">1</a></span>
+<span class="normal"><a href="#__codelineno-2-2">2</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1"></a>wget<span class="w"> </span>https://graphics.stanford.edu/data/3Dscanrep/lucy.tar.gz
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2"></a>tar<span class="w"> </span>xvfz<span class="w"> </span>lucy.tar.gz
+</span></code></pre></div></td></tr></table></div>
+<p>and first convert it (using the Open3D library; install via <code>pip install open3d</code>) to a 
+<code>(N,3)</code> numpy array:</p>
+<div class="language-py highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-3-1">1</a></span>
+<span class="normal"><a href="#__codelineno-3-2">2</a></span>
+<span class="normal"><a href="#__codelineno-3-3">3</a></span>
+<span class="normal"><a href="#__codelineno-3-4">4</a></span>
+<span class="normal"><a href="#__codelineno-3-5">5</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">open3d</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">o3d</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3"></a><span class="n">X_ply</span> <span class="o">=</span> <span class="n">o3d</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">read_point_cloud</span><span class="p">(</span><span class="s2">&quot;lucy.ply&quot;</span><span class="p">)</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4"></a><span class="n">X_np</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X_ply</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5"></a><span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;lucy.npy&quot;</span><span class="p">,</span> <span class="n">X_np</span><span class="p">)</span>
+</span></code></pre></div></td></tr></table></div>
+<p>Finally, we execute the Flooder CLI, using 5k landmarks, 30 points per edge and a batch size of 64:</p>
+<div class="language-bash highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-4-1"> 1</a></span>
+<span class="normal"><a href="#__codelineno-4-2"> 2</a></span>
+<span class="normal"><a href="#__codelineno-4-3"> 3</a></span>
+<span class="normal"><a href="#__codelineno-4-4"> 4</a></span>
+<span class="normal"><a href="#__codelineno-4-5"> 5</a></span>
+<span class="normal"><a href="#__codelineno-4-6"> 6</a></span>
+<span class="normal"><a href="#__codelineno-4-7"> 7</a></span>
+<span class="normal"><a href="#__codelineno-4-8"> 8</a></span>
+<span class="normal"><a href="#__codelineno-4-9"> 9</a></span>
+<span class="normal"><a href="#__codelineno-4-10">10</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1"></a>flooder<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2"></a><span class="w">  </span>--input-file<span class="w"> </span>lucy.npy<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3"></a><span class="w">  </span>--output-file<span class="w"> </span>lucy-diagrams.pkl<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4"></a><span class="w">  </span>--num-landmarks<span class="w"> </span><span class="m">5000</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5"></a><span class="w">  </span>--batch-size<span class="w"> </span><span class="m">64</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6"></a><span class="w">  </span>--max-dimension<span class="w"> </span><span class="m">3</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7"></a><span class="w">  </span>--points-per-edge<span class="w"> </span><span class="m">30</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8"></a><span class="w">   </span>--device<span class="w"> </span>cuda:0<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9"></a><span class="w">  </span>--cuda-events<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10"></a><span class="w">  </span>--stats-json<span class="w"> </span>lucy.json
+</span></code></pre></div></td></tr></table></div>
 
 
 
