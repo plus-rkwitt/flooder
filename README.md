@@ -1,13 +1,36 @@
+
+
+<div align="center">
+
+<img src="logos/logo.png" width=70% height=70%>
+</div>
+
+<br>
+
+<div align="center">
+  
+[![PyPI version](https://img.shields.io/pypi/v/cellpick.svg?logo=pypi)](https://pypi.org/project/flooder/1.0rc6/)
+[![Docs](https://img.shields.io/badge/docs-latest-blue?logo=readthedocs)](https://plus-rkwitt.github.io/flooder/)
+[![Website](https://img.shields.io/badge/paper-NeurIPS'25-44cc11?logo=google-chrome)](https://arxiv.org/abs/2509.22432)
+</div>
+
+<br>
+
+<br>
+
+<div align="center">
+
+<img src="logos/animation.gif" width=50% height=50%>
+</div>
+
+<br>
+
 # Flooder
 
 `flooder` is a Python package for constructing a lightweight filtered simplicial complex-*the Flood complex*-on Euclidean point cloud data, leveraging state-of-the-art GPU computing hardware, for subsequent persistent homology (PH) computation (using `gudhi`).
 
 Currently, `flooder` allows computing *Flood PH* on millions of points in 3D (see [Usage](#usage)), enabling previously computationally infeasible large-scale applications of PH on point clouds. While `flooder` is primarily intended for 3D Euclidean point cloud data, it also works with Euclidean point cloud data of moderate dimension (e.g., 4,5,6). For theoretical guarantees of the Flood complex, including algorithmic details, see [Citing](#citing).
 
-## Related Projects
-
-If you are looking for fast implementations of (Vietoris-)Rips PH, see 
-[ripser](https://github.com/ripser/ripser), or the GPU-accelerated [ripser++](https://github.com/simonzhang00/ripser-plusplus), respectively. In addition [gudhi](https://pypi.org/project/gudhi/) supports, e.g., computing Alpha PH also on fairly large point clouds (see the `examples/example_01_cheese_3D.py` for a runtime comparison).
 
 ## Setup
 
@@ -75,16 +98,27 @@ n_lms = 1_000
 stree = flood_complex(pts, n_lms, return_simplex_tree=True)
 ```
 
+## Related Projects
+
+If you are looking for fast implementations of (Vietoris-)Rips PH, see 
+[ripser](https://github.com/ripser/ripser), or the GPU-accelerated [ripser++](https://github.com/simonzhang00/ripser-plusplus), respectively. In addition [gudhi](https://pypi.org/project/gudhi/) supports, e.g., computing Alpha PH also on fairly large point clouds (see the `examples/example_01_cheese_3D.py` for a runtime comparison).
+
+
 ## License
 
 The code is licensed under an MIT license.
 
 ## Citing
 
-Please cite the following arXiv preprint in case you `flooder` useful for your applications.
+Please cite our NeurIPS 2025 paper (in press now) in case you find `flooder` useful for your applications. Read the arXiv preprint [here](https://arxiv.org/abs/2509.22432).
 
 ```bibtex
-coming soon!
+@inproceedings{graf2025floodcomplex,
+      title={The Flood Complex: Large-Scale Persistent Homology on Millions of Points}, 
+      author={Graf, Florian and Pellizzoni, Paolo and Uray, Martin and Huber, Stefan and Kwitt, Roland},
+      year={2025},
+      booktitle={NeurIPS},
+}
 ```
 
 
