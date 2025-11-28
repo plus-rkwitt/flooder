@@ -4,6 +4,7 @@ nav:
   - Home: index.md
   - Installation: install.md
   - Examples: examples.md
+  - Visualizations: visualizations.md
   - Contributing: contributing.md
   - API Reference:
       - Utils: reference/io.md
@@ -78,6 +79,7 @@ plugins:
             line_length: 60  # wrap long signatures
 extra_javascript:
   - javascripts/mathjax.js
+  # - javascripts/p5.min.js
   - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
   - https://cdn.jsdelivr.net/npm/vega@5
   - https://cdn.jsdelivr.net/npm/vega-lite@5
