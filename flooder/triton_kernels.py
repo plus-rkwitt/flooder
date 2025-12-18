@@ -62,7 +62,7 @@ def compute_filtration(
     num_valid = col_idx.shape[0]
     assert d == d_y, "Feature dimensions of x and y must match."
 
-    T= triton.cdiv(num_valid, BLOCK_W)  # Number of tiles along the W dimension.
+    T = triton.cdiv(num_valid, BLOCK_W)  # Number of tiles along the W dimension.
     R_tiles = triton.cdiv(R, BLOCK_R)
     # Number of tiles in the R dimension.
 
