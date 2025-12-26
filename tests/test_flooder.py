@@ -13,6 +13,7 @@ from flooder import (
     flood_complex,
     generate_figure_eight_points_2d,
     generate_noisy_torus_points_3d,
+    generate_swiss_cheese_points,
     generate_landmarks,
 )
 
@@ -208,3 +209,38 @@ def test_filtration_condition(num_witnesses, num_landmarks, mode, return_simplex
                 face_filtration <= filtration
             ), f"Simplex {simplex} has filtr. value {filtration:.5f} \
                 and its face {face} has {face_filtration:.5f}"
+
+
+@pytest.mark.parametrize("pointcloud", ["torus", "cheese"])
+@pytest.mark.parametrize("device", [torch.device("cpu"), torch.device("cuda")])
+def test_float64(pointcloud, device):
+    """
+    Test consistency of the Flood complex between float32 and float64 dtypes
+    """
+    num_pts = 50_000
+    num_lms = 500
+
+    if pointcloud == "torus":
+        pts = generate_noisy_torus_points_3d(num_pts)
+    elif pointcloud == "cheese":
+        pts = generate_swiss_cheese_points(num_pts)[0]
+    else:
+        RuntimeError(f"invalid pointcloud ({pointcloud})")
+
+    torch.manual_seed(42)
+    np.random.seed(42)
+    lms = generate_landmarks(pts, num_lms)
+    pts32 = pts.to(device=device, dtype=torch.float32)
+    pts64 = pts.to(device=device, dtype=torch.float64)
+    lms32 = lms.to(device=device, dtype=torch.float32)
+    lms64 = lms.to(device=device, dtype=torch.float64)
+
+    flood32 = flood_complex(pts32, lms32, return_simplex_tree=False)
+    flood64 = flood_complex(pts64, lms64, return_simplex_tree=False)
+
+    for simplex in flood32:
+        assert simplex in flood64
+        filt32 = flood32[simplex]
+        filt64 = flood64[simplex]
+        diff = abs(filt32-filt64)
+        assert diff < 3e-6, f"Simplex {simplex}: f32 {filt32} and f64 {filt64}, difference is {diff}"
