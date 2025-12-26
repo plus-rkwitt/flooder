@@ -24,7 +24,7 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 @pytest.mark.parametrize("use_triton", [True, False])
 @pytest.mark.parametrize("batch_size", [8, 23])
 @pytest.mark.parametrize("use_rand", [True, False])
-def test_vs_alpha_1(use_triton, batch_size, use_rand):
+def test_vs_alpha(use_triton, batch_size, use_rand):
     """
     Test the homotopy equivalence of the Alpha complex and the Flood complex
     when landmarks L are set equal to the dataset X.clear
@@ -38,7 +38,7 @@ def test_vs_alpha_1(use_triton, batch_size, use_rand):
     X = X.to(DEVICE)
     L = L.to(DEVICE)
     num_rand = 20_000
-    points_per_edge = 125
+    points_per_edge = 130
     if use_rand:
         kwargs = {"num_rand": num_rand, "points_per_edge": None}
     else:

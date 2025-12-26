@@ -39,3 +39,41 @@ stree = flood_complex(pts, n_lms, return_simplex_tree=True)
 ```
 
 in which case FPS is called internally.
+
+## Flooder CLI
+
+If you installed flooder via `pip install flooder`, you not only have the API 
+available but also a command-line interface (CLI), which you can execute as 
+follows: for demonstration, we will download a PLY file of the *Lucy* angel (>14M points, available 
+from the *Stanford 3D Scanning Repository*) 
+
+``` bash linenums="1"
+wget https://graphics.stanford.edu/data/3Dscanrep/lucy.tar.gz
+tar xvfz lucy.tar.gz
+```
+
+and first convert it (using the Open3D library; install via `pip install open3d`) to a 
+`(N,3)` numpy array:
+
+```py linenums="1"
+import numpy as np
+import open3d as o3d
+X_ply = o3d.io.read_point_cloud("lucy.ply")
+X_np = np.asarray(X_ply.points, dtype=np.float32)
+np.save("lucy.npy", X_np)
+```
+
+Finally, we execute the Flooder CLI, using 5k landmarks, 30 points per edge and a batch size of 64:
+
+``` bash linenums="1"
+flooder \
+  --input-file lucy.npy \
+  --output-file lucy-diagrams.pkl \
+  --num-landmarks 5000 \
+  --batch-size 64 \
+  --max-dimension 3 \
+  --points-per-edge 30 \
+   --device cuda:0 \
+  --cuda-events \
+  --stats-json lucy.json
+```

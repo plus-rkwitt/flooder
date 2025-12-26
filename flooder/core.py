@@ -13,6 +13,7 @@ import torch
 import gudhi
 import fpsample
 import numpy as np
+from numbers import Integral
 from scipy.spatial import KDTree
 
 from .triton_kernels import compute_mask, compute_filtration, tl_dtypes_dict
@@ -29,7 +30,7 @@ def flood_complex(
     max_dimension: Union[None, int] = None,
     points_per_edge: Union[None, int] = 30,
     num_rand: int = None,
-    batch_size: Union[None, int] = 256,
+    batch_size: Union[None, int] = 64,
     use_triton: bool = True,
     return_simplex_tree: bool = False,
     fps_h: Union[None, int] = None,
@@ -80,8 +81,7 @@ def flood_complex(
     """
     if max_dimension is None:
         max_dimension = points.shape[1]
-
-    if isinstance(landmarks, int):
+    if isinstance(landmarks, Integral):
         landmarks = generate_landmarks(
             points, min(landmarks, points.shape[0]), fps_h, start_idx=start_idx
         )
@@ -109,13 +109,13 @@ def flood_complex(
     else:
         kdtree = KDTree(np.asarray(points))
 
-    dc = gudhi.DelaunayComplex(  # pylint: disable=no-member
+    stree = gudhi.DelaunayComplex(  # pylint: disable=no-member
         landmarks
     ).create_simplex_tree()
     out_complex = {}
 
     simplices = [[] for _ in range(max_dimension + 1)]
-    for simplex, _ in dc.get_simplices():
+    for simplex, _ in stree.get_simplices():
         if len(simplex) <= max_dimension + 1:
             simplices[len(simplex) - 1].append(tuple(simplex))
 
@@ -252,14 +252,16 @@ def flood_complex(
             else:
                 min_covering_radius = torch.amax(distances, dim=1)
                 out_complex.update(
-                    zip(d_simplices[start:end], min_covering_radius.tolist())
+                    zip(
+                        map(tuple, d_simplices[start:end].tolist()),
+                        min_covering_radius.tolist(),
+                    )
                 )
 
-    stree = gudhi.SimplexTree()  # pylint: disable=no-member
     for simplex, filtration_val in out_complex.items():
-        stree.insert(simplex, float("inf"))
         stree.assign_filtration(simplex, filtration_val)
     stree.make_filtration_non_decreasing()
+    torch.cuda.empty_cache()
     if return_simplex_tree:
         return stree
 
@@ -348,13 +350,13 @@ def generate_grid(
     """
 
     combs = torch.tensor(
-        list(itertools.combinations(range(n + dim), dim)), device=device
+        list(itertools.combinations(range(n + dim - 1), dim)), device=device
     )  # shape [C, dim]
     padded = torch.cat(
         [
             torch.full((combs.shape[0], 1), -1, device=device),
             combs,
-            torch.full((combs.shape[0], 1), n + dim, device=device),
+            torch.full((combs.shape[0], 1), n + dim - 1, device=device),
         ],
         dim=1,
     )  # shape [C, dim + 2]
