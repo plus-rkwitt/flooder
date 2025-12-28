@@ -21,6 +21,7 @@ def compute_filtration_kernel(
     d: tl.constexpr,  # feature dimension
     BLOCK_R: tl.constexpr,  # block size (tile size) for R dimension (must divide R)
     BLOCK_W: tl.constexpr,  # block size for the W dimension per tile
+    DTYPE: tl.constexpr,  # dtype of the tensors
 ):
     pid_w = tl.program_id(0)  # tile index for W dimension
     pid_r = tl.program_id(1)  # tile index for R dimension
@@ -32,7 +33,7 @@ def compute_filtration_kernel(
     w_idx = tl.load(w_idx_ptr + pid_w * BLOCK_W + tl.arange(0, BLOCK_W))
 
     # Initialize the squared-distance accumulator for this (BLOCK_R x BLOCK_W) tile.
-    dist2 = tl.zeros((BLOCK_R, BLOCK_W), dtype=tl.float32)
+    dist2 = tl.zeros((BLOCK_R, BLOCK_W), dtype=DTYPE)
     for i in range(d):
         x_vals = tl.load(x_ptr + x_idx + i, mask=r_mask, other=0.0)
         y_vals = tl.load(y_ptr + w_idx * d + i, mask=(w_idx < W), other=float("inf"))
@@ -49,21 +50,24 @@ def compute_filtration(
     y: torch.Tensor,
     row_idx: torch.Tensor,
     col_idx: torch.Tensor,
-    BLOCK_W,
-    BLOCK_R,
+    BLOCK_W: int,
+    BLOCK_R: int,
 ) -> torch.Tensor:
-
+    
+    device = x.device
+    dtype = x.dtype
+    DTYPE = tl_dtypes_dict[dtype]
     S, R, d = x.shape
     W, d_y = y.shape
     num_valid = col_idx.shape[0]
     assert d == d_y, "Feature dimensions of x and y must match."
 
-    T = num_valid // BLOCK_W  # Number of tiles along the W dimension.
+    T = triton.cdiv(num_valid, BLOCK_W)  # Number of tiles along the W dimension.
     R_tiles = triton.cdiv(R, BLOCK_R)
     # Number of tiles in the R dimension.
 
     # Allocate an intermediate tensor of shape (S, R) on the GPU.
-    inter = torch.full((S, R), torch.inf, device=x.device, dtype=torch.float32)
+    inter = torch.full((S, R), torch.inf, device=device, dtype=dtype)
 
     # Bounds check
     assert (
@@ -83,7 +87,7 @@ def compute_filtration(
     try:
         x = x.contiguous().view(-1)  # Make sure indexing math (later) matches layout
         compute_filtration_kernel[(T, R_tiles)](
-            x, y, row_idx, col_idx, inter, R, W, d, BLOCK_R=BLOCK_R, BLOCK_W=BLOCK_W
+            x, y, row_idx, col_idx, inter, R, W, d, BLOCK_R=BLOCK_R, BLOCK_W=BLOCK_W, DTYPE=DTYPE
         )
     except RuntimeError:
         raise RuntimeError(
@@ -105,6 +109,7 @@ def compute_mask_kernel(
     BLOCK_N: tl.constexpr,
     BLOCK_M: tl.constexpr,
     BLOCK_W: tl.constexpr,
+    DTYPE: tl.constexpr,
 ):
 
     # According to https://triton-lang.org/main/python-api/triton-semantics.html, any
@@ -129,7 +134,7 @@ def compute_mask_kernel(
     radi = tl.load(radi_ptr + offs_n, mask=mask_n, other=0.0)
     sq_radi = radi * radi  # [BLOCK_N]
 
-    sq_dist = tl.zeros((BLOCK_N, BLOCK_M), dtype=tl.float32)
+    sq_dist = tl.zeros((BLOCK_N, BLOCK_M), dtype=DTYPE)
     for i in range(d):
         pt_i = tl.load(
             points_ptr + offs_m * pt_stride + i, mask=mask_m, other=0.0
@@ -157,9 +162,9 @@ def compute_mask(
     points: torch.Tensor,
     centers: torch.Tensor,
     radii: torch.Tensor,
-    BLOCK_N,
-    BLOCK_M,
-    BLOCK_W,
+    BLOCK_N: int,
+    BLOCK_M: int,
+    BLOCK_W: int,
 ) -> torch.Tensor:
     """
     Check which points are inside Euclidean balls with given radii.
@@ -183,13 +188,17 @@ def compute_mask(
             Boolean tensor of shape (n, m + BLOCK_W), mask[i,j] = True if points[j] inside simplices[i].
             Last (n, BLOCK_W) block is padded so that number of Trues per row is divisible by BLOCK_W
     """
+
+    device = points.device
+    dtype = points.dtype
+    DTYPE = tl_dtypes_dict[dtype]
     n, d = centers.shape
     m = points.shape[0]
 
     centers_flat = centers.view(n, -1).contiguous()
     radii_flat = radii.view(-1).contiguous()
-    mask = torch.zeros((n, m + BLOCK_W), dtype=torch.bool, device=points.device)
-    counts = torch.zeros(n, dtype=torch.int32, device=points.device)
+    mask = torch.zeros((n, m + BLOCK_W), dtype=torch.bool, device=device)
+    counts = torch.zeros(n, dtype=torch.int32, device=device)
 
     grid = (triton.cdiv(m, BLOCK_M), triton.cdiv(n, BLOCK_N))
     compute_mask_kernel[grid](
@@ -204,6 +213,7 @@ def compute_mask(
         BLOCK_N=BLOCK_N,
         BLOCK_M=BLOCK_M,
         BLOCK_W=BLOCK_W,
+        DTYPE=DTYPE,
     )
     extra = ((-counts) % BLOCK_W).unsqueeze(1)  # [n, 1]
     extra_range = torch.arange(BLOCK_W, device=counts.device).unsqueeze(
@@ -211,3 +221,9 @@ def compute_mask(
     )  # [1, BLOCK_W]
     mask[:, m : m + BLOCK_W] = extra_range < extra  # [n, BLOCK_W]
     return mask
+
+
+tl_dtypes_dict = {
+    torch.float32: tl.float32,
+    torch.float64: tl.float64,
+}
