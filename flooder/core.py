@@ -5,6 +5,7 @@ SPDX-License-Identifier: MIT
 """
 
 import itertools
+import warnings
 from typing import Union
 from typing import List, Tuple
 
@@ -15,7 +16,7 @@ import numpy as np
 from numbers import Integral
 from scipy.spatial import KDTree
 
-from .triton_kernels import compute_mask, compute_filtration
+from .triton_kernels import compute_mask, compute_filtration, tl_dtypes_dict
 
 BLOCK_W = 512
 BLOCK_R = 16
@@ -84,11 +85,29 @@ def flood_complex(
         landmarks = generate_landmarks(
             points, min(landmarks, points.shape[0]), fps_h, start_idx=start_idx
         )
-    assert (
-        landmarks.device == points.device
-    ), f"landmarks.device ({landmarks.device}) != points.device {points.device}"
-    device = landmarks.device
-    if landmarks.is_cuda:
+    if landmarks.device != points.device:
+        raise RuntimeError(
+            f"landmarks.device ({landmarks.device}) != points.device ({points.device})"
+        )
+    if landmarks.dtype != points.dtype:
+        raise RuntimeError(
+
+
+            f"landmarks.dtype ({landmarks.dtype}) != points.device ({points.dtype})"
+        )
+    device = points.device
+    dtype = points.dtype
+
+    if dtype not in tl_dtypes_dict:
+        raise TypeError(f"dtype ({dtype}) not supported")
+    if dtype is torch.float64:
+        warnings.warn(
+            "Using float64 in Triton kernels might be slow on certain GPUs",
+            RuntimeWarning,
+            stacklevel=2
+        )
+
+    if device.type == 'cuda':
         torch.cuda.set_device(device)
     else:
         kdtree = KDTree(np.asarray(points))
@@ -147,10 +166,10 @@ def flood_complex(
         # generate points on simplices
         if num_rand is None:
             weights, vertex_idxs, face_idxs = generate_grid(
-                points_per_edge, max_dimension, device
+                points_per_edge, max_dimension, device, dtype
             )
         else:
-            weights = generate_uniform_weights(num_rand, d, device)
+            weights = generate_uniform_weights(num_rand, d, device, dtype)
         points_on_simplex = weights.unsqueeze(0) @ simplex_vertices
 
         if landmarks.is_cpu or not use_triton:
@@ -187,8 +206,8 @@ def flood_complex(
                         points[imin:imax],
                         row_idx,
                         col_idx,
-                        BLOCK_W=BLOCK_W,
-                        BLOCK_R=BLOCK_R,
+                        BLOCK_W,
+                        BLOCK_R,
                     )
                 else:
                     distances = torch.full(
@@ -286,7 +305,10 @@ def generate_landmarks(
             sampled landmarks. Returned tensor is on the same device and has the same dtype
             as the input.
     """
-    assert n_lms > 0, "Number of landmarks must be positive."
+    if n_lms <= 0:
+        raise RuntimeError(
+            f"Number of landmarks ({n_lms}) must be positive"
+        )
     n_pts = len(points)
     n_lms = min(n_lms, n_pts)
     if fps_h is None:
@@ -307,7 +329,7 @@ def generate_landmarks(
 
 
 def generate_grid(
-    n: int, dim: int, device: torch.device
+    n: int, dim: int, device: torch.device, dtype: torch.dtype
 ) -> Tuple[torch.Tensor, List[torch.Tensor], List[torch.Tensor]]:
     """Generates a grid of points on the unit simplex based on the number of points per edge.
 
@@ -360,11 +382,12 @@ def generate_grid(
             vertex_idxs_k.append(idx)
         face_idxs.append(torch.stack(face_idxs_k))
         vertex_idxs.append(torch.stack(vertex_idxs_k))
-    grid = grid / (n - 1)
-    return grid, vertex_idxs, face_idxs
+    grid_float = torch.empty_like(grid, dtype=dtype)
+    torch.divide(grid, n - 1 , out=grid_float)
+    return grid_float, vertex_idxs, face_idxs
 
 
-def generate_uniform_weights(num_rand, dim, device):
+def generate_uniform_weights(num_rand, dim, device, dtype):
     """Generates num_rand points from a uniform distribution on the unit simplex.
 
     Args:
@@ -380,10 +403,10 @@ def generate_uniform_weights(num_rand, dim, device):
             (coordinate weights).
     """
     if dim == 0:
-        weights = torch.ones((num_rand, 1), device=device)
+        weights = torch.ones((num_rand, 1), device=device, dtype=dtype)
     else:
         # For consistency with the cpu version, random points are generated on the
         # CPU and then moved to the device.
-        weights = -torch.log(1 - torch.rand(num_rand, dim + 1)).to(device)
+        weights = -torch.log(1 - torch.rand(num_rand, dim + 1)).to(device, dtype=dtype)
         weights = weights / weights.sum(dim=1, keepdim=True)
     return weights
