@@ -1,25 +1,22 @@
 import torch
 import numpy as np
-import sys, os, yaml
+import os
+import yaml
 import copy
 from pathlib import Path
 import os.path as osp
 from tqdm import tqdm
 import gdown
-import tarfile, zipfile
+import tarfile
+import zipfile
 import zstandard as zstd
 
 import torch.utils.data
 from torch import Tensor
 from collections.abc import Sequence
 from typing import (
-    Any,
     Callable,
-    Iterable,
-    Iterator,
     List,
-    Optional,
-    Tuple,
     Union,
 )
 IndexType = Union[slice, Tensor, np.ndarray, Sequence]
@@ -34,18 +31,19 @@ class FlooderData:
         for key, value in kwargs.items():
             setattr(self, key, value)
 
+
 class BaseDataset(torch.utils.data.Dataset):
     def __init__(self, root, fixed_transform=None, transform=None):
         super().__init__()
         self.root = Path(root)
-        self.raw_dir = self.root / 'raw'
-        self.processed_dir = self.root / 'processed'
+        self.raw_dir = os.path.join(self.root, 'raw')
+        self.processed_dir = os.path.join(self.root, 'processed')
         self.transform = transform
         self._indices = None
 
         self._download()
         self._process()
-        
+
         self.data = torch.load(self.processed_paths[0], weights_only=False)
         self.splits = torch.load(self.processed_paths[1], weights_only=False)
         self.length = len(self.data)
@@ -57,7 +55,6 @@ class BaseDataset(torch.utils.data.Dataset):
             self.data = [fixed_transform(d) for d in old_data]
             del old_data
 
-    # simplified torch_geometric.data.dataset functionality 
     def len(self) -> int:
         return self.length
 
@@ -79,17 +76,17 @@ class BaseDataset(torch.utils.data.Dataset):
         return [osp.join(self.processed_dir, f) for f in files]
 
     def _download(self):
-        if all([osp.exists(f) for f in self.raw_paths]): 
+        if all([osp.exists(f) for f in self.raw_paths]):
             return
         self.raw_dir.mkdir(exist_ok=True, parents=True)
         self.download()
-    
+
     def _process(self):
         if all([osp.exists(f) for f in self.processed_paths]):
             return
         self.processed_dir.mkdir(exist_ok=True, parents=True)
         self.process()
-    
+
     def __len__(self) -> int:
         r"""The number of examples in the dataset."""
         return len(self.indices())
@@ -119,7 +116,7 @@ class BaseDataset(torch.utils.data.Dataset):
         for i in range(len(self)):
             yield self[i]
 
-    def index_select(self, idx: IndexType) -> 'Dataset':
+    def index_select(self, idx: IndexType):
         r"""Creates a subset of the dataset from specified indices :obj:`idx`.
         Indices :obj:`idx` can be a slicing object, *e.g.*, :obj:`[2:5]`, a
         list, a tuple, or a :obj:`torch.Tensor` or :obj:`np.ndarray` of type
@@ -165,11 +162,10 @@ class BaseDataset(torch.utils.data.Dataset):
         dataset._indices = indices
         return dataset
 
-
     def shuffle(
         self,
         return_perm: bool = False,
-    ) -> Union['Dataset', Tuple['Dataset', Tensor]]:
+    ):
         r"""Randomly shuffles the examples in the dataset.
 
         Args:
@@ -180,11 +176,11 @@ class BaseDataset(torch.utils.data.Dataset):
         perm = torch.randperm(len(self))
         dataset = self.index_select(perm)
         return (dataset, perm) if return_perm is True else dataset
-    
+
     def __repr__(self) -> str:
         arg_repr = str(len(self)) if len(self) > 1 else ''
         return f'{self.__class__.__name__}({arg_repr})'
-        
+
     def get(self, idx: int):
         return self.data[idx]
 
@@ -204,7 +200,7 @@ class FlooderDataset(BaseDataset):
 
     def download(self):
         pass
-    
+
     def unzip_file(self):
         print(f'Extracting {self.raw_paths[0]}')
         with zipfile.ZipFile(self.raw_paths[0], 'r') as f:
@@ -226,17 +222,17 @@ class FlooderDataset(BaseDataset):
         # Load Metadata
         with open(osp.join(extract_path, 'meta.yaml'), "r") as f:
             ydata = yaml.safe_load(f)
-        
+
         with open(osp.join(extract_path, 'splits.yaml'), "r") as f:
             splits_data = yaml.safe_load(f)
-        
+
         split_indices = self.get_split_indices(splits_data)
 
         # Process Files
         data_list = []
         in_path = Path(extract_path)
         sorted_files = sorted(in_path.glob("*.npy"))
-        
+
         for file in tqdm(sorted_files, desc=f"Processing {self.folder_name}"):
             data = self.process_file(file, ydata)
             data_list.append(data)
@@ -245,23 +241,20 @@ class FlooderDataset(BaseDataset):
         torch.save(split_indices, self.processed_paths[1])
 
 
-
-# --- Specialized Classes ---
-
 class SwisscheeseDataset(FlooderDataset):
-    def __init__(self, root, ks=[10,20], num_per_class=500, num_points=1000000, fixed_transform=None, transform=None):
+    def __init__(self, root, ks=[10, 20], num_per_class=500, num_points=1000000, fixed_transform=None, transform=None):
         self.rng = np.random.RandomState(42)
-        self.k, self.num_per_class, self.num_points = ks, num_per_class, num_points 
+        self.k, self.num_per_class, self.num_points = ks, num_per_class, num_points
         super().__init__(root, fixed_transform=fixed_transform, transform=transform)
 
     @property
     def folder_name(self):
         return 'swisscheese'
-    
+
     @property
     def raw_file_names(self):
         return []
-    
+
     @torch.no_grad()
     def generate_swiss_cheese_points_fast(
         self,
@@ -324,22 +317,21 @@ class SwisscheeseDataset(FlooderDataset):
 
         return pts, centres, radii
 
-
     def process(self):
         split_indices = {}
-        n = len(self.k)*self.num_per_class
+        n = len(self.k) * self.num_per_class
         for i in range(10):
             split = {}
             indices = self.rng.permutation(np.arange(n))
-            split['trn'] = indices[:int(n*0.72)] 
-            split['val'] = indices[int(n*0.72):int(n*0.80)]
-            split['tst'] = indices[int(n*0.80):]
+            split['trn'] = indices[:int(n * 0.72)]
+            split['val'] = indices[int(n * 0.72):int(n * 0.80)]
+            split['tst'] = indices[int(n * 0.80):]
             split_indices[i] = split
 
         ks, num_per_class, num_points = self.k, self.num_per_class, self.num_points
         rect_min = torch.tensor([0.0, 0.0, 0.0])
         rect_max = torch.tensor([5.0, 5.0, 5.0])
-        
+
         data_list = []
         for ki, k in enumerate(ks):
             for r in tqdm(range(num_per_class)):
@@ -347,20 +339,20 @@ class SwisscheeseDataset(FlooderDataset):
                 points, _, _ = self.generate_swiss_cheese_points_fast(
                     num_points, rect_min, rect_max, k, void_radius_range
                 )
-                data_list.append( FlooderData(x=points.to(torch.float32), y=ki, name=f'{k}voids_{r}') )
+                data_list.append(FlooderData(x=points.to(torch.float32), y=ki, name=f'{k}voids_{r}'))
 
         torch.save(data_list, self.processed_paths[0])
-        torch.save(split_indices, self.processed_paths[1])      
+        torch.save(split_indices, self.processed_paths[1])
 
 
 class ModelNet10Dataset(FlooderDataset):
     @property
     def folder_name(self):
         return 'modelnet10_250k'
-    
+
     @property
     def raw_file_names(self):
-        return [f'modelnet10_250k.tar.zst']
+        return ['modelnet10_250k.tar.zst']
 
     def download(self):
         file_id = '180Gk0I_JYWkGNnLj5McI2P3zwhgGeVtM'
@@ -382,15 +374,15 @@ class ModelNet10Dataset(FlooderDataset):
         y = ydata['data'][file.name]['label']
         return FlooderData(x=x, y=y, name=file.stem)
 
-        
+
 class CoralDataset(FlooderDataset):
     @property
     def folder_name(self):
         return 'corals'
-    
+
     @property
     def raw_file_names(self):
-        return [f'corals.tar.zst']
+        return ['corals.tar.zst']
 
     def download(self):
         file_id = '1g-n8ExkU6eOJLelIMeNaFRdqoEM8ZDry'
@@ -417,10 +409,10 @@ class MCBDataset(FlooderDataset):
     @property
     def folder_name(self):
         return 'mcb'
-    
+
     @property
     def raw_file_names(self):
-        return [f'mcb.tar.zst']
+        return ['mcb.tar.zst']
 
     def download(self):
         file_id = '19EP9DEOMoSj0YVa_pXnui3OR2JZHOgSY'
@@ -451,10 +443,10 @@ class RocksDataset(FlooderDataset):
     @property
     def folder_name(self):
         return 'rocks'
-    
+
     @property
     def raw_file_names(self):
-        return [f'rocks.tar.zst']
+        return ['rocks.tar.zst']
 
     def download(self):
         file_id = '1htI0eeON3RG3V_fShd8U8tZmJ1g6akEx'
@@ -463,7 +455,7 @@ class RocksDataset(FlooderDataset):
         # Use gdown to handle the download
         output = os.path.join(self.raw_dir, self.raw_file_names[0])
         gdown.download(url, output, quiet=False)
-    
+
     def unzip_file(self):
         with open(self.raw_paths[0], 'rb') as f:
             dctx = zstd.ZstdDecompressor()
@@ -475,8 +467,8 @@ class RocksDataset(FlooderDataset):
         loaded_data = np.load(file)
         bool_data = np.unpackbits(loaded_data).reshape((256, 256, 256)).astype(bool)
         pts = np.stack(np.where(bool_data), axis=1).astype(np.float32)
-        pts += 0.1 * self.rng.rand(*pts.shape) 
-        
+        pts += 0.1 * self.rng.rand(*pts.shape)
+
         return FlooderData(
             x=torch.from_numpy(pts),
             y=ydata['data'][file.name]['label'],
@@ -484,4 +476,3 @@ class RocksDataset(FlooderDataset):
             volume=ydata['data'][file.name]['volume'],
             name=file.stem
         )
-
