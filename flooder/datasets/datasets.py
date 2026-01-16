@@ -36,8 +36,8 @@ class BaseDataset(torch.utils.data.Dataset):
     def __init__(self, root, fixed_transform=None, transform=None):
         super().__init__()
         self.root = Path(root)
-        self.raw_dir = os.path.join(self.root, 'raw')
-        self.processed_dir = os.path.join(self.root, 'processed')
+        self.raw_dir = self.root / 'raw'
+        self.processed_dir = self.root / 'processed'
         self.transform = transform
         self._indices = None
 
