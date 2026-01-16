@@ -1,26 +1,24 @@
-import torch
-import numpy as np
-import os
-import yaml
 import copy
+import hashlib
+import os
 import os.path as osp
-from tqdm import tqdm
-import gdown
 import tarfile
-import zipfile
-import zstandard as zstd
+import warnings
+from collections.abc import Sequence
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Callable, List, Union, Tuple
 
+import yaml
+import zstandard as zstd
+import gdown
+import numpy as np
+import torch
 import torch.utils.data
 from torch import Tensor
-from collections.abc import Sequence
-from typing import (
-    Callable,
-    List,
-    Union,
-    Tuple
-)
-from dataclasses import dataclass
+from tqdm import tqdm
+
+
 IndexType = Union[slice, Tensor, np.ndarray, Sequence]
 
 
@@ -221,6 +219,14 @@ class BaseDataset(torch.utils.data.Dataset):  # Follows torch_geometric.data.dat
 
 class FlooderDataset(BaseDataset):
     @property
+    def file_id(self):
+        raise NotImplementedError
+
+    @property
+    def checksum(self):
+        raise NotImplementedError
+
+    @property
     def folder_name(self):
         raise NotImplementedError
 
@@ -235,9 +241,11 @@ class FlooderDataset(BaseDataset):
         return len(self.data)
 
     def unzip_file(self):
-        print(f'Extracting {self.raw_paths[0]}')
-        with zipfile.ZipFile(self.raw_paths[0], 'r') as f:
-            f.extractall(self.raw_dir)
+        with open(self.raw_paths[0], 'rb') as f:
+            dctx = zstd.ZstdDecompressor()
+            with dctx.stream_reader(f) as reader:
+                with tarfile.open(fileobj=reader, mode='r|') as tar:
+                    tar.extractall(path=self.raw_dir, filter='data')
 
     def process_file(self, file, ydata):
         """Specific logic to turn an .npy file into a FlooderData object"""
@@ -272,6 +280,29 @@ class FlooderDataset(BaseDataset):
 
         torch.save(data_list, self.processed_paths[0])
         torch.save(split_indices, self.processed_paths[1])
+
+    def download(self):
+        url = f'https://drive.google.com/uc?id={self.file_id}'
+
+        # Use gdown to handle the download
+        output = os.path.join(self.raw_dir, self.raw_file_names[0])
+        gdown.download(url, output, quiet=False)
+        self.validate(output)
+
+    def validate(self, file_path: Path):
+        h = hashlib.new('sha256')
+        with open(file_path, 'rb') as f:
+            for chunk in iter(lambda: f.read(8192), b''):
+                h.update(chunk)
+        if h.hexdigest() != self.checksum:
+            warnings.warn(
+                f"Warning: the downloaded file {file_path} did not match the expected checksum.\n"
+                f"This may indicate that the file is corrupted, incomplete, or altered during download.\n"
+                f"Expected SHA256: {self._checksum}\n"
+                f"Actual SHA256:   {h.hexdigest()}\n"
+                f"Please try re-downloading the dataset or contact the dataset maintainer if the problem persists.",
+                UserWarning
+            )
 
 
 class SwisscheeseDataset(FlooderDataset):
@@ -377,8 +408,19 @@ class SwisscheeseDataset(FlooderDataset):
         torch.save(data_list, self.processed_paths[0])
         torch.save(split_indices, self.processed_paths[1])
 
+    def download(self):
+        pass
+
 
 class ModelNet10Dataset(FlooderDataset):
+    @property
+    def file_id(self):
+        return '180Gk0I_JYWkGNnLj5McI2P3zwhgGeVtM'
+
+    @property
+    def checksum(self):
+        return '6f9504d5574224fdf5b9255d2b9d5f041540298c0241fc6abbbfedaf9e1f4280'
+
     @property
     def folder_name(self):
         return 'modelnet10_250k'
@@ -386,21 +428,6 @@ class ModelNet10Dataset(FlooderDataset):
     @property
     def raw_file_names(self):
         return ['modelnet10_250k.tar.zst']
-
-    def download(self):
-        file_id = '180Gk0I_JYWkGNnLj5McI2P3zwhgGeVtM'
-        url = f'https://drive.google.com/uc?id={file_id}'
-
-        # Use gdown to handle the download
-        output = os.path.join(self.raw_dir, self.raw_file_names[0])
-        gdown.download(url, output, quiet=False)
-
-    def unzip_file(self):
-        with open(self.raw_paths[0], 'rb') as f:
-            dctx = zstd.ZstdDecompressor()
-            with dctx.stream_reader(f) as reader:
-                with tarfile.open(fileobj=reader, mode='r|') as tar:
-                    tar.extractall(path=self.raw_dir, filter='data')
 
     def process_file(self, file, ydata):
         x = torch.from_numpy((np.load(file) / 32767).astype(np.float32))
@@ -410,27 +437,20 @@ class ModelNet10Dataset(FlooderDataset):
 
 class CoralDataset(FlooderDataset):
     @property
+    def file_id(self):
+        return '1g-n8ExkU6eOJLelIMeNaFRdqoEM8ZDry'
+
+    @property
+    def checksum(self):
+        return 'e8b5ae6b22d03e0bcf118bb28b4d465f8ec5b308e038385879b98df3fed0150f'
+
+    @property
     def folder_name(self):
         return 'corals'
 
     @property
     def raw_file_names(self):
         return ['corals.tar.zst']
-
-    def download(self):
-        file_id = '1g-n8ExkU6eOJLelIMeNaFRdqoEM8ZDry'
-        url = f'https://drive.google.com/uc?id={file_id}'
-
-        # Use gdown to handle the download
-        output = os.path.join(self.raw_dir, self.raw_file_names[0])
-        gdown.download(url, output, quiet=False)
-
-    def unzip_file(self):
-        with open(self.raw_paths[0], 'rb') as f:
-            dctx = zstd.ZstdDecompressor()
-            with dctx.stream_reader(f) as reader:
-                with tarfile.open(fileobj=reader, mode='r|') as tar:
-                    tar.extractall(path=self.raw_dir, filter='data')
 
     def process_file(self, file, ydata):
         x = torch.from_numpy((np.load(file) / 32767).astype(np.float32))
@@ -440,27 +460,20 @@ class CoralDataset(FlooderDataset):
 
 class MCBDataset(FlooderDataset):
     @property
+    def file_id(self):
+        return '19EP9DEOMoSj0YVa_pXnui3OR2JZHOgSY'
+
+    @property
+    def checksum(self):
+        return 'dc36e1c5886e2d21a9f1dbaec084852dda2aab06fb7cd1c36e4403ac3e486a10'
+
+    @property
     def folder_name(self):
         return 'mcb'
 
     @property
     def raw_file_names(self):
         return ['mcb.tar.zst']
-
-    def download(self):
-        file_id = '19EP9DEOMoSj0YVa_pXnui3OR2JZHOgSY'
-        url = f'https://drive.google.com/uc?id={file_id}'
-
-        # Use gdown to handle the download
-        output = os.path.join(self.raw_dir, self.raw_file_names[0])
-        gdown.download(url, output, quiet=False)
-
-    def unzip_file(self):
-        with open(self.raw_paths[0], 'rb') as f:
-            dctx = zstd.ZstdDecompressor()
-            with dctx.stream_reader(f) as reader:
-                with tarfile.open(fileobj=reader, mode='r|') as tar:
-                    tar.extractall(path=self.raw_dir, filter='data')
 
     def process_file(self, file, ydata):
         x = torch.from_numpy((np.load(file) / 32767).astype(np.float32))
@@ -469,6 +482,14 @@ class MCBDataset(FlooderDataset):
 
 
 class RocksDataset(FlooderDataset):
+    @property
+    def file_id(self):
+        return '1htI0eeON3RG3V_fShd8U8tZmJ1g6akEx'
+
+    @property
+    def checksum(self):
+        return 'd635e6ae2e949075ae69b4397217bb2949c737126bbc23108fc48ec1a7aa5b00'
+
     def __init__(self, root, fixed_transform=None, transform=None):
         self.rng = np.random.RandomState(42)
         super().__init__(root, fixed_transform, transform)
@@ -480,21 +501,6 @@ class RocksDataset(FlooderDataset):
     @property
     def raw_file_names(self):
         return ['rocks.tar.zst']
-
-    def download(self):
-        file_id = '1htI0eeON3RG3V_fShd8U8tZmJ1g6akEx'
-        url = f'https://drive.google.com/uc?id={file_id}'
-
-        # Use gdown to handle the download
-        output = os.path.join(self.raw_dir, self.raw_file_names[0])
-        gdown.download(url, output, quiet=False)
-
-    def unzip_file(self):
-        with open(self.raw_paths[0], 'rb') as f:
-            dctx = zstd.ZstdDecompressor()
-            with dctx.stream_reader(f) as reader:
-                with tarfile.open(fileobj=reader, mode='r|') as tar:
-                    tar.extractall(path=self.raw_dir, filter='data')
 
     def process_file(self, file, ydata):
         loaded_data = np.load(file)
