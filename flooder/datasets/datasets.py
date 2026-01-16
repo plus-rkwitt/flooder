@@ -199,7 +199,7 @@ class FlooderDataset(BaseDataset):
         return ['data.pt', 'splits.pt']
 
     def download(self):
-        pass
+        raise NotImplementedError
 
     def unzip_file(self):
         print(f'Extracting {self.raw_paths[0]}')
@@ -367,7 +367,7 @@ class ModelNet10Dataset(FlooderDataset):
             dctx = zstd.ZstdDecompressor()
             with dctx.stream_reader(f) as reader:
                 with tarfile.open(fileobj=reader, mode='r|') as tar:
-                    tar.extractall(path=self.raw_dir)
+                    tar.extractall(path=self.raw_dir, filter='data')
 
     def process_file(self, file, ydata):
         x = torch.from_numpy((np.load(file) / 32767).astype(np.float32))
@@ -397,7 +397,7 @@ class CoralDataset(FlooderDataset):
             dctx = zstd.ZstdDecompressor()
             with dctx.stream_reader(f) as reader:
                 with tarfile.open(fileobj=reader, mode='r|') as tar:
-                    tar.extractall(path=self.raw_dir)
+                    tar.extractall(path=self.raw_dir, filter='data')
 
     def process_file(self, file, ydata):
         x = torch.from_numpy((np.load(file) / 32767).astype(np.float32))
@@ -427,7 +427,7 @@ class MCBDataset(FlooderDataset):
             dctx = zstd.ZstdDecompressor()
             with dctx.stream_reader(f) as reader:
                 with tarfile.open(fileobj=reader, mode='r|') as tar:
-                    tar.extractall(path=self.raw_dir)
+                    tar.extractall(path=self.raw_dir, filter='data')
 
     def process_file(self, file, ydata):
         x = torch.from_numpy((np.load(file) / 32767).astype(np.float32))
@@ -461,7 +461,7 @@ class RocksDataset(FlooderDataset):
             dctx = zstd.ZstdDecompressor()
             with dctx.stream_reader(f) as reader:
                 with tarfile.open(fileobj=reader, mode='r|') as tar:
-                    tar.extractall(path=self.raw_dir)
+                    tar.extractall(path=self.raw_dir, filter='data')
 
     def process_file(self, file, ydata):
         loaded_data = np.load(file)
