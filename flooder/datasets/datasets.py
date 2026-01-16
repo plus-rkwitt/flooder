@@ -3,13 +3,13 @@ import numpy as np
 import os
 import yaml
 import copy
-from pathlib import Path
 import os.path as osp
 from tqdm import tqdm
 import gdown
 import tarfile
 import zipfile
 import zstandard as zstd
+from pathlib import Path
 
 import torch.utils.data
 from torch import Tensor
@@ -18,26 +18,59 @@ from typing import (
     Callable,
     List,
     Union,
+    Tuple
 )
+from dataclasses import dataclass
 IndexType = Union[slice, Tensor, np.ndarray, Sequence]
 
 
+@dataclass
 class FlooderData:
-    def __init__(self, x=None, y=None, **kwargs,):
-        if x is not None:
-            self.x = x
-        if y is not None:
-            self.y = y
-        for key, value in kwargs.items():
-            setattr(self, key, value)
+    x: torch.Tensor
+    y: Union[int, torch.Tensor]
+    name: str
 
 
-class BaseDataset(torch.utils.data.Dataset):
+@dataclass
+class FlooderRocksData(FlooderData):
+    surface: float
+    volume: float
+
+
+class BaseDataset(torch.utils.data.Dataset):  # Follows torch_geometric.data.dataset
+    @property
+    def raw_file_names(self) -> Union[str, List[str], Tuple[str, ...]]:
+        r"""The name of the files in the :obj:`self.raw_dir` folder that must
+        be present in order to skip downloading.
+        """
+        raise NotImplementedError
+
+    @property
+    def processed_file_names(self) -> Union[str, List[str], Tuple[str, ...]]:
+        r"""The name of the files in the :obj:`self.processed_dir` folder that
+        must be present in order to skip processing.
+        """
+        raise NotImplementedError
+
+    def download(self) -> None:
+        r"""Downloads the dataset to the :obj:`self.raw_dir` folder."""
+        raise NotImplementedError
+
+    def process(self) -> None:
+        r"""Processes the dataset to the :obj:`self.processed_dir` folder."""
+        raise NotImplementedError
+
+    def len(self) -> int:
+        r"""Returns the number of data objects stored in the dataset."""
+        raise NotImplementedError
+
+    def get(self, idx: int) -> FlooderData:
+        r"""Gets the data object at index :obj:`idx`."""
+        raise NotImplementedError
+
     def __init__(self, root, fixed_transform=None, transform=None):
         super().__init__()
-        self.root = Path(root)
-        self.raw_dir = self.root / 'raw'
-        self.processed_dir = self.root / 'processed'
+        self.root = root
         self.transform = transform
         self._indices = None
 
@@ -46,8 +79,7 @@ class BaseDataset(torch.utils.data.Dataset):
 
         self.data = torch.load(self.processed_paths[0], weights_only=False)
         self.splits = torch.load(self.processed_paths[1], weights_only=False)
-        self.length = len(self.data)
-        self.classes = sorted(list(set([int(data.y) for data in self])))
+        self.classes = sorted({int(data.y) for data in self})
         self.num_classes = len(self.classes)
 
         if fixed_transform is not None:
@@ -55,11 +87,16 @@ class BaseDataset(torch.utils.data.Dataset):
             self.data = [fixed_transform(d) for d in old_data]
             del old_data
 
-    def len(self) -> int:
-        return self.length
-
     def indices(self) -> Sequence:
         return range(self.len()) if self._indices is None else self._indices
+
+    @property
+    def raw_dir(self) -> str:
+        return osp.join(self.root, 'raw')
+
+    @property
+    def processed_dir(self) -> str:
+        return osp.join(self.root, 'processed')
 
     @property
     def raw_paths(self) -> List[str]:
@@ -78,13 +115,13 @@ class BaseDataset(torch.utils.data.Dataset):
     def _download(self):
         if all([osp.exists(f) for f in self.raw_paths]):
             return
-        self.raw_dir.mkdir(exist_ok=True, parents=True)
+        os.makedirs(self.raw_dir, exist_ok=True)
         self.download()
 
     def _process(self):
         if all([osp.exists(f) for f in self.processed_paths]):
             return
-        self.processed_dir.mkdir(exist_ok=True, parents=True)
+        os.makedirs(self.processed_dir, exist_ok=True)
         self.process()
 
     def __len__(self) -> int:
@@ -181,9 +218,6 @@ class BaseDataset(torch.utils.data.Dataset):
         arg_repr = str(len(self)) if len(self) > 1 else ''
         return f'{self.__class__.__name__}({arg_repr})'
 
-    def get(self, idx: int):
-        return self.data[idx]
-
 
 class FlooderDataset(BaseDataset):
     @property
@@ -191,15 +225,14 @@ class FlooderDataset(BaseDataset):
         raise NotImplementedError
 
     @property
-    def raw_file_names(self):
-        raise NotImplementedError
-
-    @property
     def processed_file_names(self):
         return ['data.pt', 'splits.pt']
 
-    def download(self):
-        raise NotImplementedError
+    def get(self, idx: int):
+        return self.data[idx]
+
+    def len(self) -> int:
+        return len(self.data)
 
     def unzip_file(self):
         print(f'Extracting {self.raw_paths[0]}')
@@ -469,7 +502,7 @@ class RocksDataset(FlooderDataset):
         pts = np.stack(np.where(bool_data), axis=1).astype(np.float32)
         pts += 0.1 * self.rng.rand(*pts.shape)
 
-        return FlooderData(
+        return FlooderRocksData(
             x=torch.from_numpy(pts),
             y=ydata['data'][file.name]['label'],
             surface=ydata['data'][file.name]['target'],
