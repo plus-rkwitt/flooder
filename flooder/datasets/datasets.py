@@ -1,3 +1,9 @@
+"""Implementation of datasets used in the original Flooder paper.
+
+Copyright (c) 2025 Paolo Pellizzoni, Florian Graf, Martin Uray, Stefan Huber and Roland Kwitt
+SPDX-License-Identifier: MIT
+"""
+
 import copy
 import hashlib
 import os
@@ -38,24 +44,24 @@ class FlooderRocksData(FlooderData):
 class BaseDataset(torch.utils.data.Dataset):  # Follows torch_geometric.data.dataset
     @property
     def raw_file_names(self) -> Union[str, List[str], Tuple[str, ...]]:
-        r"""The name of the files in the :obj:`self.raw_dir` folder that must
+        r"""The name of the files in the ``self.raw_dir`` folder that must
         be present in order to skip downloading.
         """
         raise NotImplementedError
 
     @property
     def processed_file_names(self) -> Union[str, List[str], Tuple[str, ...]]:
-        r"""The name of the files in the :obj:`self.processed_dir` folder that
+        r"""The name of the files in the ``self.processed_dir`` folder that
         must be present in order to skip processing.
         """
         raise NotImplementedError
 
     def download(self) -> None:
-        r"""Downloads the dataset to the :obj:`self.raw_dir` folder."""
+        r"""Downloads the dataset to the ``self.raw_dir`` folder."""
         raise NotImplementedError
 
     def process(self) -> None:
-        r"""Processes the dataset to the :obj:`self.processed_dir` folder."""
+        r"""Processes the dataset to the ``self.processed_dir`` folder."""
         raise NotImplementedError
 
     def len(self) -> int:
@@ -63,7 +69,7 @@ class BaseDataset(torch.utils.data.Dataset):  # Follows torch_geometric.data.dat
         raise NotImplementedError
 
     def get(self, idx: int) -> FlooderData:
-        r"""Gets the data object at index :obj:`idx`."""
+        r"""Gets the data object at index ``idx`."""
         raise NotImplementedError
 
     def __init__(self, root, fixed_transform=None, transform=None):
@@ -130,11 +136,10 @@ class BaseDataset(torch.utils.data.Dataset):  # Follows torch_geometric.data.dat
         self,
         idx: Union[int, np.integer, IndexType],
     ):
-        r"""In case :obj:`idx` is of type integer, will return the data object
-        at index :obj:`idx` (and transforms it in case :obj:`transform` is
-        present).
-        In case :obj:`idx` is a slicing object, *e.g.*, :obj:`[2:5]`, a list, a
-        tuple, or a :obj:`torch.Tensor` or :obj:`np.ndarray` of type long or
+        r"""In case ``idx`` is of type integer, will return the data object
+        at index ``idx`` (and transforms it in case ``transform`` is
+        present). In case ``idx`` is a slicing object, *e.g.*, ``[2:5]``, a list, a
+        tuple, or a ``torch.Tensor`` or ``np.ndarray`` of type long or
         bool, will return a subset of the dataset at the specified indices.
         """
         if (isinstance(idx, (int, np.integer))
@@ -152,10 +157,16 @@ class BaseDataset(torch.utils.data.Dataset):  # Follows torch_geometric.data.dat
             yield self[i]
 
     def index_select(self, idx: IndexType):
-        r"""Creates a subset of the dataset from specified indices :obj:`idx`.
-        Indices :obj:`idx` can be a slicing object, *e.g.*, :obj:`[2:5]`, a
-        list, a tuple, or a :obj:`torch.Tensor` or :obj:`np.ndarray` of type
+        r"""Creates a subset of the dataset from specified indices ``idx``.
+        Indices ``idx`` can be a slicing object, *e.g.*, ``[2:5]``, a
+        list, a tuple, or a ``torch.Tensor`` or ``np.ndarray`` of type
         long or bool.
+
+        Args:
+            idx (slice, list, tuple, torch.Tensor, np.ndarray): The indices to
+                select.
+        Returns:
+            BaseDataset: A subset of the dataset at the specified indices.
         """
         indices = self.indices()
 
@@ -204,17 +215,92 @@ class BaseDataset(torch.utils.data.Dataset):  # Follows torch_geometric.data.dat
         r"""Randomly shuffles the examples in the dataset.
 
         Args:
-            return_perm (bool, optional): If set to :obj:`True`, will also
+            return_perm (bool, optional): If set to ``True``, will also
                 return the random permutation used to shuffle the dataset.
-                (default: :obj:`False`)
+                (default: ``False``)
         """
         perm = torch.randperm(len(self))
         dataset = self.index_select(perm)
         return (dataset, perm) if return_perm is True else dataset
 
     def __repr__(self) -> str:
-        arg_repr = str(len(self)) if len(self) > 1 else ''
-        return f'{self.__class__.__name__}({arg_repr})'
+        cls = self.__class__.__name__
+
+        def _safe_len(x, default="?"):
+            try:
+                return len(x)
+            except Exception:
+                return default
+
+        def _short_path(p: str) -> str:
+            try:
+                p = str(p)
+                # show last 2 components to keep it readable
+                parts = p.replace("\\", "/").rstrip("/").split("/")
+                return "/".join(parts[-2:]) if len(parts) >= 2 else parts[-1]
+            except Exception:
+                return "?"
+
+        def _has_all(paths):
+            try:
+                return all(osp.exists(p) for p in paths)
+            except Exception:
+                return False
+
+        # Size: current view vs total
+        n_view = _safe_len(self.indices())
+        n_total = "?"
+        try:
+            # If this is a subset, the "full" dataset is its stored data length (if available)
+            if getattr(self, "_indices", None) is not None and hasattr(self, "data"):
+                n_total = _safe_len(self.data)
+            else:
+                n_total = n_view
+        except Exception:
+            pass
+
+        is_subset = getattr(self, "_indices", None) is not None
+
+        # Root / dirs
+        root = _short_path(getattr(self, "root", "?"))
+
+        raw_ok = _has_all(getattr(self, "raw_paths", []))
+        proc_ok = _has_all(getattr(self, "processed_paths", []))
+
+        num_classes = getattr(self, "num_classes", None)
+        classes = getattr(self, "classes", None)
+        class_part = ""
+        if num_classes is not None:
+            if classes is not None and _safe_len(classes) != "?":
+                # show at most first 5
+                cls_preview = list(classes)[:5]
+                suffix = ", ..." if len(classes) > 5 else ""
+                class_part = f", num_classes={num_classes}, classes={cls_preview}{suffix}"
+            else:
+                class_part = f", num_classes={num_classes}"
+
+        split_part = ""
+        splits = getattr(self, "splits", None)
+        if isinstance(splits, dict):
+            split_part = f", splits={list(splits.keys())}"
+        elif splits is not None:
+            split_part = ", splits=yes"
+
+        tfm = getattr(self, "transform", None)
+        tfm_part = f", transform={tfm.__class__.__name__}" if tfm is not None else ""
+
+        # Compose
+        size_part = f"n={n_view}"
+        if is_subset and n_total != "?":
+            size_part += f"/{n_total}"
+
+        subset_part = ", subset=yes" if is_subset else ""
+
+        return (
+            f"{cls}({size_part}, root='{root}', raw={'ok' if raw_ok else 'missing'}, "
+            f"processed={'ok' if proc_ok else 'missing'}"
+            f"{subset_part}{class_part}{split_part}{tfm_part})"
+        )
 
 
 class FlooderDataset(BaseDataset):
@@ -307,6 +393,16 @@ class FlooderDataset(BaseDataset):
 
 class SwisscheeseDataset(FlooderDataset):
     def __init__(self, root, ks=[10, 20], num_per_class=500, num_points=1000000, fixed_transform=None, transform=None):
+        """
+        Create a Swiss Cheese dataset with specified parameters.
+
+        Args:
+            root (str): Root directory where the dataset is stored.
+            ks (list): List of integers representing the number of voids in each class.
+            num_per_class (int): Number of samples to generate per class.
+            num_points (int): Number of points to generate for each sample.
+        """
+
         self.rng = np.random.RandomState(42)
         self.k, self.num_per_class, self.num_points = ks, num_per_class, num_points
         super().__init__(root, fixed_transform=fixed_transform, transform=transform)
