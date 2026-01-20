@@ -1,4 +1,11 @@
-from .datasets import FlooderData, CoralDataset, MCBDataset, RocksDataset, SwisscheeseDataset, ModelNet10Dataset
+from .datasets import (
+    FlooderData,
+    CoralDataset,
+    MCBDataset,
+    RocksDataset,
+    SwisscheeseDataset,
+    ModelNet10Dataset,
+)
 
 __all__ = [
     "FlooderData",

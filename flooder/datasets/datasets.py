@@ -77,21 +77,13 @@ class BaseDataset(torch.utils.data.Dataset):  # Follows torch_geometric.data.dat
     def __init__(self, root, fixed_transform=None, transform=None):
         super().__init__()
         self.root = root
+        self.fixed_transform = fixed_transform
         self.transform = transform
         self._indices = None
 
         self._download()
         self._process()
-
-        self.data = torch.load(self.processed_paths[0], weights_only=False)
-        self.splits = torch.load(self.processed_paths[1], weights_only=False)
-        self.classes = sorted({int(data.y) for data in self})
-        self.num_classes = len(self.classes)
-
-        if fixed_transform is not None:
-            old_data = self.data
-            self.data = [fixed_transform(d) for d in old_data]
-            del old_data
+        self._load()
 
     def indices(self) -> Sequence:
         return range(self.len()) if self._indices is None else self._indices
@@ -129,6 +121,10 @@ class BaseDataset(torch.utils.data.Dataset):  # Follows torch_geometric.data.dat
             return
         os.makedirs(self.processed_dir, exist_ok=True)
         self.process()
+
+    def _load(self):
+        r"""Loads the data to memory."""
+        raise NotImplementedError()
 
     def __len__(self) -> int:
         r"""The number of examples in the dataset."""
@@ -320,7 +316,7 @@ class FlooderDataset(BaseDataset):
 
     @property
     def processed_file_names(self):
-        return ['data.pt', 'splits.pt']
+        return ['_done', 'splits.yaml']
 
     def get(self, idx: int):
         return self.data[idx]
@@ -356,18 +352,35 @@ class FlooderDataset(BaseDataset):
             splits_data = yaml.safe_load(f)
 
         split_indices = self.get_split_indices(splits_data)
+        with open(osp.join(self.processed_dir, "splits.yaml"), "w") as f:
+            yaml.safe_dump(split_indices, f)
 
         # Process Files
-        data_list = []
         in_path = Path(extract_path)
         sorted_files = sorted(in_path.glob("*.npy"))
 
         for file in tqdm(sorted_files, desc=f"Processing {self.folder_name}"):
             data = self.process_file(file, ydata)
-            data_list.append(data)
+            stem = Path(file).stem
+            out_file = osp.join(self.processed_dir, f"{stem}.pt")
+            torch.save(data, out_file)
+        Path(self.processed_dir, "_done").touch()
 
-        torch.save(data_list, self.processed_paths[0])
-        torch.save(split_indices, self.processed_paths[1])
+    def _load(self):
+        self.data = []
+        in_path = Path(self.processed_dir)
+        sorted_files = sorted(in_path.glob("*.pt"))
+        for file in tqdm(sorted_files, desc=f"Loading {self.folder_name}"):
+            data_i = torch.load(file, weights_only=False)
+            if self.fixed_transform is not None:
+                data_i = self.fixed_transform(data_i)
+            self.data.append(data_i)
+
+        with open(osp.join(self.processed_dir, "splits.yaml"), "r") as f:
+            self.splits = yaml.safe_load(f)
+        self.classes = sorted({int(data.y) for data in self})
+        self.num_classes = len(self.classes)
+        
 
     def download(self):
         url = f'https://drive.google.com/uc?id={self.file_id}'
@@ -423,16 +436,17 @@ class SwisscheeseDataset(FlooderDataset):
         for i in range(10):
             split = {}
             indices = self.rng.permutation(np.arange(n))
-            split['trn'] = indices[:int(n * 0.72)]
-            split['val'] = indices[int(n * 0.72):int(n * 0.80)]
-            split['tst'] = indices[int(n * 0.80):]
+            split['trn'] = indices[:int(n * 0.72)].tolist()
+            split['val'] = indices[int(n * 0.72):int(n * 0.80)].tolist()
+            split['tst'] = indices[int(n * 0.80):].tolist()
             split_indices[i] = split
+        with open(osp.join(self.processed_dir, "splits.yaml"), "w") as f:
+            yaml.safe_dump(split_indices, f)
 
         ks, num_per_class, num_points = self.k, self.num_per_class, self.num_points
-        rect_min = torch.tensor([0.0, 0.0, 0.0])
-        rect_max = torch.tensor([5.0, 5.0, 5.0])
+        rect_min = [0.0, 0.0, 0.0]
+        rect_max = [5.0, 5.0, 5.0]
 
-        data_list = []
         for ki, k in enumerate(ks):
             for r in tqdm(range(num_per_class)):
                 void_radius_range = (0.1, 0.5)
@@ -442,10 +456,10 @@ class SwisscheeseDataset(FlooderDataset):
                 # points, _, _ = self.generate_swiss_cheese_points_fast(
                 #    num_points, rect_min, rect_max, k, void_radius_range
                 # )
-                data_list.append(FlooderData(x=points.to(torch.float32), y=ki, name=f'{k}voids_{r}'))
-
-        torch.save(data_list, self.processed_paths[0])
-        torch.save(split_indices, self.processed_paths[1])
+                data = FlooderData(x=points.to(torch.float32), y=ki, name=f'{k}voids_{r}')
+                file_id = hashlib.sha256(points.numpy().tobytes()).hexdigest()[:10]
+                torch.save(data, osp.join(self.processed_dir, f"{file_id}.pt"))
+        Path(self.processed_dir, "_done").touch()
 
     def download(self):
         pass
