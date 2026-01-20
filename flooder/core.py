@@ -32,7 +32,7 @@ except Exception as e:
     compute_mask = _missing_triton
     compute_filtration = _missing_triton
     tl_dtypes_dict = {}
-    _TRITON_IMPORT_ERROR = e  # optional: keep original exception for debugging 
+    _TRITON_IMPORT_ERROR = e  # keep original exception for debugging
 
 BLOCK_W = 512
 BLOCK_R = 16

@@ -24,6 +24,8 @@ import torch.utils.data
 from torch import Tensor
 from tqdm import tqdm
 
+from .. import generate_swiss_cheese_points
+
 
 IndexType = Union[slice, Tensor, np.ndarray, Sequence]
 
@@ -415,68 +417,6 @@ class SwisscheeseDataset(FlooderDataset):
     def raw_file_names(self):
         return []
 
-    @torch.no_grad()
-    def generate_swiss_cheese_points_fast(
-        self,
-        N: int,
-        rect_min: torch.Tensor,
-        rect_max: torch.Tensor,
-        k: int,
-        void_radius_rng: tuple,
-        batch_factor=4,  # how many candidates to shoot each round
-    ):
-        """
-        N                 number of output points
-        rect_min,rect_max d-vectors (same device & dtype) describing the box
-        k                 number of spherical voids
-        void_radius_rng   (r_min, r_max)
-        """
-        d = rect_min.numel()
-        r_min, r_max = void_radius_rng
-
-        # --- 1.  build non-overlapping voids ------------------------------------
-        centres = torch.empty((0, d))
-        radii = torch.empty((0,))
-
-        while centres.shape[0] < k:
-            # shoot a small batch of candidate voids
-            B = max(8, 2 * (k - centres.shape[0]))  # a handful is enough
-            cand_centres = (rect_min + r_max) + (
-                rect_max - rect_min - 2 * r_max
-            ) * torch.from_numpy(self.rng.rand(B, d))
-            cand_radii = r_min + (r_max - r_min) * torch.from_numpy(self.rng.rand(B))
-
-            if centres.numel() == 0:
-                ok = torch.ones(B, dtype=torch.bool)
-            else:
-                dist = torch.cdist(cand_centres, centres)  # B × |centres|
-                ok = (dist >= (cand_radii[:, None] + radii[None, :])).all(dim=1)
-
-            # keep as many as we still need
-            keep = ok.nonzero(as_tuple=False).squeeze()[: k - centres.shape[0]]
-            centres = torch.cat([centres, cand_centres[keep]], dim=0)
-            radii = torch.cat([radii, cand_radii[keep]], dim=0)
-
-        # --- 2.  rejection sample points in large vectorised batches ------------
-        pts = torch.empty((0, d), dtype=rect_min.dtype)
-        todo = N
-        while todo:
-            B = batch_factor * todo  # adaptive batch
-            cand = rect_min + (rect_max - rect_min) * torch.from_numpy(self.rng.rand(B, d))
-
-            # distance of every candidate to every void centre:  B × k
-            if k:
-                dist = torch.cdist(cand, centres)
-                good = (dist >= radii[None, :]).all(dim=1)
-            else:  # no holes at all
-                good = torch.ones(B, dtype=torch.bool)
-
-            accepted = cand[good][:todo]  # at most 'todo'
-            pts = torch.cat([pts, accepted], dim=0)
-            todo = N - pts.shape[0]
-
-        return pts, centres, radii
-
     def process(self):
         split_indices = {}
         n = len(self.k) * self.num_per_class
@@ -496,9 +436,12 @@ class SwisscheeseDataset(FlooderDataset):
         for ki, k in enumerate(ks):
             for r in tqdm(range(num_per_class)):
                 void_radius_range = (0.1, 0.5)
-                points, _, _ = self.generate_swiss_cheese_points_fast(
+                points, _, _ = generate_swiss_cheese_points(
                     num_points, rect_min, rect_max, k, void_radius_range
-                )
+                )                
+                # points, _, _ = self.generate_swiss_cheese_points_fast(
+                #    num_points, rect_min, rect_max, k, void_radius_range
+                # )
                 data_list.append(FlooderData(x=points.to(torch.float32), y=ki, name=f'{k}voids_{r}'))
 
         torch.save(data_list, self.processed_paths[0])
