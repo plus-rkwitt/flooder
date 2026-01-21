@@ -16,23 +16,12 @@ from numbers import Integral
 from scipy.spatial import KDTree
 
 
-def _missing_triton(*_args, **_kwargs):
-    raise ImportError(
-        "Triton kernels are not available. Install/enable Triton and ensure your "
-        "environment supports it (GPU, drivers, compatible Triton build)."
-    )
-
-
 # catch triton import errors, so that users can still use CPU functionality
 try:
     from .triton_kernels import compute_mask, compute_filtration, tl_dtypes_dict
     HAS_TRITON_KERNELS = True
 except Exception as e:
     HAS_TRITON_KERNELS = False
-    compute_mask = _missing_triton
-    compute_filtration = _missing_triton
-    tl_dtypes_dict = {}
-    _TRITON_IMPORT_ERROR = e  # keep original exception for debugging
 
 BLOCK_W = 512
 BLOCK_R = 16

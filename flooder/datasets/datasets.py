@@ -44,37 +44,139 @@ class FlooderRocksData(FlooderData):
 
 
 class BaseDataset(torch.utils.data.Dataset):  # Follows torch_geometric.data.dataset
+    """Base class for Flooder datasets with download/process/load lifecycle.
+
+    This class provides a dataset API inspired by
+    `torch_geometric.data.Dataset`, including:
+      - a standard directory layout (`root/raw` and `root/processed`);
+      - a lifecycle executed at construction time: download, process, load;
+      - integer indexing to return items, and advanced indexing to return
+        a subset "view" of the dataset;
+      - optional per-sample transformations.
+
+    Subclasses must implement the abstract properties/methods that specify
+    file requirements and dataset-specific loading logic.
+
+    Attributes:
+        root (str): Root directory containing the dataset folders.
+        fixed_transform (Callable[[FlooderData], FlooderData] | None):
+            Optional transform applied once to each item during `_load()`
+            (i.e., at dataset load time, before storing in memory).
+        transform (Callable[[FlooderData], FlooderData] | None):
+            Optional transform applied on-the-fly in `__getitem__` for
+            individual samples.
+        _indices (Sequence[int] | None): If not None, defines a subset view
+            over the underlying dataset indices.
+
+    Notes:
+        - The constructor triggers `_download()`, `_process()`, and `_load()`.
+          This means instantiation may perform I/O and compute.
+        - Advanced indexing (`slice`, sequences, boolean masks) returns a
+          shallow-copied dataset object sharing the same underlying storage
+          (whatever the subclass uses), but with `_indices` set.
+    """
     @property
     def raw_file_names(self) -> Union[str, List[str], Tuple[str, ...]]:
-        r"""The name of the files in the ``self.raw_dir`` folder that must
-        be present in order to skip downloading.
+        """Required raw files to consider the dataset downloaded.
+
+        Subclasses should return the file name(s) expected to exist in
+        `raw_dir`. If all such files exist, `_download()` is skipped.
+
+        Returns:
+            Union[str, list[str], tuple[str, ...]]: File name(s) expected
+            inside `self.raw_dir`.
+
+        Raises:
+            NotImplementedError: If not implemented by a subclass.
         """
         raise NotImplementedError
 
     @property
     def processed_file_names(self) -> Union[str, List[str], Tuple[str, ...]]:
-        r"""The name of the files in the ``self.processed_dir`` folder that
-        must be present in order to skip processing.
+        """Required processed files to consider the dataset processed.
+
+        Subclasses should return the file name(s) expected to exist in
+        `processed_dir`. If all such files exist, `_process()` is skipped.
+
+        Returns:
+            Union[str, list[str], tuple[str, ...]]: File name(s) expected
+            inside `self.processed_dir`.
+
+        Raises:
+            NotImplementedError: If not implemented by a subclass.
         """
         raise NotImplementedError
 
     def download(self) -> None:
-        r"""Downloads the dataset to the ``self.raw_dir`` folder."""
+        """Download the dataset into `raw_dir`.
+
+        Subclasses must implement the dataset-specific download logic.
+        This method is called by `_download()` only if the required files
+        in `raw_paths` are not present.
+
+        Raises:
+            NotImplementedError: If not implemented by a subclass.
+        """
         raise NotImplementedError
 
     def process(self) -> None:
-        r"""Processes the dataset to the ``self.processed_dir`` folder."""
+        """Process raw files into `processed_dir`.
+
+        Subclasses must implement the dataset-specific processing logic.
+        This method is called by `_process()` only if the required files
+        in `processed_paths` are not present.
+
+        Raises:
+            NotImplementedError: If not implemented by a subclass.
+        """
         raise NotImplementedError
 
     def len(self) -> int:
-        r"""Returns the number of data objects stored in the dataset."""
+        """Return the number of items in the full dataset.
+
+        This method is analogous to `torch_geometric.data.Dataset.len()`.
+        It should return the total number of items in the underlying dataset,
+        not the size of a subset view created via `index_select`.
+
+        Returns:
+            int: Total number of data objects stored by the dataset.
+
+        Raises:
+            NotImplementedError: If not implemented by a subclass.
+        """
         raise NotImplementedError
 
     def get(self, idx: int) -> FlooderData:
-        r"""Gets the data object at index ``idx`."""
+        """Return the data object at a given *global* index.
+
+        `idx` refers to the underlying dataset index, not the subset-view
+        index. The subset mapping is handled by `__getitem__` via `indices()`.
+
+        Args:
+            idx (int): Global index into the underlying dataset storage.
+
+        Returns:
+            FlooderData: The data object at the given index.
+
+        Raises:
+            NotImplementedError: If not implemented by a subclass.
+        """
         raise NotImplementedError
 
     def __init__(self, root, fixed_transform=None, transform=None):
+        """Initialize a dataset and execute the download/process/load lifecycle.
+
+        Args:
+            root (str): Root directory where raw and processed data are stored.
+            fixed_transform (Callable[[FlooderData], FlooderData] | None):
+                Optional transform applied once to each item during `_load()`.
+            transform (Callable[[FlooderData], FlooderData] | None):
+                Optional transform applied on-the-fly in `__getitem__`.
+
+        Notes:
+            Instantiation may perform I/O and compute by calling `_download()`,
+            `_process()`, and `_load()`.
+        """
         super().__init__()
         self.root = root
         self.fixed_transform = fixed_transform
@@ -86,18 +188,43 @@ class BaseDataset(torch.utils.data.Dataset):  # Follows torch_geometric.data.dat
         self._load()
 
     def indices(self) -> Sequence:
+        """Return the active index mapping for this dataset view.
+
+        For a full dataset (no subset), this is `range(self.len())`.
+        For a subset view created via `index_select`, this is the stored
+        `_indices` sequence.
+
+        Returns:
+            Sequence[int]: Index mapping from view indices to global indices.
+        """
         return range(self.len()) if self._indices is None else self._indices
 
     @property
     def raw_dir(self) -> str:
+        """Directory containing raw downloaded files.
+
+        Returns:
+            str: Path to `<root>/raw`.
+        """
         return osp.join(self.root, 'raw')
 
     @property
     def processed_dir(self) -> str:
+        """Directory containing processed files.
+
+        Returns:
+            str: Path to `<root>/processed`.
+        """
         return osp.join(self.root, 'processed')
 
     @property
     def raw_paths(self) -> List[str]:
+        """Absolute paths to required raw files.
+
+        Returns:
+            list[str]: List of absolute paths for `raw_file_names` under
+            `raw_dir`.
+        """
         files = self.raw_file_names
         if isinstance(files, Callable):
             files = files()
@@ -105,40 +232,93 @@ class BaseDataset(torch.utils.data.Dataset):  # Follows torch_geometric.data.dat
 
     @property
     def processed_paths(self) -> List[str]:
+        """Absolute paths to required processed files.
+
+        Returns:
+            list[str]: List of absolute paths for `processed_file_names` under
+            `processed_dir`.
+        """
         files = self.processed_file_names
         if isinstance(files, Callable):
             files = files()
         return [osp.join(self.processed_dir, f) for f in files]
 
     def _download(self):
+        """Ensure raw files exist, downloading them if needed.
+
+        If all paths in `raw_paths` exist, this is a no-op. Otherwise, it
+        creates `raw_dir` and calls `download()`.
+
+        Notes:
+            If `raw_paths` is empty, `all([])` is True and this method will
+            skip downloading. Subclasses that do not require raw downloads
+            may intentionally return an empty list.
+        """
         if all([osp.exists(f) for f in self.raw_paths]):
             return
         os.makedirs(self.raw_dir, exist_ok=True)
         self.download()
 
     def _process(self):
+        """Ensure processed files exist, processing them if needed.
+
+        If all paths in `processed_paths` exist, this is a no-op. Otherwise,
+        it creates `processed_dir` and calls `process()`.
+        """
         if all([osp.exists(f) for f in self.processed_paths]):
             return
         os.makedirs(self.processed_dir, exist_ok=True)
         self.process()
 
     def _load(self):
-        r"""Loads the data to memory."""
+        """Load processed data into memory.
+
+        Subclasses implement the in-memory representation (e.g., `self.data`)
+        and are responsible for applying `fixed_transform` if desired.
+
+        Raises:
+            NotImplementedError: If not implemented by a subclass.
+        """
         raise NotImplementedError()
 
     def __len__(self) -> int:
-        r"""The number of examples in the dataset."""
+        """Return the number of examples in the current dataset view.
+
+        For a full dataset this equals `self.len()`. For a subset view this
+        equals `len(self._indices)`.
+
+        Returns:
+            int: Number of examples exposed by this dataset instance.
+        """
         return len(self.indices())
 
     def __getitem__(
         self,
         idx: Union[int, np.integer, IndexType],
     ):
-        r"""In case ``idx`` is of type integer, will return the data object
-        at index ``idx`` (and transforms it in case ``transform`` is
-        present). In case ``idx`` is a slicing object, *e.g.*, ``[2:5]``, a list, a
-        tuple, or a ``torch.Tensor`` or ``np.ndarray`` of type long or
-        bool, will return a subset of the dataset at the specified indices.
+        """Get an item or a subset of the dataset.
+
+        Behavior depends on the type of `idx`:
+
+        - If `idx` is an integer (Python `int`, `np.integer`, 0-dim `Tensor`,
+          or scalar `np.ndarray`), returns a single `FlooderData` object
+          corresponding to the *view* index `idx`.
+        - Otherwise, returns a subset view of the dataset created via
+          `index_select(idx)`.
+
+        If `transform` is set, it is applied on-the-fly to single-item access.
+
+        Args:
+            idx (int | np.integer | slice | torch.Tensor | np.ndarray | Sequence):
+                Index or indices selecting items.
+
+        Returns:
+            FlooderData | BaseDataset:
+                A single data object if `idx` is scalar-like, otherwise a
+                `BaseDataset` subset view.
+
+        Raises:
+            IndexError: If `idx` type is unsupported (delegated to `index_select`).
         """
         if (isinstance(idx, (int, np.integer))
                 or (isinstance(idx, Tensor) and idx.dim() == 0)
@@ -151,20 +331,40 @@ class BaseDataset(torch.utils.data.Dataset):  # Follows torch_geometric.data.dat
             return self.index_select(idx)
 
     def __iter__(self):
+        """Iterate over items in the current dataset view.
+
+        Yields:
+            FlooderData: Items in order from `0` to `len(self) - 1`, with
+            `transform` applied if configured.
+        """
         for i in range(len(self)):
             yield self[i]
 
     def index_select(self, idx: IndexType):
-        r"""Creates a subset of the dataset from specified indices ``idx``.
-        Indices ``idx`` can be a slicing object, *e.g.*, ``[2:5]``, a
-        list, a tuple, or a ``torch.Tensor`` or ``np.ndarray`` of type
-        long or bool.
+        """Create a subset view of the dataset from specified indices.
+
+        Supported index types:
+        - `slice`: includes support for float boundaries, e.g. `dataset[:0.9]`,
+          interpreted as a fraction of the current view length.
+        - `torch.Tensor` of dtype `long`: treated as integer indices.
+        - `torch.Tensor` of dtype `bool`: treated as a boolean mask.
+        - `np.ndarray` of dtype `int64`: treated as integer indices.
+        - `np.ndarray` of dtype `bool`: treated as a boolean mask.
+        - `Sequence` (excluding `str`): treated as a list of integer indices.
+
+        The returned dataset is a shallow copy of `self` with `_indices` set
+        to map view indices to global indices.
 
         Args:
-            idx (slice, list, tuple, torch.Tensor, np.ndarray): The indices to
-                select.
+            idx (slice | Sequence[int] | torch.Tensor | np.ndarray):
+                Indices specifying the subset.
+
         Returns:
-            BaseDataset: A subset of the dataset at the specified indices.
+            BaseDataset: A subset view of the dataset.
+
+        Raises:
+            IndexError: If `idx` is not one of the supported types or has an
+                unsupported dtype.
         """
         indices = self.indices()
 
@@ -210,95 +410,23 @@ class BaseDataset(torch.utils.data.Dataset):  # Follows torch_geometric.data.dat
         self,
         return_perm: bool = False,
     ):
-        r"""Randomly shuffles the examples in the dataset.
+        """Return a shuffled subset view of the dataset.
+
+        This method generates a random permutation of the current dataset view
+        and returns a subset view with that ordering.
 
         Args:
-            return_perm (bool, optional): If set to ``True``, will also
-                return the random permutation used to shuffle the dataset.
-                (default: ``False``)
+            return_perm (bool): If True, also return the permutation tensor.
+
+        Returns:
+            BaseDataset | tuple[BaseDataset, torch.Tensor]:
+                If `return_perm` is False, returns the shuffled dataset view.
+                If True, returns `(dataset, perm)` where `perm` is a 1D long
+                tensor of indices into the current view.
         """
         perm = torch.randperm(len(self))
         dataset = self.index_select(perm)
         return (dataset, perm) if return_perm is True else dataset
-
-    def __repr__(self) -> str:
-        cls = self.__class__.__name__
-
-        def _safe_len(x, default="?"):
-            try:
-                return len(x)
-            except Exception:
-                return default
-
-        def _short_path(p: str) -> str:
-            try:
-                p = str(p)
-                # show last 2 components to keep it readable
-                parts = p.replace("\\", "/").rstrip("/").split("/")
-                return "/".join(parts[-2:]) if len(parts) >= 2 else parts[-1]
-            except Exception:
-                return "?"
-
-        def _has_all(paths):
-            try:
-                return all(osp.exists(p) for p in paths)
-            except Exception:
-                return False
-
-        # Size: current view vs total
-        n_view = _safe_len(self.indices())
-        n_total = "?"
-        try:
-            # If this is a subset, the "full" dataset is its stored data length (if available)
-            if getattr(self, "_indices", None) is not None and hasattr(self, "data"):
-                n_total = _safe_len(self.data)
-            else:
-                n_total = n_view
-        except Exception:
-            pass
-
-        is_subset = getattr(self, "_indices", None) is not None
-
-        # Root / dirs
-        root = _short_path(getattr(self, "root", "?"))
-
-        raw_ok = _has_all(getattr(self, "raw_paths", []))
-        proc_ok = _has_all(getattr(self, "processed_paths", []))
-
-        num_classes = getattr(self, "num_classes", None)
-        classes = getattr(self, "classes", None)
-        class_part = ""
-        if num_classes is not None:
-            if classes is not None and _safe_len(classes) != "?":
-                # show at most first 5
-                cls_preview = list(classes)[:5]
-                suffix = ", ..." if len(classes) > 5 else ""
-                class_part = f", num_classes={num_classes}, classes={cls_preview}{suffix}"
-            else:
-                class_part = f", num_classes={num_classes}"
-
-        split_part = ""
-        splits = getattr(self, "splits", None)
-        if isinstance(splits, dict):
-            split_part = f", splits={list(splits.keys())}"
-        elif splits is not None:
-            split_part = ", splits=yes"
-
-        tfm = getattr(self, "transform", None)
-        tfm_part = f", transform={tfm.__class__.__name__}" if tfm is not None else ""
-
-        # Compose
-        size_part = f"n={n_view}"
-        if is_subset and n_total != "?":
-            size_part += f"/{n_total}"
-
-        subset_part = ", subset=yes" if is_subset else ""
-
-        return (
-            f"{cls}({size_part}, root='{root}', raw={'ok' if raw_ok else 'missing'}, "
-            f"processed={'ok' if proc_ok else 'missing'}"
-            f"{subset_part}{class_part}{split_part}{tfm_part})"
-        )
 
 
 class FlooderDataset(BaseDataset):
@@ -380,7 +508,6 @@ class FlooderDataset(BaseDataset):
             self.splits = yaml.safe_load(f)
         self.classes = sorted({int(data.y) for data in self})
         self.num_classes = len(self.classes)
-        
 
     def download(self):
         url = f'https://drive.google.com/uc?id={self.file_id}'
@@ -404,6 +531,88 @@ class FlooderDataset(BaseDataset):
                 f"Please try re-downloading the dataset or contact the dataset maintainer if the problem persists.",
                 UserWarning
             )
+
+    def __repr__(self) -> str:
+        cls = self.__class__.__name__
+
+        def _safe_len(x, default="?"):
+            try:
+                return len(x)
+            except Exception:
+                return default
+
+        def _short_path(p: str) -> str:
+            try:
+                p = str(p)
+                # show last 2 components to keep it readable
+                parts = p.replace("\\", "/").rstrip("/").split("/")
+                return "/".join(parts[-2:]) if len(parts) >= 2 else parts[-1]
+            except Exception:
+                return "?"
+
+        def _has_all(paths):
+            try:
+                if not paths:
+                    return None
+                return all(osp.exists(p) for p in paths)
+            except Exception:
+                return False
+
+        # Size: current view vs total
+        n_view = _safe_len(self.indices())
+        n_total = "?"
+        try:
+            # If this is a subset, the "full" dataset is its stored data length (if available)
+            if getattr(self, "_indices", None) is not None and hasattr(self, "data"):
+                n_total = _safe_len(self.data)
+            else:
+                n_total = n_view
+        except Exception:
+            pass
+
+        is_subset = getattr(self, "_indices", None) is not None
+
+        # Root / dirs
+        root = _short_path(getattr(self, "root", "?"))
+
+        raw_ok = _has_all(getattr(self, "raw_paths", []))
+        proc_ok = _has_all(getattr(self, "processed_paths", []))
+
+        num_classes = getattr(self, "num_classes", None)
+        classes = getattr(self, "classes", None)
+        class_part = ""
+        if num_classes is not None:
+            if classes is not None and _safe_len(classes) != "?":
+                # show at most first 5
+                cls_preview = list(classes)[:5]
+                suffix = ", ..." if len(classes) > 5 else ""
+                class_part = f", num_classes={num_classes}, classes={cls_preview}{suffix}"
+            else:
+                class_part = f", num_classes={num_classes}"
+
+        split_part = ""
+        splits = getattr(self, "splits", None)
+        if isinstance(splits, dict):
+            split_part = f", splits={list(splits.keys())}"
+        elif splits is not None:
+            split_part = ", splits=yes"
+
+        tfm = getattr(self, "transform", None)
+        tfm_part = f", transform={tfm.__class__.__name__}" if tfm is not None else ""
+
+        # Compose
+        size_part = f"n={n_view}"
+        if is_subset and n_total != "?":
+            size_part += f"/{n_total}"
+
+        subset_part = ", subset=yes" if is_subset else ""
+
+        return (
+            f"{cls}({size_part}, root='{root}', raw={'ok' if raw_ok else 'missing'}, "
+            f"processed={'ok' if proc_ok else 'missing'}"
+            f"{subset_part}{class_part}{split_part}{tfm_part})"
+        )
+
 
 
 class SwisscheeseDataset(FlooderDataset):
