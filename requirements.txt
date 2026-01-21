@@ -6,3 +6,6 @@ pandas
 scipy
 rich
 rich_argparse
+pyyaml
+gdown
+zstandard

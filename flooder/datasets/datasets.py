@@ -329,7 +329,10 @@ class FlooderDataset(BaseDataset):
             dctx = zstd.ZstdDecompressor()
             with dctx.stream_reader(f) as reader:
                 with tarfile.open(fileobj=reader, mode='r|') as tar:
-                    tar.extractall(path=self.raw_dir, filter='data')
+                    if 'filter' in tarfile.TarFile.extractall.__code__.co_varnames: # Python >= 3.12
+                        tar.extractall(path=self.raw_dir, filter='data')
+                    else:
+                        tar.extractall(path=self.raw_dir)
 
     def process_file(self, file, ydata):
         """Specific logic to turn an .npy file into a FlooderData object"""
