@@ -430,47 +430,210 @@ class BaseDataset(torch.utils.data.Dataset):  # Follows torch_geometric.data.dat
 
 
 class FlooderDataset(BaseDataset):
+    """Base class for Flooder paper datasets distributed as compressed archives.
+
+    This dataset class implements a standard pipeline:
+
+      1) Download a `.tar.zst` archive from Google Drive (via `gdown`),
+         identified by `file_id`, and validate it with a SHA256 `checksum`.
+      2) Decompress and extract the archive into `raw_dir/<folder_name>/`.
+      3) Read dataset metadata (`meta.yaml`) and split definitions (`splits.yaml`)
+         from the extracted raw folder.
+      4) Convert each raw `.npy` file into a `FlooderData`-like object via
+         `process_file(...)`, and store it as a `.pt` file in `processed_dir`.
+      5) Load all `.pt` files into memory (`self.data`) in `_load()`, optionally
+         applying `fixed_transform` once per sample at load time.
+
+    Subclasses are expected to define:
+      - `file_id`: Google Drive file id
+      - `checksum`: expected SHA256 checksum of the downloaded archive
+      - `folder_name`: name of the extracted folder under `raw_dir`
+      - `raw_file_names`: name(s) of the downloaded raw archive file(s)
+      - `process_file(...)`: conversion logic from a `.npy` file and metadata
+
+    Attributes:
+        data (list[FlooderData]): In-memory list of processed examples loaded from
+            `.pt` files. Populated by `_load()`.
+        splits (dict): Split definitions loaded from `processed_dir/splits.yaml`.
+            The structure depends on the dataset, but is typically a mapping from
+            split identifier (e.g., fold index) to dicts containing keys like
+            `'trn'`, `'val'`, `'tst'` with integer indices.
+        classes (list[int]): Sorted list of unique class labels observed across the
+            dataset (computed after loading).
+        num_classes (int): Number of unique classes.
+    """
+
     @property
     def file_id(self):
+        """Google Drive file id for the dataset archive.
+
+        Subclasses must provide the id used to construct the download URL:
+        `https://drive.google.com/uc?id=<file_id>`.
+
+        Returns:
+            str: The Google Drive file id.
+
+        Raises:
+            NotImplementedError: If not implemented by a subclass.
+        """
         raise NotImplementedError
 
     @property
     def checksum(self):
+        """Expected SHA256 checksum of the downloaded archive.
+
+        The checksum is used by `validate(...)` after download. If the computed
+        SHA256 does not match, a warning is emitted.
+
+        Returns:
+            str: Lowercase hex-encoded SHA256 digest of the expected archive.
+
+        Raises:
+            NotImplementedError: If not implemented by a subclass.
+        """
         raise NotImplementedError
 
     @property
     def folder_name(self):
+        """Name of the extracted folder under `raw_dir`.
+
+        After extraction, the expected raw folder is `raw_dir/<folder_name>/`
+        containing `meta.yaml`, `splits.yaml`, and the `.npy` files.
+
+        Returns:
+            str: Folder name within `raw_dir`.
+
+        Raises:
+            NotImplementedError: If not implemented by a subclass.
+        """
         raise NotImplementedError
 
     @property
     def processed_file_names(self):
+        """Processed-file sentinel list for determining whether processing is done.
+
+        The default convention for Flooder datasets is:
+          - `_done`: an empty file indicating processing completion
+          - `splits.yaml`: split definitions copied to the processed directory
+
+        Returns:
+            list[str]: List of required processed file names.
+        """
         return ['_done', 'splits.yaml']
 
     def get(self, idx: int):
+        """Return the in-memory data object at the given global index.
+
+        This implementation assumes `_load()` has populated `self.data` with
+        objects saved in `processed_dir` as `.pt` files.
+
+        Args:
+            idx (int): Global index into `self.data`.
+
+        Returns:
+            FlooderData: The data item at `idx`.
+        """
         return self.data[idx]
 
     def len(self) -> int:
+        """Return the number of examples in the full dataset.
+
+        Returns:
+            int: Total number of examples, equal to `len(self.data)` after `_load()`.
+        """
         return len(self.data)
 
     def unzip_file(self):
+        """Decompress and extract the dataset archive into `raw_dir`.
+
+        This method reads the first file in `raw_paths` as a `.tar.zst` archive,
+        decompresses it using `zstandard`, and extracts it using `tarfile`.
+
+        Extraction behavior depends on Python version:
+          - Python >= 3.12: uses `tar.extractall(..., filter='data')` to apply
+            tarfile's safety filter.
+          - Older versions: falls back to `tar.extractall(...)`.
+
+        Raises:
+            FileNotFoundError: If `raw_paths[0]` does not exist.
+            tarfile.TarError: If the archive is invalid or cannot be read.
+            zstandard.ZstdError: If decompression fails.
+            OSError: For I/O errors during reading or extraction.
+
+        Security:
+            Be careful extracting archives from untrusted sources. While Python
+            3.12's `filter='data'` mitigates some risks, older versions extract
+            without filtering.
+        """
         with open(self.raw_paths[0], 'rb') as f:
             dctx = zstd.ZstdDecompressor()
             with dctx.stream_reader(f) as reader:
                 with tarfile.open(fileobj=reader, mode='r|') as tar:
-                    if 'filter' in tarfile.TarFile.extractall.__code__.co_varnames: # Python >= 3.12
+                    if 'filter' in tarfile.TarFile.extractall.__code__.co_varnames:  # Python >= 3.12
                         tar.extractall(path=self.raw_dir, filter='data')
                     else:
                         tar.extractall(path=self.raw_dir)
 
     def process_file(self, file, ydata):
-        """Specific logic to turn an .npy file into a FlooderData object"""
+        """Convert a raw `.npy` file into a `FlooderData`-like object.
+
+        Subclasses must implement the dataset-specific logic for reading `file`
+        (typically via `numpy.load`) and for producing an instance of `FlooderData`
+        (or a subclass like `FlooderRocksData`).
+
+        Args:
+            file (pathlib.Path): Path to a `.npy` file inside the extracted raw folder.
+            ydata (dict): Metadata loaded from `meta.yaml`. The structure is dataset-
+                dependent but typically contains labels and other targets keyed by
+                file name.
+
+        Returns:
+            FlooderData: Processed data object to be saved as a `.pt` file.
+
+        Raises:
+            NotImplementedError: If not implemented by a subclass.
+        """
         raise NotImplementedError
 
     def get_split_indices(self, splits_data):
-        """Override this if split extraction logic differs"""
+        """Extract split indices from raw `splits.yaml` content.
+
+        The default behavior expects the raw `splits.yaml` to contain a top-level
+        key `"splits"` holding the split definitions.
+
+        Subclasses may override this method if their `splits.yaml` uses a different
+        schema.
+
+        Args:
+            splits_data (dict): Parsed YAML content from `splits.yaml`.
+
+        Returns:
+            Any: The split indices structure to be saved into
+            `processed_dir/splits.yaml`. Typically a dict mapping fold id to split
+            dicts (`'trn'`, `'val'`, `'tst'`), but may vary by dataset.
+        """
         return splits_data["splits"]
 
     def process(self):
+        """Process the extracted raw dataset into serialized `.pt` files.
+
+        Processing performs the following steps:
+
+          1) Ensure the archive has been extracted into `raw_dir/<folder_name>/`.
+          2) Load metadata from `meta.yaml` and split definitions from `splits.yaml`.
+          3) Save extracted split indices into `processed_dir/splits.yaml`.
+          4) Iterate over all `.npy` files in the extracted folder, sorted by name.
+          5) For each `.npy`, call `process_file(file, ydata)` and save the returned
+             object as `<stem>.pt` in `processed_dir`.
+          6) Create the `_done` sentinel file in `processed_dir`.
+
+        Raises:
+            FileNotFoundError: If required raw files (`meta.yaml`, `splits.yaml`,
+                or `.npy` files) are missing.
+            yaml.YAMLError: If YAML parsing fails.
+            OSError: For I/O errors reading raw files or writing processed files.
+            RuntimeError: If `torch.save` fails for a produced object.
+        """
         extract_path = osp.join(self.raw_dir, self.folder_name)
         if not osp.isdir(extract_path):
             self.unzip_file()
@@ -498,6 +661,20 @@ class FlooderDataset(BaseDataset):
         Path(self.processed_dir, "_done").touch()
 
     def _load(self):
+        """Load processed `.pt` files and dataset metadata into memory.
+
+        This method:
+          - Loads all `.pt` files in `processed_dir` (sorted by filename) into
+            `self.data`.
+          - Applies `fixed_transform` (if provided) once per loaded sample.
+          - Loads split definitions from `processed_dir/splits.yaml` into `self.splits`.
+          - Computes `self.classes` and `self.num_classes` from observed labels.
+
+        Raises:
+            FileNotFoundError: If `processed_dir/splits.yaml` is missing.
+            RuntimeError: If `torch.load` fails for any `.pt` file.
+            yaml.YAMLError: If `splits.yaml` cannot be parsed.
+        """
         self.data = []
         in_path = Path(self.processed_dir)
         sorted_files = sorted(in_path.glob("*.pt"))
@@ -513,6 +690,17 @@ class FlooderDataset(BaseDataset):
         self.num_classes = len(self.classes)
 
     def download(self):
+        """Download the dataset archive from Google Drive into `raw_dir`.
+
+        Constructs a Google Drive download URL from `file_id` and downloads
+        into `raw_dir/<raw_file_names[0]>` using `gdown`. After downloading,
+        calls `validate(...)` to check integrity.
+
+        Raises:
+            IndexError: If `raw_file_names` is empty.
+            OSError: If the destination file cannot be written.
+            Exception: Propagates errors from `gdown.download(...)`.
+        """
         url = f'https://drive.google.com/uc?id={self.file_id}'
 
         # Use gdown to handle the download
@@ -521,6 +709,21 @@ class FlooderDataset(BaseDataset):
         self.validate(output)
 
     def validate(self, file_path: Path):
+        """Validate a downloaded archive against the expected SHA256 checksum.
+
+        Computes the SHA256 digest of `file_path` and compares it to `self.checksum`.
+        If they do not match, emits a `UserWarning`.
+
+        Args:
+            file_path (pathlib.Path | str): Path to the downloaded archive.
+
+        Warns:
+            UserWarning: If the computed checksum differs from the expected checksum.
+
+        Raises:
+            FileNotFoundError: If `file_path` does not exist.
+            OSError: For I/O errors reading the file.
+        """
         h = hashlib.new('sha256')
         with open(file_path, 'rb') as f:
             for chunk in iter(lambda: f.read(8192), b''):
@@ -615,7 +818,6 @@ class FlooderDataset(BaseDataset):
             f"processed={'ok' if proc_ok else 'missing'}"
             f"{subset_part}{class_part}{split_part}{tfm_part})"
         )
-
 
 
 class SwisscheeseDataset(FlooderDataset):
