@@ -821,15 +821,61 @@ class FlooderDataset(BaseDataset):
 
 
 class SwisscheeseDataset(FlooderDataset):
+    """Synthetic "Swiss cheese" point-cloud dataset used in the Flooder paper.
+
+    This dataset is generated procedurally (no download). Each sample consists
+    of points uniformly sampled from a 3D axis-aligned box with multiple
+    spherical voids removed ("Swiss cheese"). The number of voids defines the
+    class label.
+
+    Unlike the other `FlooderDataset` subclasses that download a compressed
+    archive, this dataset overrides `process()` to generate samples and write
+    them directly to `processed_dir` as `.pt` files. Split definitions are also
+    generated and saved to `processed_dir/splits.yaml`.
+
+    Class semantics:
+        - Each class corresponds to a value `k` in `ks`, where `k` is the number
+          of spherical voids carved out of the sampling volume.
+        - Label `y` is the integer index into `ks` (i.e., `ki` from enumeration).
+
+    Generated file naming:
+        Each sample is saved under a short SHA256-derived identifier computed
+        from the generated point array bytes. This provides deterministic naming
+        for a fixed RNG seed and generation implementation, but note that changes
+        to sampling code, dtype, or ordering can change the resulting hash.
+
+    Splits:
+        `process()` generates 10 random splits (keys `0..9`), each containing
+        `trn`, `val`, and `tst` partitions with proportions 72% / 8% / 20%,
+        respectively, over the *full* dataset indices.
+
+    Notes:
+        - Because generation is performed inside `process()`, instantiation may be
+          compute- and storage-intensive, depending on `num_points` and dataset size.
+        - This class sets a fixed RNG seed (`np.random.RandomState(42)`) for
+          split generation. The point generation itself depends on the behavior of
+          `generate_swiss_cheese_points` (and any randomness inside it).
+    """
     def __init__(self, root, ks=[10, 20], num_per_class=500, num_points=1000000, fixed_transform=None, transform=None):
-        """
-        Create a Swiss Cheese dataset with specified parameters.
+        """Initialize the Swiss cheese dataset generator.
 
         Args:
             root (str): Root directory where the dataset is stored.
-            ks (list): List of integers representing the number of voids in each class.
-            num_per_class (int): Number of samples to generate per class.
-            num_points (int): Number of points to generate for each sample.
+            ks (list[int]): List of void counts, one per class. Each `k` produces
+                a distinct class corresponding to point clouds with `k` voids.
+            num_per_class (int): Number of samples generated for each class.
+                Total dataset size is `len(ks) * num_per_class`.
+            num_points (int): Number of points generated per sample point cloud.
+            fixed_transform (Callable[[FlooderData], FlooderData] | None):
+                Optional transform applied once per example during `_load()`.
+            transform (Callable[[FlooderData], FlooderData] | None):
+                Optional transform applied on-the-fly in `__getitem__`.
+
+        Notes:
+            - Split generation uses a fixed seed (`42`) via `np.random.RandomState`.
+            - Generation and serialization are performed during `process()`, which is
+              invoked during `FlooderDataset` construction if processed artifacts
+              are missing.
         """
 
         self.rng = np.random.RandomState(42)
@@ -838,13 +884,46 @@ class SwisscheeseDataset(FlooderDataset):
 
     @property
     def folder_name(self):
+        """Name of the raw folder under `raw_dir`.
+
+        Returns:
+            str: Folder name. Included for API compatibility; this dataset does not
+            use extracted raw archives.
+        """
         return 'swisscheese'
 
     @property
     def raw_file_names(self):
+        """Raw-file requirements for download skipping.
+
+        This dataset is generated locally and does not require downloaded raw files,
+        so this returns an empty list.
+
+        Returns:
+            list[str]: Empty list.
+        """
         return []
 
     def process(self):
+        """Generate synthetic samples and write processed artifacts to disk.
+
+        This method generates:
+          - `processed_dir/splits.yaml`: A dict of 10 random splits with keys `0..9`.
+          - One `.pt` file per generated sample containing a `FlooderData` object.
+          - `processed_dir/_done`: A sentinel file indicating processing completion.
+
+        Sample generation details:
+          - Points are generated inside an axis-aligned box with corners
+            `rect_min = [0,0,0]` and `rect_max = [5,5,5]`.
+          - For each class `k` in `ks`, the generator creates `num_per_class`
+            samples using `generate_swiss_cheese_points(num_points, ..., k, ...)`.
+          - Each sample is labeled with `y = ki` where `ki` is the index of `k` in `ks`.
+
+        Raises:
+            OSError: If the processed directory cannot be written.
+            RuntimeError: If `torch.save` fails.
+            Exception: Propagates exceptions from `generate_swiss_cheese_points`.
+        """
         split_indices = {}
         n = len(self.k) * self.num_per_class
         for i in range(10):
@@ -866,10 +945,7 @@ class SwisscheeseDataset(FlooderDataset):
                 void_radius_range = (0.1, 0.5)
                 points, _, _ = generate_swiss_cheese_points(
                     num_points, rect_min, rect_max, k, void_radius_range
-                )                
-                # points, _, _ = self.generate_swiss_cheese_points_fast(
-                #    num_points, rect_min, rect_max, k, void_radius_range
-                # )
+                )
                 data = FlooderData(x=points.to(torch.float32), y=ki, name=f'{k}voids_{r}')
                 file_id = hashlib.sha256(points.numpy().tobytes()).hexdigest()[:10]
                 torch.save(data, osp.join(self.processed_dir, f"{file_id}.pt"))
@@ -880,6 +956,32 @@ class SwisscheeseDataset(FlooderDataset):
 
 
 class ModelNet10Dataset(FlooderDataset):
+    """ModelNet10 point-cloud dataset (250k points) used in the Flooder paper.
+
+    This dataset is a high-resolution point-cloud variant of ModelNet10,
+    distributed as a compressed `.tar.zst` archive and hosted on Google Drive.
+    The archive is downloaded, validated via SHA256, extracted into
+    `raw_dir/<folder_name>/`, and processed into per-sample `.pt` files.
+
+    Each raw sample is stored as a `.npy` array containing quantized point
+    coordinates. During processing, coordinates are normalized by dividing
+    by `32767` and cast to `float32`.
+
+    The processed sample representation is:
+      - `x`: `torch.FloatTensor` of normalized point coordinates
+      - `y`: integer class label in `[0, 9]`
+      - `name`: sample identifier derived from the file stem
+
+    Expected extracted raw directory structure:
+        raw_dir/modelnet10_250k/
+            meta.yaml
+            splits.yaml
+            *.npy
+
+    See Also:
+        FlooderDataset: Implements the shared download, processing, and loading
+        pipeline.
+    """
     @property
     def file_id(self):
         return '180Gk0I_JYWkGNnLj5McI2P3zwhgGeVtM'
@@ -903,12 +1005,47 @@ class ModelNet10Dataset(FlooderDataset):
 
 
 class CoralDataset(FlooderDataset):
+    """Coral point-cloud dataset used in the Flooder paper.
+
+    This dataset is distributed as a compressed archive (`corals.tar.zst`)
+    hosted on Google Drive. The archive is downloaded, validated via SHA256,
+    extracted into `raw_dir/<folder_name>/`, and processed into per-sample
+    `.pt` files stored in `processed_dir`.
+
+    Each raw sample is stored as a `.npy` array that is loaded and normalized
+    by dividing by 32767, and cast to `float32`. Labels are read from the
+    dataset metadata (`meta.yaml`) under `ydata['data'][<filename>]['label']`.
+
+    The processed sample is represented as:
+      - `x`: `torch.FloatTensor` containing the point cloud
+      - `y`: integer class label
+      - `name`: sample identifier derived from the file stem
+
+    Directory structure (expected after extraction):
+        raw_dir/corals/
+            meta.yaml
+            splits.yaml
+            *.npy
+
+    See Also:
+        FlooderDataset: Implements the download/process/load lifecycle.
+    """
     @property
     def file_id(self):
+        """Google Drive file id for the dataset archive.
+
+        Returns:
+            str: Google Drive file id used to construct the download URL.
+        """
         return '1g-n8ExkU6eOJLelIMeNaFRdqoEM8ZDry'
 
     @property
     def checksum(self):
+        """Expected SHA256 checksum of the downloaded archive.
+
+        Returns:
+            str: Lowercase hex-encoded SHA256 digest for `corals.tar.zst`.
+        """
         return 'e8b5ae6b22d03e0bcf118bb28b4d465f8ec5b308e038385879b98df3fed0150f'
 
     @property
@@ -917,9 +1054,33 @@ class CoralDataset(FlooderDataset):
 
     @property
     def raw_file_names(self):
+        """Name of the extracted raw folder under `raw_dir`.
+
+        Returns:
+            str: Folder name containing raw dataset files after extraction.
+        """
         return ['corals.tar.zst']
 
     def process_file(self, file, ydata):
+        """Convert a raw `.npy` file into a `FlooderData` example.
+
+        Loads the point cloud from `file` using `numpy.load`, normalizes values
+        by dividing by `32767`, casts to `float32`, and converts to a PyTorch
+        tensor. The class label is read from metadata.
+
+        Args:
+            file (pathlib.Path): Path to the raw `.npy` file to process.
+            ydata (dict): Parsed YAML metadata from `meta.yaml`. Must contain
+                an entry `ydata['data'][file.name]['label']`.
+
+        Returns:
+            FlooderData: Processed example with fields `(x, y, name)`.
+
+        Raises:
+            KeyError: If the expected label entry is missing from `ydata`.
+            OSError: If the `.npy` file cannot be read.
+            ValueError: If the `.npy` content cannot be converted to `float32`.
+        """
         x = torch.from_numpy((np.load(file) / 32767).astype(np.float32))
         y = ydata['data'][file.name]['label']
         return FlooderData(x=x, y=y, name=file.stem)
@@ -949,6 +1110,37 @@ class MCBDataset(FlooderDataset):
 
 
 class RocksDataset(FlooderDataset):
+    """Rock voxel dataset converted to point clouds with geometric targets.
+
+    This dataset consists of 3D binary voxel grids representing rock samples.
+    Each sample is stored as a bit-packed array in a `.npy` file and decoded
+    into a point cloud by extracting the coordinates of occupied voxels.
+
+    The dataset is distributed as a compressed archive (`rocks.tar.zst`)
+    hosted on Google Drive. During processing, each voxel grid is converted
+    into a set of 3D points with small random jitter added to break lattice
+    structure.
+
+    In addition to the class label, each sample includes continuous targets
+    such as surface area and volume.
+
+    Processed sample representation:
+      - `x`: `torch.FloatTensor` of shape `(N, 3)` containing point coordinates
+      - `y`: integer class label
+      - `surface`: float-valued surface area target
+      - `volume`: float-valued volume target
+      - `name`: sample identifier derived from the file stem
+
+    Expected extracted raw directory structure:
+        raw_dir/rocks/
+            meta.yaml
+            splits.yaml
+            *.npy
+
+    See Also:
+        FlooderDataset: Implements the shared download, processing, and loading
+        pipeline.
+    """
     @property
     def file_id(self):
         return '1htI0eeON3RG3V_fShd8U8tZmJ1g6akEx'
@@ -970,6 +1162,32 @@ class RocksDataset(FlooderDataset):
         return ['rocks.tar.zst']
 
     def process_file(self, file, ydata):
+        """Convert a raw voxel `.npy` file into a `FlooderRocksData` example.
+
+        Processing steps:
+          1) Load the bit-packed voxel array from `file`.
+          2) Unpack bits into a boolean array of shape `(256, 256, 256)`.
+          3) Extract the indices of occupied voxels using `np.where`.
+          4) Convert voxel indices to float coordinates and add small random
+             jitter to avoid degenerate lattice structure.
+          5) Attach label and continuous targets from metadata.
+
+        Args:
+            file (pathlib.Path): Path to the raw `.npy` voxel file.
+            ydata (dict): Parsed YAML metadata from `meta.yaml`. Must contain
+                entries for `label`, `target` (surface), and `volume` under
+                `ydata['data'][file.name]`.
+
+        Returns:
+            FlooderRocksData: Processed example with fields
+            `(x, y, surface, volume, name)`.
+
+        Raises:
+            KeyError: If required metadata entries are missing.
+            ValueError: If the unpacked voxel array cannot be reshaped to
+                `(256, 256, 256)`.
+            OSError: If the `.npy` file cannot be read.
+        """
         loaded_data = np.load(file)
         bool_data = np.unpackbits(loaded_data).reshape((256, 256, 256)).astype(bool)
         pts = np.stack(np.where(bool_data), axis=1).astype(np.float32)
