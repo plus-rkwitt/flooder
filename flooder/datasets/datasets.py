@@ -13,7 +13,7 @@ import warnings
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, List, Union, Tuple
+from typing import Callable, List, Union, Tuple, Iterator
 
 import yaml
 import zstandard as zstd
@@ -163,7 +163,12 @@ class BaseDataset(torch.utils.data.Dataset):  # Follows torch_geometric.data.dat
         """
         raise NotImplementedError
 
-    def __init__(self, root, fixed_transform=None, transform=None):
+    def __init__(
+        self,
+        root: str,
+        fixed_transform: (Callable[[FlooderData], FlooderData] | None) = None,
+        transform: (Callable[[FlooderData], FlooderData] | None) = None
+        ) -> None:
         """Initialize a dataset and execute the download/process/load lifecycle.
 
         Args:
@@ -295,7 +300,7 @@ class BaseDataset(torch.utils.data.Dataset):  # Follows torch_geometric.data.dat
     def __getitem__(
         self,
         idx: Union[int, np.integer, IndexType],
-    ):
+    ) -> "FlooderData | BaseDataset":
         """Get an item or a subset of the dataset.
 
         Behavior depends on the type of `idx`:
@@ -330,7 +335,7 @@ class BaseDataset(torch.utils.data.Dataset):  # Follows torch_geometric.data.dat
         else:
             return self.index_select(idx)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[FlooderData]:
         """Iterate over items in the current dataset view.
 
         Yields:
@@ -340,7 +345,7 @@ class BaseDataset(torch.utils.data.Dataset):  # Follows torch_geometric.data.dat
         for i in range(len(self)):
             yield self[i]
 
-    def index_select(self, idx: IndexType):
+    def index_select(self, idx: IndexType) -> "BaseDataset":
         """Create a subset view of the dataset from specified indices.
 
         Supported index types:
@@ -409,7 +414,7 @@ class BaseDataset(torch.utils.data.Dataset):  # Follows torch_geometric.data.dat
     def shuffle(
         self,
         return_perm: bool = False,
-    ):
+    ) -> "BaseDataset | Tuple[BaseDataset, Tensor]":
         """Return a shuffled subset view of the dataset.
 
         This method generates a random permutation of the current dataset view
@@ -464,7 +469,7 @@ class FlooderDataset(BaseDataset):
     """
 
     @property
-    def file_id(self):
+    def file_id(self) -> str:
         """Google Drive file id for the dataset archive.
 
         Subclasses must provide the id used to construct the download URL:
@@ -479,7 +484,7 @@ class FlooderDataset(BaseDataset):
         raise NotImplementedError
 
     @property
-    def checksum(self):
+    def checksum(self) -> str:
         """Expected SHA256 checksum of the downloaded archive.
 
         The checksum is used by `validate(...)` after download. If the computed
@@ -494,7 +499,7 @@ class FlooderDataset(BaseDataset):
         raise NotImplementedError
 
     @property
-    def folder_name(self):
+    def folder_name(self) -> str:
         """Name of the extracted folder under `raw_dir`.
 
         After extraction, the expected raw folder is `raw_dir/<folder_name>/`
@@ -509,7 +514,7 @@ class FlooderDataset(BaseDataset):
         raise NotImplementedError
 
     @property
-    def processed_file_names(self):
+    def processed_file_names(self) -> list[str]:
         """Processed-file sentinel list for determining whether processing is done.
 
         The default convention for Flooder datasets is:
@@ -521,7 +526,7 @@ class FlooderDataset(BaseDataset):
         """
         return ['_done', 'splits.yaml']
 
-    def get(self, idx: int):
+    def get(self, idx: int) -> FlooderData:
         """Return the in-memory data object at the given global index.
 
         This implementation assumes `_load()` has populated `self.data` with
@@ -543,7 +548,7 @@ class FlooderDataset(BaseDataset):
         """
         return len(self.data)
 
-    def unzip_file(self):
+    def unzip_file(self) -> None:
         """Decompress and extract the dataset archive into `raw_dir`.
 
         This method reads the first file in `raw_paths` as a `.tar.zst` archive,
@@ -574,7 +579,7 @@ class FlooderDataset(BaseDataset):
                     else:
                         tar.extractall(path=self.raw_dir)
 
-    def process_file(self, file, ydata):
+    def process_file(self, file: Path, ydata: dict) -> None:
         """Convert a raw `.npy` file into a `FlooderData`-like object.
 
         Subclasses must implement the dataset-specific logic for reading `file`
@@ -595,7 +600,7 @@ class FlooderDataset(BaseDataset):
         """
         raise NotImplementedError
 
-    def get_split_indices(self, splits_data):
+    def get_split_indices(self, splits_data) -> dict:
         """Extract split indices from raw `splits.yaml` content.
 
         The default behavior expects the raw `splits.yaml` to contain a top-level
@@ -614,7 +619,7 @@ class FlooderDataset(BaseDataset):
         """
         return splits_data["splits"]
 
-    def process(self):
+    def process(self) -> None:
         """Process the extracted raw dataset into serialized `.pt` files.
 
         Processing performs the following steps:
@@ -660,7 +665,7 @@ class FlooderDataset(BaseDataset):
             torch.save(data, out_file)
         Path(self.processed_dir, "_done").touch()
 
-    def _load(self):
+    def _load(self) -> None:
         """Load processed `.pt` files and dataset metadata into memory.
 
         This method:
@@ -689,7 +694,7 @@ class FlooderDataset(BaseDataset):
         self.classes = sorted({int(data.y) for data in self})
         self.num_classes = len(self.classes)
 
-    def download(self):
+    def download(self) -> None:
         """Download the dataset archive from Google Drive into `raw_dir`.
 
         Constructs a Google Drive download URL from `file_id` and downloads
@@ -708,7 +713,7 @@ class FlooderDataset(BaseDataset):
         gdown.download(url, output, quiet=False)
         self.validate(output)
 
-    def validate(self, file_path: Path):
+    def validate(self, file_path: Path) -> None:
         """Validate a downloaded archive against the expected SHA256 checksum.
 
         Computes the SHA256 digest of `file_path` and compares it to `self.checksum`.
@@ -856,7 +861,14 @@ class SwisscheeseDataset(FlooderDataset):
           split generation. The point generation itself depends on the behavior of
           `generate_swiss_cheese_points` (and any randomness inside it).
     """
-    def __init__(self, root, ks=[10, 20], num_per_class=500, num_points=1000000, fixed_transform=None, transform=None):
+    def __init__(self,
+                root: str,
+                ks: list[int] = [10, 20],
+                num_per_class: int = 500,
+                num_points: int = 1000000,
+                fixed_transform: (Callable[[FlooderData], FlooderData] | None) = None,
+                transform: (Callable[[FlooderData], FlooderData] | None) = None
+                ):
         """Initialize the Swiss cheese dataset generator.
 
         Args:
@@ -883,7 +895,7 @@ class SwisscheeseDataset(FlooderDataset):
         super().__init__(root, fixed_transform=fixed_transform, transform=transform)
 
     @property
-    def folder_name(self):
+    def folder_name(self) -> str:
         """Name of the raw folder under `raw_dir`.
 
         Returns:
@@ -893,7 +905,7 @@ class SwisscheeseDataset(FlooderDataset):
         return 'swisscheese'
 
     @property
-    def raw_file_names(self):
+    def raw_file_names(self) -> list[str]:
         """Raw-file requirements for download skipping.
 
         This dataset is generated locally and does not require downloaded raw files,
@@ -904,7 +916,7 @@ class SwisscheeseDataset(FlooderDataset):
         """
         return []
 
-    def process(self):
+    def process(self) -> None:
         """Generate synthetic samples and write processed artifacts to disk.
 
         This method generates:
@@ -983,22 +995,22 @@ class ModelNet10Dataset(FlooderDataset):
         pipeline.
     """
     @property
-    def file_id(self):
+    def file_id(self) -> str:
         return '180Gk0I_JYWkGNnLj5McI2P3zwhgGeVtM'
 
     @property
-    def checksum(self):
+    def checksum(self) -> str:
         return '6f9504d5574224fdf5b9255d2b9d5f041540298c0241fc6abbbfedaf9e1f4280'
 
     @property
-    def folder_name(self):
+    def folder_name(self) -> str:
         return 'modelnet10_250k'
 
     @property
-    def raw_file_names(self):
+    def raw_file_names(self) -> list[str]:
         return ['modelnet10_250k.tar.zst']
 
-    def process_file(self, file, ydata):
+    def process_file(self, file: str, ydata: dict):
         x = torch.from_numpy((np.load(file) / 32767).astype(np.float32))
         y = ydata['data'][file.name]['label']
         return FlooderData(x=x, y=y, name=file.stem)
@@ -1031,7 +1043,7 @@ class CoralDataset(FlooderDataset):
         FlooderDataset: Implements the download/process/load lifecycle.
     """
     @property
-    def file_id(self):
+    def file_id(self) -> str:
         """Google Drive file id for the dataset archive.
 
         Returns:
@@ -1040,7 +1052,7 @@ class CoralDataset(FlooderDataset):
         return '1g-n8ExkU6eOJLelIMeNaFRdqoEM8ZDry'
 
     @property
-    def checksum(self):
+    def checksum(self) -> str:
         """Expected SHA256 checksum of the downloaded archive.
 
         Returns:
@@ -1049,11 +1061,11 @@ class CoralDataset(FlooderDataset):
         return 'e8b5ae6b22d03e0bcf118bb28b4d465f8ec5b308e038385879b98df3fed0150f'
 
     @property
-    def folder_name(self):
+    def folder_name(self) -> str:
         return 'corals'
 
     @property
-    def raw_file_names(self):
+    def raw_file_names(self) -> list[str]:
         """Name of the extracted raw folder under `raw_dir`.
 
         Returns:
@@ -1061,7 +1073,7 @@ class CoralDataset(FlooderDataset):
         """
         return ['corals.tar.zst']
 
-    def process_file(self, file, ydata):
+    def process_file(self, file: Path, ydata: dict) -> None:
         """Convert a raw `.npy` file into a `FlooderData` example.
 
         Loads the point cloud from `file` using `numpy.load`, normalizes values
@@ -1088,22 +1100,22 @@ class CoralDataset(FlooderDataset):
 
 class MCBDataset(FlooderDataset):
     @property
-    def file_id(self):
+    def file_id(self) -> str:
         return '19EP9DEOMoSj0YVa_pXnui3OR2JZHOgSY'
 
     @property
-    def checksum(self):
+    def checksum(self) -> str:
         return 'dc36e1c5886e2d21a9f1dbaec084852dda2aab06fb7cd1c36e4403ac3e486a10'
 
     @property
-    def folder_name(self):
+    def folder_name(self) -> str:
         return 'mcb'
 
     @property
-    def raw_file_names(self):
+    def raw_file_names(self) -> list[str]:
         return ['mcb.tar.zst']
 
-    def process_file(self, file, ydata):
+    def process_file(self, file: Path, ydata: dict) -> FlooderData:
         x = torch.from_numpy((np.load(file) / 32767).astype(np.float32))
         y = ydata['data'][file.name]['label']
         return FlooderData(x=x, y=y, name=file.stem)
@@ -1142,26 +1154,31 @@ class RocksDataset(FlooderDataset):
         pipeline.
     """
     @property
-    def file_id(self):
+    def file_id(self) -> str:
         return '1htI0eeON3RG3V_fShd8U8tZmJ1g6akEx'
 
     @property
-    def checksum(self):
+    def checksum(self) -> str:
         return 'd635e6ae2e949075ae69b4397217bb2949c737126bbc23108fc48ec1a7aa5b00'
 
-    def __init__(self, root, fixed_transform=None, transform=None):
+    def __init__(
+            self,
+            root: str,
+            fixed_transform: (Callable[[FlooderData], FlooderData] | None) = None,
+            transform: (Callable[[FlooderData], FlooderData] | None) = None
+            ):
         self.rng = np.random.RandomState(42)
         super().__init__(root, fixed_transform, transform)
 
     @property
-    def folder_name(self):
+    def folder_name(self) -> str:
         return 'rocks'
 
     @property
-    def raw_file_names(self):
+    def raw_file_names(self) -> list[str]:
         return ['rocks.tar.zst']
 
-    def process_file(self, file, ydata):
+    def process_file(self, file: Path, ydata: dict) -> FlooderRocksData:
         """Convert a raw voxel `.npy` file into a `FlooderRocksData` example.
 
         Processing steps:
