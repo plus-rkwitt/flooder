@@ -1,14 +1,15 @@
 
 <div align="center">
 
-<img src="logos/logo.png" width=70% height=70%>
+<img src="https://raw.githubusercontent.com/plus-rkwitt/flooder/main/logos/logo.png" width=70% height=70%>
+
 </div>
 
 <br>
 
 <div align="center">
   
-[![PyPI version](https://img.shields.io/pypi/v/cellpick.svg?logo=pypi)](https://pypi.org/project/flooder/1.0/)
+[![PyPI version](https://img.shields.io/pypi/v/flooder.svg?logo=pypi)](https://pypi.org/project/flooder/1.0/)
 [![Docs](https://img.shields.io/badge/docs-latest-blue?logo=readthedocs)](https://plus-rkwitt.github.io/flooder/)
 [![Website](https://img.shields.io/badge/paper-NeurIPS'25-44cc11?logo=google-chrome)](https://arxiv.org/abs/2509.22432)
 </div>
@@ -19,7 +20,8 @@
 
 <div align="center">
 
-<img src="logos/animation.gif" width=50% height=50%>
+<img src="https://raw.githubusercontent.com/plus-rkwitt/flooder/main/logos/animation.gif" width="50%">
+
 </div>
 
 <br>
