@@ -1,0 +1,5665 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://mydomain.org/mysite/reference/datasets/">
+      
+      
+        <link rel="prev" href="../core/">
+      
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
+    
+    
+      
+        <title>Datasets - flooder - Lightspeed Persistent Homology</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.342714a4.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Lato";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="amber" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#flooder.datasets.datasets" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="flooder - Lightspeed Persistent Homology" class="md-header__button md-logo" aria-label="flooder - Lightspeed Persistent Homology" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            flooder - Lightspeed Persistent Homology
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Datasets
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="amber" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="amber" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/plus-rkwitt/flooder" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../install/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Installation
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../examples/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Examples
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../visualizations/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Visualizations
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../io/" class="md-tabs__link">
+          
+  
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="flooder - Lightspeed Persistent Homology" class="md-nav__button md-logo" aria-label="flooder - Lightspeed Persistent Homology" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    flooder - Lightspeed Persistent Homology
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/plus-rkwitt/flooder" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Installation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Examples
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../visualizations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Visualizations
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Contributing
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    API Reference
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            API Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../io/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Utils
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../synthetic_data_generators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Synthetic data generators
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Core
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Datasets
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Datasets
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets" class="md-nav__link">
+    <span class="md-ellipsis">
+      datasets
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="datasets">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.BaseDataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      BaseDataset
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="BaseDataset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.BaseDataset.processed_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      processed_dir
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.BaseDataset.processed_file_names" class="md-nav__link">
+    <span class="md-ellipsis">
+      processed_file_names
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.BaseDataset.processed_paths" class="md-nav__link">
+    <span class="md-ellipsis">
+      processed_paths
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.BaseDataset.raw_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      raw_dir
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.BaseDataset.raw_file_names" class="md-nav__link">
+    <span class="md-ellipsis">
+      raw_file_names
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.BaseDataset.raw_paths" class="md-nav__link">
+    <span class="md-ellipsis">
+      raw_paths
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.BaseDataset.__getitem__" class="md-nav__link">
+    <span class="md-ellipsis">
+      __getitem__
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.BaseDataset.__iter__" class="md-nav__link">
+    <span class="md-ellipsis">
+      __iter__
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.BaseDataset.__len__" class="md-nav__link">
+    <span class="md-ellipsis">
+      __len__
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.BaseDataset.download" class="md-nav__link">
+    <span class="md-ellipsis">
+      download
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.BaseDataset.get" class="md-nav__link">
+    <span class="md-ellipsis">
+      get
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.BaseDataset.index_select" class="md-nav__link">
+    <span class="md-ellipsis">
+      index_select
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.BaseDataset.indices" class="md-nav__link">
+    <span class="md-ellipsis">
+      indices
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.BaseDataset.len" class="md-nav__link">
+    <span class="md-ellipsis">
+      len
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.BaseDataset.process" class="md-nav__link">
+    <span class="md-ellipsis">
+      process
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.BaseDataset.shuffle" class="md-nav__link">
+    <span class="md-ellipsis">
+      shuffle
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.CoralDataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      CoralDataset
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CoralDataset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.CoralDataset.checksum" class="md-nav__link">
+    <span class="md-ellipsis">
+      checksum
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.CoralDataset.file_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      file_id
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.CoralDataset.raw_file_names" class="md-nav__link">
+    <span class="md-ellipsis">
+      raw_file_names
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.CoralDataset.process_file" class="md-nav__link">
+    <span class="md-ellipsis">
+      process_file
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.FlooderDataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      FlooderDataset
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="FlooderDataset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.FlooderDataset.checksum" class="md-nav__link">
+    <span class="md-ellipsis">
+      checksum
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.FlooderDataset.file_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      file_id
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.FlooderDataset.folder_name" class="md-nav__link">
+    <span class="md-ellipsis">
+      folder_name
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.FlooderDataset.processed_file_names" class="md-nav__link">
+    <span class="md-ellipsis">
+      processed_file_names
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.FlooderDataset.download" class="md-nav__link">
+    <span class="md-ellipsis">
+      download
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.FlooderDataset.get" class="md-nav__link">
+    <span class="md-ellipsis">
+      get
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.FlooderDataset.get_split_indices" class="md-nav__link">
+    <span class="md-ellipsis">
+      get_split_indices
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.FlooderDataset.len" class="md-nav__link">
+    <span class="md-ellipsis">
+      len
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.FlooderDataset.process" class="md-nav__link">
+    <span class="md-ellipsis">
+      process
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.FlooderDataset.process_file" class="md-nav__link">
+    <span class="md-ellipsis">
+      process_file
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.FlooderDataset.unzip_file" class="md-nav__link">
+    <span class="md-ellipsis">
+      unzip_file
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.FlooderDataset.validate" class="md-nav__link">
+    <span class="md-ellipsis">
+      validate
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.MCBDataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      MCBDataset
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MCBDataset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.MCBDataset.checksum" class="md-nav__link">
+    <span class="md-ellipsis">
+      checksum
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.MCBDataset.file_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      file_id
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.MCBDataset.folder_name" class="md-nav__link">
+    <span class="md-ellipsis">
+      folder_name
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.MCBDataset.raw_file_names" class="md-nav__link">
+    <span class="md-ellipsis">
+      raw_file_names
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.MCBDataset.process_file" class="md-nav__link">
+    <span class="md-ellipsis">
+      process_file
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.ModelNet10Dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      ModelNet10Dataset
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.RocksDataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      RocksDataset
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="RocksDataset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.RocksDataset.process_file" class="md-nav__link">
+    <span class="md-ellipsis">
+      process_file
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.SwisscheeseDataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      SwisscheeseDataset
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="SwisscheeseDataset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.SwisscheeseDataset.folder_name" class="md-nav__link">
+    <span class="md-ellipsis">
+      folder_name
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.SwisscheeseDataset.raw_file_names" class="md-nav__link">
+    <span class="md-ellipsis">
+      raw_file_names
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.SwisscheeseDataset.process" class="md-nav__link">
+    <span class="md-ellipsis">
+      process
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets" class="md-nav__link">
+    <span class="md-ellipsis">
+      datasets
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="datasets">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.BaseDataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      BaseDataset
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="BaseDataset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.BaseDataset.processed_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      processed_dir
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.BaseDataset.processed_file_names" class="md-nav__link">
+    <span class="md-ellipsis">
+      processed_file_names
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.BaseDataset.processed_paths" class="md-nav__link">
+    <span class="md-ellipsis">
+      processed_paths
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.BaseDataset.raw_dir" class="md-nav__link">
+    <span class="md-ellipsis">
+      raw_dir
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.BaseDataset.raw_file_names" class="md-nav__link">
+    <span class="md-ellipsis">
+      raw_file_names
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.BaseDataset.raw_paths" class="md-nav__link">
+    <span class="md-ellipsis">
+      raw_paths
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.BaseDataset.__getitem__" class="md-nav__link">
+    <span class="md-ellipsis">
+      __getitem__
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.BaseDataset.__iter__" class="md-nav__link">
+    <span class="md-ellipsis">
+      __iter__
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.BaseDataset.__len__" class="md-nav__link">
+    <span class="md-ellipsis">
+      __len__
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.BaseDataset.download" class="md-nav__link">
+    <span class="md-ellipsis">
+      download
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.BaseDataset.get" class="md-nav__link">
+    <span class="md-ellipsis">
+      get
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.BaseDataset.index_select" class="md-nav__link">
+    <span class="md-ellipsis">
+      index_select
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.BaseDataset.indices" class="md-nav__link">
+    <span class="md-ellipsis">
+      indices
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.BaseDataset.len" class="md-nav__link">
+    <span class="md-ellipsis">
+      len
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.BaseDataset.process" class="md-nav__link">
+    <span class="md-ellipsis">
+      process
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.BaseDataset.shuffle" class="md-nav__link">
+    <span class="md-ellipsis">
+      shuffle
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.CoralDataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      CoralDataset
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CoralDataset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.CoralDataset.checksum" class="md-nav__link">
+    <span class="md-ellipsis">
+      checksum
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.CoralDataset.file_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      file_id
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.CoralDataset.raw_file_names" class="md-nav__link">
+    <span class="md-ellipsis">
+      raw_file_names
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.CoralDataset.process_file" class="md-nav__link">
+    <span class="md-ellipsis">
+      process_file
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.FlooderDataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      FlooderDataset
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="FlooderDataset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.FlooderDataset.checksum" class="md-nav__link">
+    <span class="md-ellipsis">
+      checksum
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.FlooderDataset.file_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      file_id
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.FlooderDataset.folder_name" class="md-nav__link">
+    <span class="md-ellipsis">
+      folder_name
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.FlooderDataset.processed_file_names" class="md-nav__link">
+    <span class="md-ellipsis">
+      processed_file_names
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.FlooderDataset.download" class="md-nav__link">
+    <span class="md-ellipsis">
+      download
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.FlooderDataset.get" class="md-nav__link">
+    <span class="md-ellipsis">
+      get
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.FlooderDataset.get_split_indices" class="md-nav__link">
+    <span class="md-ellipsis">
+      get_split_indices
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.FlooderDataset.len" class="md-nav__link">
+    <span class="md-ellipsis">
+      len
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.FlooderDataset.process" class="md-nav__link">
+    <span class="md-ellipsis">
+      process
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.FlooderDataset.process_file" class="md-nav__link">
+    <span class="md-ellipsis">
+      process_file
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.FlooderDataset.unzip_file" class="md-nav__link">
+    <span class="md-ellipsis">
+      unzip_file
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.FlooderDataset.validate" class="md-nav__link">
+    <span class="md-ellipsis">
+      validate
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.MCBDataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      MCBDataset
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MCBDataset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.MCBDataset.checksum" class="md-nav__link">
+    <span class="md-ellipsis">
+      checksum
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.MCBDataset.file_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      file_id
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.MCBDataset.folder_name" class="md-nav__link">
+    <span class="md-ellipsis">
+      folder_name
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.MCBDataset.raw_file_names" class="md-nav__link">
+    <span class="md-ellipsis">
+      raw_file_names
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.MCBDataset.process_file" class="md-nav__link">
+    <span class="md-ellipsis">
+      process_file
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.ModelNet10Dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      ModelNet10Dataset
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.RocksDataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      RocksDataset
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="RocksDataset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.RocksDataset.process_file" class="md-nav__link">
+    <span class="md-ellipsis">
+      process_file
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.SwisscheeseDataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      SwisscheeseDataset
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="SwisscheeseDataset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.SwisscheeseDataset.folder_name" class="md-nav__link">
+    <span class="md-ellipsis">
+      folder_name
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.SwisscheeseDataset.raw_file_names" class="md-nav__link">
+    <span class="md-ellipsis">
+      raw_file_names
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flooder.datasets.datasets.SwisscheeseDataset.process" class="md-nav__link">
+    <span class="md-ellipsis">
+      process
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Datasets</h1>
+
+<div class="doc doc-object doc-module">
+
+
+
+<h2 id="flooder.datasets.datasets" class="doc doc-heading">
+            <span class="doc doc-object-name doc-module-name">flooder.datasets.datasets</span>
+
+
+</h2>
+
+    <div class="doc doc-contents first">
+
+        <p>Implementation of datasets used in the original Flooder paper.</p>
+<p>Copyright (c) 2025 Paolo Pellizzoni, Florian Graf, Martin Uray, Stefan Huber and Roland Kwitt
+SPDX-License-Identifier: MIT</p>
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="flooder.datasets.datasets.BaseDataset" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">BaseDataset</span>
+
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">BaseDataset</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">root</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">fixed_transform</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">FlooderData</span><span class="p">],</span> <span class="n">FlooderData</span><span class="p">]</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">transform</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">FlooderData</span><span class="p">],</span> <span class="n">FlooderData</span><span class="p">]</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="torch.utils.data.Dataset">Dataset</span></code></p>
+
+
+        <p>Base class for Flooder datasets with download/process/load lifecycle.</p>
+<p>This class provides a dataset API inspired by
+<code>torch_geometric.data.Dataset</code>, including:
+  - a standard directory layout (<code>root/raw</code> and <code>root/processed</code>);
+  - a lifecycle executed at construction time: download, process, load;
+  - integer indexing to return items, and advanced indexing to return
+    a subset "view" of the dataset;
+  - optional per-sample transformations.</p>
+<p>Subclasses must implement the abstract properties/methods that specify
+file requirements and dataset-specific loading logic.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="flooder.datasets.datasets.BaseDataset.root">root</span></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Root directory containing the dataset folders.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="flooder.datasets.datasets.BaseDataset.fixed_transform">fixed_transform</span></code></td>
+            <td>
+                  <code><span title="typing.Callable">Callable</span>[[<span title="flooder.datasets.datasets.FlooderData">FlooderData</span>], <span title="flooder.datasets.datasets.FlooderData">FlooderData</span>] | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional transform applied once to each item during <code>_load()</code>
+(i.e., at dataset load time, before storing in memory).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="flooder.datasets.datasets.BaseDataset.transform">transform</span></code></td>
+            <td>
+                  <code><span title="typing.Callable">Callable</span>[[<span title="flooder.datasets.datasets.FlooderData">FlooderData</span>], <span title="flooder.datasets.datasets.FlooderData">FlooderData</span>] | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional transform applied on-the-fly in <code>__getitem__</code> for
+individual samples.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="flooder.datasets.datasets.BaseDataset._indices">_indices</span></code></td>
+            <td>
+                  <code><span title="collections.abc.Sequence">Sequence</span>[<span title="int">int</span>] | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If not None, defines a subset view
+over the underlying dataset indices.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="notes" open>
+  <summary>Notes</summary>
+  <ul>
+<li>The constructor triggers <code>_download()</code>, <code>_process()</code>, and <code>_load()</code>.
+  This means instantiation may perform I/O and compute.</li>
+<li>Advanced indexing (<code>slice</code>, sequences, boolean masks) returns a
+  shallow-copied dataset object sharing the same underlying storage
+  (whatever the subclass uses), but with <code>_indices</code> set.</li>
+</ul>
+</details>
+        <p>Initialize a dataset and execute the download/process/load lifecycle.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>root</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Root directory where raw and processed data are stored.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>fixed_transform</code>
+            </td>
+            <td>
+                  <code><span title="typing.Callable">Callable</span>[[<span title="flooder.datasets.datasets.FlooderData">FlooderData</span>], <span title="flooder.datasets.datasets.FlooderData">FlooderData</span>] | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional transform applied once to each item during <code>_load()</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>transform</code>
+            </td>
+            <td>
+                  <code><span title="typing.Callable">Callable</span>[[<span title="flooder.datasets.datasets.FlooderData">FlooderData</span>], <span title="flooder.datasets.datasets.FlooderData">FlooderData</span>] | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional transform applied on-the-fly in <code>__getitem__</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="notes" open>
+  <summary>Notes</summary>
+  <p>Instantiation may perform I/O and compute by calling <code>_download()</code>,
+<code>_process()</code>, and <code>_load()</code>.</p>
+</details>
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="flooder.datasets.datasets.BaseDataset.processed_dir" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">processed_dir</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">processed_dir</span><span class="p">:</span> <span class="nb">str</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Directory containing processed files.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>str</code></td>            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Path to <code>&lt;root&gt;/processed</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="flooder.datasets.datasets.BaseDataset.processed_file_names" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">processed_file_names</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">processed_file_names</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Required processed files to consider the dataset processed.</p>
+<p>Subclasses should return the file name(s) expected to exist in
+<code>processed_dir</code>. If all such files exist, <code>_process()</code> is skipped.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="typing.Union">Union</span>[<span title="str">str</span>, <span title="typing.List">List</span>[<span title="str">str</span>], <span title="typing.Tuple">Tuple</span>[<span title="str">str</span>, ...]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Union[str, list[str], tuple[str, ...]]: File name(s) expected</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="typing.Union">Union</span>[<span title="str">str</span>, <span title="typing.List">List</span>[<span title="str">str</span>], <span title="typing.Tuple">Tuple</span>[<span title="str">str</span>, ...]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>inside <code>self.processed_dir</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="NotImplementedError">NotImplementedError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If not implemented by a subclass.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="flooder.datasets.datasets.BaseDataset.processed_paths" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">processed_paths</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">processed_paths</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Absolute paths to required processed files.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="typing.List">List</span>[<span title="str">str</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>list[str]: List of absolute paths for <code>processed_file_names</code> under</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="typing.List">List</span>[<span title="str">str</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>processed_dir</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="flooder.datasets.datasets.BaseDataset.raw_dir" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">raw_dir</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">raw_dir</span><span class="p">:</span> <span class="nb">str</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Directory containing raw downloaded files.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>str</code></td>            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Path to <code>&lt;root&gt;/raw</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="flooder.datasets.datasets.BaseDataset.raw_file_names" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">raw_file_names</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">raw_file_names</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Required raw files to consider the dataset downloaded.</p>
+<p>Subclasses should return the file name(s) expected to exist in
+<code>raw_dir</code>. If all such files exist, <code>_download()</code> is skipped.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="typing.Union">Union</span>[<span title="str">str</span>, <span title="typing.List">List</span>[<span title="str">str</span>], <span title="typing.Tuple">Tuple</span>[<span title="str">str</span>, ...]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Union[str, list[str], tuple[str, ...]]: File name(s) expected</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="typing.Union">Union</span>[<span title="str">str</span>, <span title="typing.List">List</span>[<span title="str">str</span>], <span title="typing.Tuple">Tuple</span>[<span title="str">str</span>, ...]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>inside <code>self.raw_dir</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="NotImplementedError">NotImplementedError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If not implemented by a subclass.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="flooder.datasets.datasets.BaseDataset.raw_paths" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">raw_paths</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">raw_paths</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Absolute paths to required raw files.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="typing.List">List</span>[<span title="str">str</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>list[str]: List of absolute paths for <code>raw_file_names</code> under</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="typing.List">List</span>[<span title="str">str</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>raw_dir</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+    </div>
+
+</div>
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="flooder.datasets.datasets.BaseDataset.__getitem__" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">__getitem__</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">__getitem__</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">idx</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">integer</span><span class="p">,</span> <span class="n">IndexType</span><span class="p">],</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FlooderData</span> <span class="o">|</span> <span class="n">BaseDataset</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Get an item or a subset of the dataset.</p>
+<p>Behavior depends on the type of <code>idx</code>:</p>
+<ul>
+<li>If <code>idx</code> is an integer (Python <code>int</code>, <code>np.integer</code>, 0-dim <code>Tensor</code>,
+  or scalar <code>np.ndarray</code>), returns a single <code>FlooderData</code> object
+  corresponding to the <em>view</em> index <code>idx</code>.</li>
+<li>Otherwise, returns a subset view of the dataset created via
+  <code>index_select(idx)</code>.</li>
+</ul>
+<p>If <code>transform</code> is set, it is applied on-the-fly to single-item access.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>idx</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span> | <span title="numpy.integer">integer</span> | <span title="slice">slice</span> | <span title="torch.Tensor">Tensor</span> | <span title="numpy.ndarray">ndarray</span> | <span title="collections.abc.Sequence">Sequence</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Index or indices selecting items.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="flooder.datasets.datasets.FlooderData">FlooderData</span> | <a class="autorefs autorefs-internal" title="BaseDataset (flooder.datasets.datasets.BaseDataset)" href="#flooder.datasets.datasets.BaseDataset">BaseDataset</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>FlooderData | BaseDataset:
+A single data object if <code>idx</code> is scalar-like, otherwise a
+<code>BaseDataset</code> subset view.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="IndexError">IndexError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If <code>idx</code> type is unsupported (delegated to <code>index_select</code>).</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="flooder.datasets.datasets.BaseDataset.__iter__" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">__iter__</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">__iter__</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">FlooderData</span><span class="p">]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Iterate over items in the current dataset view.</p>
+
+
+    <p><span class="doc-section-title">Yields:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>FlooderData</code></td>            <td>
+                  <code><span title="flooder.datasets.datasets.FlooderData">FlooderData</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Items in order from <code>0</code> to <code>len(self) - 1</code>, with</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+<td></td>            <td>
+                  <code><span title="flooder.datasets.datasets.FlooderData">FlooderData</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>transform</code> applied if configured.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="flooder.datasets.datasets.BaseDataset.__len__" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">__len__</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">__len__</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the number of examples in the current dataset view.</p>
+<p>For a full dataset this equals <code>self.len()</code>. For a subset view this
+equals <code>len(self._indices)</code>.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>int</code></td>            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of examples exposed by this dataset instance.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="flooder.datasets.datasets.BaseDataset.download" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">download</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">download</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Download the dataset into <code>raw_dir</code>.</p>
+<p>Subclasses must implement the dataset-specific download logic.
+This method is called by <code>_download()</code> only if the required files
+in <code>raw_paths</code> are not present.</p>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="NotImplementedError">NotImplementedError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If not implemented by a subclass.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="flooder.datasets.datasets.BaseDataset.get" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">get</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">get</span><span class="p">(</span><span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FlooderData</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the data object at a given <em>global</em> index.</p>
+<p><code>idx</code> refers to the underlying dataset index, not the subset-view
+index. The subset mapping is handled by <code>__getitem__</code> via <code>indices()</code>.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>idx</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Global index into the underlying dataset storage.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>FlooderData</code></td>            <td>
+                  <code><span title="flooder.datasets.datasets.FlooderData">FlooderData</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The data object at the given index.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="NotImplementedError">NotImplementedError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If not implemented by a subclass.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="flooder.datasets.datasets.BaseDataset.index_select" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">index_select</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">index_select</span><span class="p">(</span><span class="n">idx</span><span class="p">:</span> <span class="n">IndexType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseDataset</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Create a subset view of the dataset from specified indices.</p>
+<p>Supported index types:
+- <code>slice</code>: includes support for float boundaries, e.g. <code>dataset[:0.9]</code>,
+  interpreted as a fraction of the current view length.
+- <code>torch.Tensor</code> of dtype <code>long</code>: treated as integer indices.
+- <code>torch.Tensor</code> of dtype <code>bool</code>: treated as a boolean mask.
+- <code>np.ndarray</code> of dtype <code>int64</code>: treated as integer indices.
+- <code>np.ndarray</code> of dtype <code>bool</code>: treated as a boolean mask.
+- <code>Sequence</code> (excluding <code>str</code>): treated as a list of integer indices.</p>
+<p>The returned dataset is a shallow copy of <code>self</code> with <code>_indices</code> set
+to map view indices to global indices.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>idx</code>
+            </td>
+            <td>
+                  <code><span title="slice">slice</span> | <span title="collections.abc.Sequence">Sequence</span>[<span title="int">int</span>] | <span title="torch.Tensor">Tensor</span> | <span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Indices specifying the subset.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>BaseDataset</code></td>            <td>
+                  <code><a class="autorefs autorefs-internal" title="BaseDataset (flooder.datasets.datasets.BaseDataset)" href="#flooder.datasets.datasets.BaseDataset">BaseDataset</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A subset view of the dataset.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="IndexError">IndexError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If <code>idx</code> is not one of the supported types or has an
+unsupported dtype.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="flooder.datasets.datasets.BaseDataset.indices" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">indices</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">indices</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Sequence</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the active index mapping for this dataset view.</p>
+<p>For a full dataset (no subset), this is <code>range(self.len())</code>.
+For a subset view created via <code>index_select</code>, this is the stored
+<code>_indices</code> sequence.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="collections.abc.Sequence">Sequence</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Sequence[int]: Index mapping from view indices to global indices.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="flooder.datasets.datasets.BaseDataset.len" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">len</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">len</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the number of items in the full dataset.</p>
+<p>This method is analogous to <code>torch_geometric.data.Dataset.len()</code>.
+It should return the total number of items in the underlying dataset,
+not the size of a subset view created via <code>index_select</code>.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>int</code></td>            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Total number of data objects stored by the dataset.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="NotImplementedError">NotImplementedError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If not implemented by a subclass.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="flooder.datasets.datasets.BaseDataset.process" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">process</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">process</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Process raw files into <code>processed_dir</code>.</p>
+<p>Subclasses must implement the dataset-specific processing logic.
+This method is called by <code>_process()</code> only if the required files
+in <code>processed_paths</code> are not present.</p>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="NotImplementedError">NotImplementedError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If not implemented by a subclass.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="flooder.datasets.datasets.BaseDataset.shuffle" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">shuffle</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">shuffle</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">return_perm</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseDataset</span> <span class="o">|</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">BaseDataset</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return a shuffled subset view of the dataset.</p>
+<p>This method generates a random permutation of the current dataset view
+and returns a subset view with that ordering.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>return_perm</code>
+            </td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If True, also return the permutation tensor.</p>
+              </div>
+            </td>
+            <td>
+                  <code>False</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="BaseDataset (flooder.datasets.datasets.BaseDataset)" href="#flooder.datasets.datasets.BaseDataset">BaseDataset</a> | <span title="typing.Tuple">Tuple</span>[<a class="autorefs autorefs-internal" title="BaseDataset (flooder.datasets.datasets.BaseDataset)" href="#flooder.datasets.datasets.BaseDataset">BaseDataset</a>, <span title="torch.Tensor">Tensor</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>BaseDataset | tuple[BaseDataset, torch.Tensor]:
+If <code>return_perm</code> is False, returns the shuffled dataset view.
+If True, returns <code>(dataset, perm)</code> where <code>perm</code> is a 1D long
+tensor of indices into the current view.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="flooder.datasets.datasets.CoralDataset" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">CoralDataset</span>
+
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">CoralDataset</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">root</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">fixed_transform</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">FlooderData</span><span class="p">],</span> <span class="n">FlooderData</span><span class="p">]</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">transform</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">FlooderData</span><span class="p">],</span> <span class="n">FlooderData</span><span class="p">]</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="FlooderDataset (flooder.datasets.datasets.FlooderDataset)" href="#flooder.datasets.datasets.FlooderDataset">FlooderDataset</a></code></p>
+
+
+        <p>Coral point-cloud dataset used in the Flooder paper.</p>
+<p>This dataset is distributed as a compressed archive (<code>corals.tar.zst</code>)
+hosted on Google Drive. The archive is downloaded, validated via SHA256,
+extracted into <code>raw_dir/&lt;folder_name&gt;/</code>, and processed into per-sample
+<code>.pt</code> files stored in <code>processed_dir</code>.</p>
+<p>Each raw sample is stored as a <code>.npy</code> array that is loaded and normalized
+by dividing by 32767, and cast to <code>float32</code>. Labels are read from the
+dataset metadata (<code>meta.yaml</code>) under <code>ydata['data'][&lt;filename&gt;]['label']</code>.</p>
+
+
+<details class="the-processed-sample-is-represented-as" open>
+  <summary>The processed sample is represented as</summary>
+  <ul>
+<li><code>x</code>: <code>torch.FloatTensor</code> containing the point cloud</li>
+<li><code>y</code>: integer class label</li>
+<li><code>name</code>: sample identifier derived from the file stem</li>
+</ul>
+</details>        <p>Directory structure (expected after extraction):
+    raw_dir/corals/
+        meta.yaml
+        splits.yaml
+        *.npy</p>
+
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <p>FlooderDataset: Implements the download/process/load lifecycle.</p>
+</details>
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="flooder.datasets.datasets.CoralDataset.checksum" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">checksum</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">checksum</span><span class="p">:</span> <span class="nb">str</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Expected SHA256 checksum of the downloaded archive.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>str</code></td>            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Lowercase hex-encoded SHA256 digest for <code>corals.tar.zst</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="flooder.datasets.datasets.CoralDataset.file_id" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">file_id</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">file_id</span><span class="p">:</span> <span class="nb">str</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Google Drive file id for the dataset archive.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>str</code></td>            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Google Drive file id used to construct the download URL.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="flooder.datasets.datasets.CoralDataset.raw_file_names" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">raw_file_names</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">raw_file_names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Name of the extracted raw folder under <code>raw_dir</code>.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>str</code></td>            <td>
+                  <code><span title="list">list</span>[<span title="str">str</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Folder name containing raw dataset files after extraction.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+    </div>
+
+</div>
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="flooder.datasets.datasets.CoralDataset.process_file" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">process_file</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">process_file</span><span class="p">(</span><span class="n">file</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">ydata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Convert a raw <code>.npy</code> file into a <code>FlooderData</code> example.</p>
+<p>Loads the point cloud from <code>file</code> using <code>numpy.load</code>, normalizes values
+by dividing by <code>32767</code>, casts to <code>float32</code>, and converts to a PyTorch
+tensor. The class label is read from metadata.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>file</code>
+            </td>
+            <td>
+                  <code><span title="pathlib.Path">Path</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Path to the raw <code>.npy</code> file to process.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>ydata</code>
+            </td>
+            <td>
+                  <code><span title="dict">dict</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Parsed YAML metadata from <code>meta.yaml</code>. Must contain
+an entry <code>ydata['data'][file.name]['label']</code>.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>FlooderData</code></td>            <td>
+                  <code>None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Processed example with fields <code>(x, y, name)</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="KeyError">KeyError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the expected label entry is missing from <code>ydata</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="OSError">OSError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the <code>.npy</code> file cannot be read.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ValueError">ValueError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the <code>.npy</code> content cannot be converted to <code>float32</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="flooder.datasets.datasets.FlooderDataset" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">FlooderDataset</span>
+
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">FlooderDataset</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">root</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">fixed_transform</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">FlooderData</span><span class="p">],</span> <span class="n">FlooderData</span><span class="p">]</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">transform</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">FlooderData</span><span class="p">],</span> <span class="n">FlooderData</span><span class="p">]</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="BaseDataset (flooder.datasets.datasets.BaseDataset)" href="#flooder.datasets.datasets.BaseDataset">BaseDataset</a></code></p>
+
+
+        <p>Base class for Flooder paper datasets distributed as compressed archives.</p>
+<p>This dataset class implements a standard pipeline:</p>
+<p>1) Download a <code>.tar.zst</code> archive from Google Drive (via <code>gdown</code>),
+     identified by <code>file_id</code>, and validate it with a SHA256 <code>checksum</code>.
+  2) Decompress and extract the archive into <code>raw_dir/&lt;folder_name&gt;/</code>.
+  3) Read dataset metadata (<code>meta.yaml</code>) and split definitions (<code>splits.yaml</code>)
+     from the extracted raw folder.
+  4) Convert each raw <code>.npy</code> file into a <code>FlooderData</code>-like object via
+     <code>process_file(...)</code>, and store it as a <code>.pt</code> file in <code>processed_dir</code>.
+  5) Load all <code>.pt</code> files into memory (<code>self.data</code>) in <code>_load()</code>, optionally
+     applying <code>fixed_transform</code> once per sample at load time.</p>
+
+
+<details class="subclasses-are-expected-to-define" open>
+  <summary>Subclasses are expected to define</summary>
+  <ul>
+<li><code>file_id</code>: Google Drive file id</li>
+<li><code>checksum</code>: expected SHA256 checksum of the downloaded archive</li>
+<li><code>folder_name</code>: name of the extracted folder under <code>raw_dir</code></li>
+<li><code>raw_file_names</code>: name(s) of the downloaded raw archive file(s)</li>
+<li><code>process_file(...)</code>: conversion logic from a <code>.npy</code> file and metadata</li>
+</ul>
+</details>
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="flooder.datasets.datasets.FlooderDataset.data">data</span></code></td>
+            <td>
+                  <code><span title="list">list</span>[<span title="flooder.datasets.datasets.FlooderData">FlooderData</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>In-memory list of processed examples loaded from
+<code>.pt</code> files. Populated by <code>_load()</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="flooder.datasets.datasets.FlooderDataset.splits">splits</span></code></td>
+            <td>
+                  <code><span title="dict">dict</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Split definitions loaded from <code>processed_dir/splits.yaml</code>.
+The structure depends on the dataset, but is typically a mapping from
+split identifier (e.g., fold index) to dicts containing keys like
+<code>'trn'</code>, <code>'val'</code>, <code>'tst'</code> with integer indices.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="flooder.datasets.datasets.FlooderDataset.classes">classes</span></code></td>
+            <td>
+                  <code><span title="list">list</span>[<span title="int">int</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Sorted list of unique class labels observed across the
+dataset (computed after loading).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="flooder.datasets.datasets.FlooderDataset.num_classes">num_classes</span></code></td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of unique classes.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="flooder.datasets.datasets.FlooderDataset.checksum" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">checksum</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">checksum</span><span class="p">:</span> <span class="nb">str</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Expected SHA256 checksum of the downloaded archive.</p>
+<p>The checksum is used by <code>validate(...)</code> after download. If the computed
+SHA256 does not match, a warning is emitted.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>str</code></td>            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Lowercase hex-encoded SHA256 digest of the expected archive.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="NotImplementedError">NotImplementedError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If not implemented by a subclass.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="flooder.datasets.datasets.FlooderDataset.file_id" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">file_id</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">file_id</span><span class="p">:</span> <span class="nb">str</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Google Drive file id for the dataset archive.</p>
+<p>Subclasses must provide the id used to construct the download URL:
+<code>https://drive.google.com/uc?id=&lt;file_id&gt;</code>.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>str</code></td>            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The Google Drive file id.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="NotImplementedError">NotImplementedError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If not implemented by a subclass.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="flooder.datasets.datasets.FlooderDataset.folder_name" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">folder_name</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">folder_name</span><span class="p">:</span> <span class="nb">str</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Name of the extracted folder under <code>raw_dir</code>.</p>
+<p>After extraction, the expected raw folder is <code>raw_dir/&lt;folder_name&gt;/</code>
+containing <code>meta.yaml</code>, <code>splits.yaml</code>, and the <code>.npy</code> files.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>str</code></td>            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Folder name within <code>raw_dir</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="NotImplementedError">NotImplementedError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If not implemented by a subclass.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="flooder.datasets.datasets.FlooderDataset.processed_file_names" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">processed_file_names</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">processed_file_names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Processed-file sentinel list for determining whether processing is done.</p>
+
+
+<details class="the-default-convention-for-flooder-datasets-is" open>
+  <summary>The default convention for Flooder datasets is</summary>
+  <ul>
+<li><code>_done</code>: an empty file indicating processing completion</li>
+<li><code>splits.yaml</code>: split definitions copied to the processed directory</li>
+</ul>
+</details>
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="list">list</span>[<span title="str">str</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>list[str]: List of required processed file names.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+    </div>
+
+</div>
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="flooder.datasets.datasets.FlooderDataset.download" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">download</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">download</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Download the dataset archive from Google Drive into <code>raw_dir</code>.</p>
+<p>Constructs a Google Drive download URL from <code>file_id</code> and downloads
+into <code>raw_dir/&lt;raw_file_names[0]&gt;</code> using <code>gdown</code>. After downloading,
+calls <code>validate(...)</code> to check integrity.</p>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="IndexError">IndexError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If <code>raw_file_names</code> is empty.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="OSError">OSError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the destination file cannot be written.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="Exception">Exception</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Propagates errors from <code>gdown.download(...)</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="flooder.datasets.datasets.FlooderDataset.get" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">get</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">get</span><span class="p">(</span><span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FlooderData</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the in-memory data object at the given global index.</p>
+<p>This implementation assumes <code>_load()</code> has populated <code>self.data</code> with
+objects saved in <code>processed_dir</code> as <code>.pt</code> files.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>idx</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Global index into <code>self.data</code>.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>FlooderData</code></td>            <td>
+                  <code><span title="flooder.datasets.datasets.FlooderData">FlooderData</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The data item at <code>idx</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="flooder.datasets.datasets.FlooderDataset.get_split_indices" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">get_split_indices</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">get_split_indices</span><span class="p">(</span><span class="n">splits_data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Extract split indices from raw <code>splits.yaml</code> content.</p>
+<p>The default behavior expects the raw <code>splits.yaml</code> to contain a top-level
+key <code>"splits"</code> holding the split definitions.</p>
+<p>Subclasses may override this method if their <code>splits.yaml</code> uses a different
+schema.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>splits_data</code>
+            </td>
+            <td>
+                  <code><span title="dict">dict</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Parsed YAML content from <code>splits.yaml</code>.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>Any</code></td>            <td>
+                  <code><span title="dict">dict</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The split indices structure to be saved into</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+<td></td>            <td>
+                  <code><span title="dict">dict</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>processed_dir/splits.yaml</code>. Typically a dict mapping fold id to split</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+<td></td>            <td>
+                  <code><span title="dict">dict</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>dicts (<code>'trn'</code>, <code>'val'</code>, <code>'tst'</code>), but may vary by dataset.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="flooder.datasets.datasets.FlooderDataset.len" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">len</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">len</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the number of examples in the full dataset.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>int</code></td>            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Total number of examples, equal to <code>len(self.data)</code> after <code>_load()</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="flooder.datasets.datasets.FlooderDataset.process" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">process</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">process</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Process the extracted raw dataset into serialized <code>.pt</code> files.</p>
+<p>Processing performs the following steps:</p>
+<p>1) Ensure the archive has been extracted into <code>raw_dir/&lt;folder_name&gt;/</code>.
+  2) Load metadata from <code>meta.yaml</code> and split definitions from <code>splits.yaml</code>.
+  3) Save extracted split indices into <code>processed_dir/splits.yaml</code>.
+  4) Iterate over all <code>.npy</code> files in the extracted folder, sorted by name.
+  5) For each <code>.npy</code>, call <code>process_file(file, ydata)</code> and save the returned
+     object as <code>&lt;stem&gt;.pt</code> in <code>processed_dir</code>.
+  6) Create the <code>_done</code> sentinel file in <code>processed_dir</code>.</p>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="FileNotFoundError">FileNotFoundError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If required raw files (<code>meta.yaml</code>, <code>splits.yaml</code>,
+or <code>.npy</code> files) are missing.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="yaml.YAMLError">YAMLError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If YAML parsing fails.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="OSError">OSError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>For I/O errors reading raw files or writing processed files.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="RuntimeError">RuntimeError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If <code>torch.save</code> fails for a produced object.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="flooder.datasets.datasets.FlooderDataset.process_file" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">process_file</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">process_file</span><span class="p">(</span><span class="n">file</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">ydata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Convert a raw <code>.npy</code> file into a <code>FlooderData</code>-like object.</p>
+<p>Subclasses must implement the dataset-specific logic for reading <code>file</code>
+(typically via <code>numpy.load</code>) and for producing an instance of <code>FlooderData</code>
+(or a subclass like <code>FlooderRocksData</code>).</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>file</code>
+            </td>
+            <td>
+                  <code><span title="pathlib.Path">Path</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Path to a <code>.npy</code> file inside the extracted raw folder.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>ydata</code>
+            </td>
+            <td>
+                  <code><span title="dict">dict</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Metadata loaded from <code>meta.yaml</code>. The structure is dataset-
+dependent but typically contains labels and other targets keyed by
+file name.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>FlooderData</code></td>            <td>
+                  <code>None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Processed data object to be saved as a <code>.pt</code> file.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="NotImplementedError">NotImplementedError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If not implemented by a subclass.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="flooder.datasets.datasets.FlooderDataset.unzip_file" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">unzip_file</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">unzip_file</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Decompress and extract the dataset archive into <code>raw_dir</code>.</p>
+<p>This method reads the first file in <code>raw_paths</code> as a <code>.tar.zst</code> archive,
+decompresses it using <code>zstandard</code>, and extracts it using <code>tarfile</code>.</p>
+
+
+<details class="extraction-behavior-depends-on-python-version" open>
+  <summary>Extraction behavior depends on Python version</summary>
+  <ul>
+<li>Python &gt;= 3.12: uses <code>tar.extractall(..., filter='data')</code> to apply
+  tarfile's safety filter.</li>
+<li>Older versions: falls back to <code>tar.extractall(...)</code>.</li>
+</ul>
+</details>
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="FileNotFoundError">FileNotFoundError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If <code>raw_paths[0]</code> does not exist.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="tarfile.TarError">TarError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the archive is invalid or cannot be read.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="zstandard.ZstdError">ZstdError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If decompression fails.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="OSError">OSError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>For I/O errors during reading or extraction.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="security" open>
+  <summary>Security</summary>
+  <p>Be careful extracting archives from untrusted sources. While Python
+3.12's <code>filter='data'</code> mitigates some risks, older versions extract
+without filtering.</p>
+</details>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="flooder.datasets.datasets.FlooderDataset.validate" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">validate</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">validate</span><span class="p">(</span><span class="n">file_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Validate a downloaded archive against the expected SHA256 checksum.</p>
+<p>Computes the SHA256 digest of <code>file_path</code> and compares it to <code>self.checksum</code>.
+If they do not match, emits a <code>UserWarning</code>.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>file_path</code>
+            </td>
+            <td>
+                  <code><span title="pathlib.Path">Path</span> | <span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Path to the downloaded archive.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Warns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code>UserWarning</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the computed checksum differs from the expected checksum.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="FileNotFoundError">FileNotFoundError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If <code>file_path</code> does not exist.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="OSError">OSError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>For I/O errors reading the file.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="flooder.datasets.datasets.MCBDataset" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">MCBDataset</span>
+
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">MCBDataset</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">root</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">fixed_transform</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">FlooderData</span><span class="p">],</span> <span class="n">FlooderData</span><span class="p">]</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">transform</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">FlooderData</span><span class="p">],</span> <span class="n">FlooderData</span><span class="p">]</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="FlooderDataset (flooder.datasets.datasets.FlooderDataset)" href="#flooder.datasets.datasets.FlooderDataset">FlooderDataset</a></code></p>
+
+
+        <p>MCB point-cloud dataset used in the Flooder paper.</p>
+<p>This dataset is distributed as a compressed <code>.tar.zst</code> archive hosted on
+Google Drive. The archive is downloaded, validated using a SHA256 checksum,
+extracted into <code>raw_dir/&lt;folder_name&gt;/</code>, and processed into per-sample
+<code>.pt</code> files stored in <code>processed_dir</code>.</p>
+<p>Each raw sample is stored as a <code>.npy</code> array containing quantized point
+coordinates. During processing, coordinates are normalized by dividing
+by <code>32767</code> and cast to <code>float32</code>.</p>
+
+
+<details class="the-processed-sample-representation-is" open>
+  <summary>The processed sample representation is</summary>
+  <ul>
+<li><code>x</code>: <code>torch.FloatTensor</code> of normalized point coordinates</li>
+<li><code>y</code>: integer class label</li>
+<li><code>name</code>: sample identifier derived from the file stem</li>
+</ul>
+</details>
+
+<details class="expected-extracted-raw-directory-structure" open>
+  <summary>Expected extracted raw directory structure</summary>
+  <p>raw_dir/mcb/
+    meta.yaml
+    splits.yaml
+    *.npy</p>
+</details>
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <p>FlooderDataset: Implements the shared download, processing, and loading
+pipeline.</p>
+</details>
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="flooder.datasets.datasets.MCBDataset.checksum" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">checksum</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">checksum</span><span class="p">:</span> <span class="nb">str</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Expected SHA256 checksum of the downloaded archive.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>str</code></td>            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Lowercase hex-encoded SHA256 digest for <code>mcb.tar.zst</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="flooder.datasets.datasets.MCBDataset.file_id" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">file_id</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">file_id</span><span class="p">:</span> <span class="nb">str</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Google Drive file id for the MCB dataset archive.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>str</code></td>            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Google Drive file id used to construct the download URL.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="flooder.datasets.datasets.MCBDataset.folder_name" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">folder_name</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">folder_name</span><span class="p">:</span> <span class="nb">str</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Name of the extracted raw folder under <code>raw_dir</code>.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>str</code></td>            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Folder name containing the extracted MCB dataset files.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="flooder.datasets.datasets.MCBDataset.raw_file_names" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">raw_file_names</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">raw_file_names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Raw archive file name(s) expected in <code>raw_dir</code>.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="list">list</span>[<span title="str">str</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>list[str]: List containing the dataset archive file name.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+    </div>
+
+</div>
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="flooder.datasets.datasets.MCBDataset.process_file" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">process_file</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">process_file</span><span class="p">(</span><span class="n">file</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">ydata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FlooderData</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Convert a raw <code>.npy</code> file into a <code>FlooderData</code> example.</p>
+<p>Loads the raw point cloud from <code>file</code>, normalizes coordinates by dividing
+by <code>32767</code>, casts to <code>float32</code>, and converts to a PyTorch tensor. The
+class label is read from the dataset metadata.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>file</code>
+            </td>
+            <td>
+                  <code><span title="pathlib.Path">Path</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Path to the raw <code>.npy</code> file inside the extracted
+MCB dataset folder.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>ydata</code>
+            </td>
+            <td>
+                  <code><span title="dict">dict</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Parsed YAML metadata from <code>meta.yaml</code>. Must contain
+an entry <code>ydata['data'][file.name]['label']</code>.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>FlooderData</code></td>            <td>
+                  <code><span title="flooder.datasets.datasets.FlooderData">FlooderData</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Processed example with fields <code>(x, y, name)</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="KeyError">KeyError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the label entry for <code>file.name</code> is missing in <code>ydata</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="OSError">OSError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the <code>.npy</code> file cannot be read.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ValueError">ValueError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the loaded array cannot be converted to <code>float32</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="flooder.datasets.datasets.ModelNet10Dataset" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">ModelNet10Dataset</span>
+
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">ModelNet10Dataset</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">root</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">fixed_transform</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">FlooderData</span><span class="p">],</span> <span class="n">FlooderData</span><span class="p">]</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">transform</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">FlooderData</span><span class="p">],</span> <span class="n">FlooderData</span><span class="p">]</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="FlooderDataset (flooder.datasets.datasets.FlooderDataset)" href="#flooder.datasets.datasets.FlooderDataset">FlooderDataset</a></code></p>
+
+
+        <p>ModelNet10 point-cloud dataset (250k points) used in the Flooder paper.</p>
+<p>This dataset is a high-resolution point-cloud variant of ModelNet10,
+distributed as a compressed <code>.tar.zst</code> archive and hosted on Google Drive.
+The archive is downloaded, validated via SHA256, extracted into
+<code>raw_dir/&lt;folder_name&gt;/</code>, and processed into per-sample <code>.pt</code> files.</p>
+<p>Each raw sample is stored as a <code>.npy</code> array containing quantized point
+coordinates. During processing, coordinates are normalized by dividing
+by <code>32767</code> and cast to <code>float32</code>.</p>
+
+
+<details class="the-processed-sample-representation-is" open>
+  <summary>The processed sample representation is</summary>
+  <ul>
+<li><code>x</code>: <code>torch.FloatTensor</code> of normalized point coordinates</li>
+<li><code>y</code>: integer class label in <code>[0, 9]</code></li>
+<li><code>name</code>: sample identifier derived from the file stem</li>
+</ul>
+</details>
+
+<details class="expected-extracted-raw-directory-structure" open>
+  <summary>Expected extracted raw directory structure</summary>
+  <p>raw_dir/modelnet10_250k/
+    meta.yaml
+    splits.yaml
+    *.npy</p>
+</details>
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <p>FlooderDataset: Implements the shared download, processing, and loading
+pipeline.</p>
+</details>
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="flooder.datasets.datasets.RocksDataset" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">RocksDataset</span>
+
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">RocksDataset</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">root</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">fixed_transform</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">FlooderData</span><span class="p">],</span> <span class="n">FlooderData</span><span class="p">]</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">transform</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">FlooderData</span><span class="p">],</span> <span class="n">FlooderData</span><span class="p">]</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="FlooderDataset (flooder.datasets.datasets.FlooderDataset)" href="#flooder.datasets.datasets.FlooderDataset">FlooderDataset</a></code></p>
+
+
+        <p>Rock voxel dataset converted to point clouds with geometric targets.</p>
+<p>This dataset consists of 3D binary voxel grids representing rock samples.
+Each sample is stored as a bit-packed array in a <code>.npy</code> file and decoded
+into a point cloud by extracting the coordinates of occupied voxels.</p>
+<p>The dataset is distributed as a compressed archive (<code>rocks.tar.zst</code>)
+hosted on Google Drive. During processing, each voxel grid is converted
+into a set of 3D points with small random jitter added to break lattice
+structure.</p>
+<p>In addition to the class label, each sample includes continuous targets
+such as surface area and volume.</p>
+
+
+<details class="processed-sample-representation" open>
+  <summary>Processed sample representation</summary>
+  <ul>
+<li><code>x</code>: <code>torch.FloatTensor</code> of shape <code>(N, 3)</code> containing point coordinates</li>
+<li><code>y</code>: integer class label</li>
+<li><code>surface</code>: float-valued surface area target</li>
+<li><code>volume</code>: float-valued volume target</li>
+<li><code>name</code>: sample identifier derived from the file stem</li>
+</ul>
+</details>
+
+<details class="expected-extracted-raw-directory-structure" open>
+  <summary>Expected extracted raw directory structure</summary>
+  <p>raw_dir/rocks/
+    meta.yaml
+    splits.yaml
+    *.npy</p>
+</details>
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <p>FlooderDataset: Implements the shared download, processing, and loading
+pipeline.</p>
+</details>
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="flooder.datasets.datasets.RocksDataset.process_file" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">process_file</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">process_file</span><span class="p">(</span><span class="n">file</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">ydata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FlooderRocksData</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Convert a raw voxel <code>.npy</code> file into a <code>FlooderRocksData</code> example.</p>
+
+
+<details class="processing-steps" open>
+  <summary>Processing steps</summary>
+  <p>1) Load the bit-packed voxel array from <code>file</code>.
+2) Unpack bits into a boolean array of shape <code>(256, 256, 256)</code>.
+3) Extract the indices of occupied voxels using <code>np.where</code>.
+4) Convert voxel indices to float coordinates and add small random
+   jitter to avoid degenerate lattice structure.
+5) Attach label and continuous targets from metadata.</p>
+</details>
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>file</code>
+            </td>
+            <td>
+                  <code><span title="pathlib.Path">Path</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Path to the raw <code>.npy</code> voxel file.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>ydata</code>
+            </td>
+            <td>
+                  <code><span title="dict">dict</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Parsed YAML metadata from <code>meta.yaml</code>. Must contain
+entries for <code>label</code>, <code>target</code> (surface), and <code>volume</code> under
+<code>ydata['data'][file.name]</code>.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>FlooderRocksData</code></td>            <td>
+                  <code><span title="flooder.datasets.datasets.FlooderRocksData">FlooderRocksData</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Processed example with fields</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+<td></td>            <td>
+                  <code><span title="flooder.datasets.datasets.FlooderRocksData">FlooderRocksData</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>(x, y, surface, volume, name)</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="KeyError">KeyError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If required metadata entries are missing.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ValueError">ValueError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the unpacked voxel array cannot be reshaped to
+<code>(256, 256, 256)</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="OSError">OSError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the <code>.npy</code> file cannot be read.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="flooder.datasets.datasets.SwisscheeseDataset" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">SwisscheeseDataset</span>
+
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">SwisscheeseDataset</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">root</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">ks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">num_per_class</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">500</span><span class="p">,</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">num_points</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000000</span><span class="p">,</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">fixed_transform</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">FlooderData</span><span class="p">],</span> <span class="n">FlooderData</span><span class="p">]</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">transform</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">FlooderData</span><span class="p">],</span> <span class="n">FlooderData</span><span class="p">]</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="FlooderDataset (flooder.datasets.datasets.FlooderDataset)" href="#flooder.datasets.datasets.FlooderDataset">FlooderDataset</a></code></p>
+
+
+        <p>Synthetic "Swiss cheese" point-cloud dataset used in the Flooder paper.</p>
+<p>This dataset is generated procedurally (no download). Each sample consists
+of points uniformly sampled from a 3D axis-aligned box with multiple
+spherical voids removed ("Swiss cheese"). The number of voids defines the
+class label.</p>
+<p>Unlike the other <code>FlooderDataset</code> subclasses that download a compressed
+archive, this dataset overrides <code>process()</code> to generate samples and write
+them directly to <code>processed_dir</code> as <code>.pt</code> files. Split definitions are also
+generated and saved to <code>processed_dir/splits.yaml</code>.</p>
+
+
+<details class="class-semantics" open>
+  <summary>Class semantics</summary>
+  <ul>
+<li>Each class corresponds to a value <code>k</code> in <code>ks</code>, where <code>k</code> is the number
+  of spherical voids carved out of the sampling volume.</li>
+<li>Label <code>y</code> is the integer index into <code>ks</code> (i.e., <code>ki</code> from enumeration).</li>
+</ul>
+</details>
+
+<details class="generated-file-naming" open>
+  <summary>Generated file naming</summary>
+  <p>Each sample is saved under a short SHA256-derived identifier computed
+from the generated point array bytes. This provides deterministic naming
+for a fixed RNG seed and generation implementation, but note that changes
+to sampling code, dtype, or ordering can change the resulting hash.</p>
+</details>
+
+<details class="splits" open>
+  <summary>Splits</summary>
+  <p><code>process()</code> generates 10 random splits (keys <code>0..9</code>), each containing
+<code>trn</code>, <code>val</code>, and <code>tst</code> partitions with proportions 72% / 8% / 20%,
+respectively, over the <em>full</em> dataset indices.</p>
+</details>
+
+<details class="notes" open>
+  <summary>Notes</summary>
+  <ul>
+<li>Because generation is performed inside <code>process()</code>, instantiation may be
+  compute- and storage-intensive, depending on <code>num_points</code> and dataset size.</li>
+<li>This class sets a fixed RNG seed (<code>np.random.RandomState(42)</code>) for
+  split generation. The point generation itself depends on the behavior of
+  <code>generate_swiss_cheese_points</code> (and any randomness inside it).</li>
+</ul>
+</details>
+        <p>Initialize the Swiss cheese dataset generator.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>root</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Root directory where the dataset is stored.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>ks</code>
+            </td>
+            <td>
+                  <code><span title="list">list</span>[<span title="int">int</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>List of void counts, one per class. Each <code>k</code> produces
+a distinct class corresponding to point clouds with <code>k</code> voids.</p>
+              </div>
+            </td>
+            <td>
+                  <code>[10, 20]</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>num_per_class</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of samples generated for each class.
+Total dataset size is <code>len(ks) * num_per_class</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>500</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>num_points</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of points generated per sample point cloud.</p>
+              </div>
+            </td>
+            <td>
+                  <code>1000000</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>fixed_transform</code>
+            </td>
+            <td>
+                  <code><span title="typing.Callable">Callable</span>[[<span title="flooder.datasets.datasets.FlooderData">FlooderData</span>], <span title="flooder.datasets.datasets.FlooderData">FlooderData</span>] | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional transform applied once per example during <code>_load()</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>transform</code>
+            </td>
+            <td>
+                  <code><span title="typing.Callable">Callable</span>[[<span title="flooder.datasets.datasets.FlooderData">FlooderData</span>], <span title="flooder.datasets.datasets.FlooderData">FlooderData</span>] | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional transform applied on-the-fly in <code>__getitem__</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="notes" open>
+  <summary>Notes</summary>
+  <ul>
+<li>Split generation uses a fixed seed (<code>42</code>) via <code>np.random.RandomState</code>.</li>
+<li>Generation and serialization are performed during <code>process()</code>, which is
+  invoked during <code>FlooderDataset</code> construction if processed artifacts
+  are missing.</li>
+</ul>
+</details>
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="flooder.datasets.datasets.SwisscheeseDataset.folder_name" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">folder_name</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">folder_name</span><span class="p">:</span> <span class="nb">str</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Name of the raw folder under <code>raw_dir</code>.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>str</code></td>            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Folder name. Included for API compatibility; this dataset does not</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+<td></td>            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>use extracted raw archives.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="flooder.datasets.datasets.SwisscheeseDataset.raw_file_names" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">raw_file_names</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">raw_file_names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Raw-file requirements for download skipping.</p>
+<p>This dataset is generated locally and does not require downloaded raw files,
+so this returns an empty list.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="list">list</span>[<span title="str">str</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>list[str]: Empty list.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+    </div>
+
+</div>
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="flooder.datasets.datasets.SwisscheeseDataset.process" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">process</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">process</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Generate synthetic samples and write processed artifacts to disk.</p>
+
+
+<details class="this-method-generates" open>
+  <summary>This method generates</summary>
+  <ul>
+<li><code>processed_dir/splits.yaml</code>: A dict of 10 random splits with keys <code>0..9</code>.</li>
+<li>One <code>.pt</code> file per generated sample containing a <code>FlooderData</code> object.</li>
+<li><code>processed_dir/_done</code>: A sentinel file indicating processing completion.</li>
+</ul>
+</details>
+
+<details class="sample-generation-details" open>
+  <summary>Sample generation details</summary>
+  <ul>
+<li>Points are generated inside an axis-aligned box with corners
+  <code>rect_min = [0,0,0]</code> and <code>rect_max = [5,5,5]</code>.</li>
+<li>For each class <code>k</code> in <code>ks</code>, the generator creates <code>num_per_class</code>
+  samples using <code>generate_swiss_cheese_points(num_points, ..., k, ...)</code>.</li>
+<li>Each sample is labeled with <code>y = ki</code> where <code>ki</code> is the index of <code>k</code> in <code>ks</code>.</li>
+</ul>
+</details>
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="OSError">OSError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the processed directory cannot be written.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="RuntimeError">RuntimeError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If <code>torch.save</code> fails.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="Exception">Exception</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Propagates exceptions from <code>generate_swiss_cheese_points</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2025 Paolo Pellizzoni, Florian Graf, Martin Uray, Stefan Huber, Roland Kwitt
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.instant", "navigation.tabs", "navigation.tabs.sticky", "content.code.copy"], "search": "../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.13a4f30d.min.js"></script>
+      
+        <script src="../../js/mkdocs-charts-plugin.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+      
+    
+  </body>
+</html>
