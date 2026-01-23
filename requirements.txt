@@ -2,6 +2,9 @@ torch
 gudhi
 numpy
 fpsample
+zstandard
+tqdm
+gdown
 pandas
 scipy
 rich

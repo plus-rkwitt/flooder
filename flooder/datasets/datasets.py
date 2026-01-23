@@ -1099,23 +1099,89 @@ class CoralDataset(FlooderDataset):
 
 
 class MCBDataset(FlooderDataset):
+    """MCB point-cloud dataset used in the Flooder paper.
+
+    This dataset is distributed as a compressed `.tar.zst` archive hosted on
+    Google Drive. The archive is downloaded, validated using a SHA256 checksum,
+    extracted into `raw_dir/<folder_name>/`, and processed into per-sample
+    `.pt` files stored in `processed_dir`.
+
+    Each raw sample is stored as a `.npy` array containing quantized point
+    coordinates. During processing, coordinates are normalized by dividing
+    by `32767` and cast to `float32`.
+
+    The processed sample representation is:
+      - `x`: `torch.FloatTensor` of normalized point coordinates
+      - `y`: integer class label
+      - `name`: sample identifier derived from the file stem
+
+    Expected extracted raw directory structure:
+        raw_dir/mcb/
+            meta.yaml
+            splits.yaml
+            *.npy
+
+    See Also:
+        FlooderDataset: Implements the shared download, processing, and loading
+        pipeline.
+    """
     @property
     def file_id(self) -> str:
+        """Google Drive file id for the MCB dataset archive.
+
+        Returns:
+            str: Google Drive file id used to construct the download URL.
+        """
         return '19EP9DEOMoSj0YVa_pXnui3OR2JZHOgSY'
 
     @property
     def checksum(self) -> str:
+        """Expected SHA256 checksum of the downloaded archive.
+
+        Returns:
+            str: Lowercase hex-encoded SHA256 digest for `mcb.tar.zst`.
+        """
         return 'dc36e1c5886e2d21a9f1dbaec084852dda2aab06fb7cd1c36e4403ac3e486a10'
 
     @property
     def folder_name(self) -> str:
+        """Name of the extracted raw folder under `raw_dir`.
+
+        Returns:
+            str: Folder name containing the extracted MCB dataset files.
+        """
         return 'mcb'
 
     @property
     def raw_file_names(self) -> list[str]:
+        """Raw archive file name(s) expected in `raw_dir`.
+
+        Returns:
+            list[str]: List containing the dataset archive file name.
+        """
         return ['mcb.tar.zst']
 
     def process_file(self, file: Path, ydata: dict) -> FlooderData:
+        """Convert a raw `.npy` file into a `FlooderData` example.
+
+        Loads the raw point cloud from `file`, normalizes coordinates by dividing
+        by `32767`, casts to `float32`, and converts to a PyTorch tensor. The
+        class label is read from the dataset metadata.
+
+        Args:
+            file (pathlib.Path): Path to the raw `.npy` file inside the extracted
+                MCB dataset folder.
+            ydata (dict): Parsed YAML metadata from `meta.yaml`. Must contain
+                an entry `ydata['data'][file.name]['label']`.
+
+        Returns:
+            FlooderData: Processed example with fields `(x, y, name)`.
+
+        Raises:
+            KeyError: If the label entry for `file.name` is missing in `ydata`.
+            OSError: If the `.npy` file cannot be read.
+            ValueError: If the loaded array cannot be converted to `float32`.
+        """
         x = torch.from_numpy((np.load(file) / 32767).astype(np.float32))
         y = ydata['data'][file.name]['label']
         return FlooderData(x=x, y=y, name=file.stem)
