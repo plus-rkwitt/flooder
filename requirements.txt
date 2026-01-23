@@ -2,7 +2,13 @@ torch
 gudhi
 numpy
 fpsample
+zstandard
+tqdm
+gdown
 pandas
 scipy
 rich
 rich_argparse
+pyyaml
+gdown
+zstandard

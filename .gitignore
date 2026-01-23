@@ -3,6 +3,7 @@ dist
 flooder.egg-info
 flooder/__pycache__
 site/
+build/*
 *.pyc
 __pycache__/
 Makefile

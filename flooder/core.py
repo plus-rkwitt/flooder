@@ -6,8 +6,7 @@ SPDX-License-Identifier: MIT
 
 import itertools
 import warnings
-from typing import Union
-from typing import List, Tuple
+from typing import Union, List, Tuple, Optional
 
 import torch
 import gudhi
@@ -16,7 +15,13 @@ import numpy as np
 from numbers import Integral
 from scipy.spatial import KDTree
 
-from .triton_kernels import compute_mask, compute_filtration, tl_dtypes_dict
+
+# catch triton import errors, so that users can still use CPU functionality
+try:
+    from .triton_kernels import compute_mask, compute_filtration, tl_dtypes_dict
+    HAS_TRITON_KERNELS = True
+except Exception as e:
+    HAS_TRITON_KERNELS = False
 
 BLOCK_W = 512
 BLOCK_R = 16
@@ -31,7 +36,7 @@ def flood_complex(
     points_per_edge: Union[None, int] = 30,
     num_rand: int = None,
     batch_size: Union[None, int] = 64,
-    use_triton: bool = True,
+    use_triton: Optional[bool] = None,
     return_simplex_tree: bool = False,
     fps_h: Union[None, int] = None,
     start_idx: Union[int, None] = 0,
@@ -59,7 +64,7 @@ def flood_complex(
             Number of simplices to process per batch. Defaults to 32.
         use_triton (bool, optional):
             If True, Triton kernel is used.
-            Defaults to True.
+            Defaults to None (in which case we use Triton if available).
         fps_h (Union[None, int], optional):
             h parameter (depth of kdtree) that is used for farthest point sampling to
             select the landmarks. If None, then h is selected based on the size of the
@@ -79,6 +84,16 @@ def flood_complex(
             value). Each key is a tuple of landmark indices (e.g., (i, j) for an edge), and
             each value is a float radius.
     """
+
+    # by default, i.e., use_triton=None, we use Triton if available (i.e., if the imports
+    # succeeded). In case use_triton=False, we do not use Triton anyways. However, if
+    # use_triton=True and Triton could not be imported, we raise an error.
+    if use_triton is None:
+        use_triton = HAS_TRITON_KERNELS
+    if use_triton and not HAS_TRITON_KERNELS:
+        raise ImportError(
+            "use_triton=True requested, but Triton kernels are not available in this environment."
+        )
     if max_dimension is None:
         max_dimension = points.shape[1]
     if isinstance(landmarks, Integral):
