@@ -969,6 +969,8 @@ class SwisscheeseDataset(FlooderDataset):
 
 class ModelNet10Dataset(FlooderDataset):
     """ModelNet10 point-cloud dataset (250k points) used in the Flooder paper.
+    
+    Original dataset: https://modelnet.cs.princeton.edu/
 
     This dataset is a high-resolution point-cloud variant of ModelNet10,
     distributed as a compressed `.tar.zst` archive and hosted on Google Drive.
@@ -1100,6 +1102,8 @@ class CoralDataset(FlooderDataset):
 
 class MCBDataset(FlooderDataset):
     """MCB point-cloud dataset used in the Flooder paper.
+
+    Original dataset: https://github.com/stnoah1/mcb
 
     This dataset is distributed as a compressed `.tar.zst` archive hosted on
     Google Drive. The archive is downloaded, validated using a SHA256 checksum,
