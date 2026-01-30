@@ -738,7 +738,7 @@ class FlooderDataset(BaseDataset):
             warnings.warn(
                 f"Warning: the downloaded file {file_path} did not match the expected checksum.\n"
                 f"This may indicate that the file is corrupted, incomplete, or altered during download.\n"
-                f"Expected SHA256: {self._checksum}\n"
+                f"Expected SHA256: {self.checksum}\n"
                 f"Actual SHA256:   {h.hexdigest()}\n"
                 f"Please try re-downloading the dataset or contact the dataset maintainer if the problem persists.",
                 UserWarning

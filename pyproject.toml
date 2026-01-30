@@ -8,7 +8,7 @@ include = ["flooder"]
 
 [project]
 name = "flooder"
-version = "1.0"
+version = "1.0.1"
 description = "Flood complex PH"
 readme = "README.md"
 license = "MIT"
@@ -25,6 +25,9 @@ dependencies = [
     "scipy",
     "rich",
     "rich_argparse",
+    "pyyaml",
+    "gdown",
+    "zstandard",
 ]
 requires-python = ">=3.8"
 
