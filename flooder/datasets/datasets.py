@@ -4,6 +4,7 @@ Copyright (c) 2025 Paolo Pellizzoni, Florian Graf, Martin Uray, Stefan Huber and
 SPDX-License-Identifier: MIT
 """
 
+from __future__ import annotations
 import copy
 import hashlib
 import os
@@ -168,7 +169,7 @@ class BaseDataset(torch.utils.data.Dataset):  # Follows torch_geometric.data.dat
         root: str,
         fixed_transform: (Callable[[FlooderData], FlooderData] | None) = None,
         transform: (Callable[[FlooderData], FlooderData] | None) = None
-        ) -> None:
+    ) -> None:
         """Initialize a dataset and execute the download/process/load lifecycle.
 
         Args:
@@ -861,14 +862,15 @@ class SwisscheeseDataset(FlooderDataset):
           split generation. The point generation itself depends on the behavior of
           `generate_swiss_cheese_points` (and any randomness inside it).
     """
-    def __init__(self,
-                root: str,
-                ks: list[int] = [10, 20],
-                num_per_class: int = 500,
-                num_points: int = 1000000,
-                fixed_transform: (Callable[[FlooderData], FlooderData] | None) = None,
-                transform: (Callable[[FlooderData], FlooderData] | None) = None
-                ):
+    def __init__(
+        self,
+        root: str,
+        ks: list[int] = [10, 20],
+        num_per_class: int = 500,
+        num_points: int = 1000000,
+        fixed_transform: (Callable[[FlooderData], FlooderData] | None) = None,
+        transform: (Callable[[FlooderData], FlooderData] | None) = None
+    ):
         """Initialize the Swiss cheese dataset generator.
 
         Args:
@@ -969,13 +971,16 @@ class SwisscheeseDataset(FlooderDataset):
 
 class ModelNet10Dataset(FlooderDataset):
     """ModelNet10 point-cloud dataset (250k points) used in the Flooder paper.
-    
-    Original dataset: https://modelnet.cs.princeton.edu/
 
-    This dataset is a high-resolution point-cloud variant of ModelNet10,
-    distributed as a compressed `.tar.zst` archive and hosted on Google Drive.
-    The archive is downloaded, validated via SHA256, extracted into
-    `raw_dir/<folder_name>/`, and processed into per-sample `.pt` files.
+    This dataset consists of 4899 point clouds, each comprising 250k points
+    uniformly sampled from surface meshes from the ModelNet10 dataset
+    (Wu et al., 3D ShapeNets: A Deep Representation for Volumetric Shapes,
+    CVPR 2015) available at https://modelnet.cs.princeton.edu/.
+
+    The dataset is distributed as a compressed `.tar.zst` archive hosted on
+    Google Drive. The archive is downloaded, validated using a SHA256 checksum,
+    extracted into `raw_dir/<folder_name>/`, and processed into per-sample
+    `.pt` files stored in `processed_dir`.
 
     Each raw sample is stored as a `.npy` array containing quantized point
     coordinates. During processing, coordinates are normalized by dividing
@@ -1021,7 +1026,13 @@ class ModelNet10Dataset(FlooderDataset):
 class CoralDataset(FlooderDataset):
     """Coral point-cloud dataset used in the Flooder paper.
 
-    This dataset is distributed as a compressed archive (`corals.tar.zst`)
+    This dataset consists of 81 point clouds, each comprising 1 million points
+    uniformly sampled from surface meshes of coral specimens provided by the
+    Smithsonian 3D Digitization program (https://3d.si.edu/corals). Labels
+    correspond to the coral's genus, with 31 Acroporidae samples (label 0) and
+    52 Poritidae samples (label 1).
+
+    The dataset is distributed as a compressed archive (`corals.tar.zst`)
     hosted on Google Drive. The archive is downloaded, validated via SHA256,
     extracted into `raw_dir/<folder_name>/`, and processed into per-sample
     `.pt` files stored in `processed_dir`.
@@ -1103,9 +1114,13 @@ class CoralDataset(FlooderDataset):
 class MCBDataset(FlooderDataset):
     """MCB point-cloud dataset used in the Flooder paper.
 
-    Original dataset: https://github.com/stnoah1/mcb
+    This dataset consists of 1745 point clouds, each comprising 1 million
+    points uniformly sampled from surface meshes from a subset of the MCB
+    dataset (A large-scale annotated mechanical components benchmark for
+    classification and retrieval tasks with deep neural networks, ECCV, 2020)
+    available at https://github.com/stnoah1/mcb.
 
-    This dataset is distributed as a compressed `.tar.zst` archive hosted on
+    The dataset is distributed as a compressed `.tar.zst` archive hosted on
     Google Drive. The archive is downloaded, validated using a SHA256 checksum,
     extracted into `raw_dir/<folder_name>/`, and processed into per-sample
     `.pt` files stored in `processed_dir`.
@@ -1194,14 +1209,14 @@ class MCBDataset(FlooderDataset):
 class RocksDataset(FlooderDataset):
     """Rock voxel dataset converted to point clouds with geometric targets.
 
-    This dataset consists of 3D binary voxel grids representing rock samples.
-    Each sample is stored as a bit-packed array in a `.npy` file and decoded
-    into a point cloud by extracting the coordinates of occupied voxels.
+    This synthetic dataset consists of 1000 3D binary voxel grids representing
+    rock samples from two classes. The voxel grids are produced by the PoreSpy
+    library (https://porespy.org/) with classes corresponding to the generation
+    method, fractal noise and blobs, each with 500 samples.
 
     The dataset is distributed as a compressed archive (`rocks.tar.zst`)
     hosted on Google Drive. During processing, each voxel grid is converted
-    into a set of 3D points with small random jitter added to break lattice
-    structure.
+    into a set of 3D points by extracting the coordinates of occupied voxels and adding small random jitter to break lattice the lattice structure.
 
     In addition to the class label, each sample includes continuous targets
     such as surface area and volume.
@@ -1232,11 +1247,11 @@ class RocksDataset(FlooderDataset):
         return 'd635e6ae2e949075ae69b4397217bb2949c737126bbc23108fc48ec1a7aa5b00'
 
     def __init__(
-            self,
-            root: str,
-            fixed_transform: (Callable[[FlooderData], FlooderData] | None) = None,
-            transform: (Callable[[FlooderData], FlooderData] | None) = None
-            ):
+        self,
+        root: str,
+        fixed_transform: (Callable[[FlooderData], FlooderData] | None) = None,
+        transform: (Callable[[FlooderData], FlooderData] | None) = None
+    ):
         self.rng = np.random.RandomState(42)
         super().__init__(root, fixed_transform, transform)
 
