@@ -53,7 +53,7 @@ def compute_filtration(
     BLOCK_W: int,
     BLOCK_R: int,
 ) -> torch.Tensor:
-    
+
     device = x.device
     dtype = x.dtype
     DTYPE = tl_dtypes_dict[dtype]
