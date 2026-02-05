@@ -5,6 +5,7 @@ from .datasets import (
     RocksDataset,
     SwisscheeseDataset,
     ModelNet10Dataset,
+    BenchmarkDataset
 )
 
 __all__ = [
@@ -14,4 +15,5 @@ __all__ = [
     "RocksDataset",
     "SwisscheeseDataset",
     "ModelNet10Dataset",
+    "BenchmarkDataset",
 ]

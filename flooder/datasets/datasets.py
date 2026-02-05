@@ -44,6 +44,16 @@ class FlooderRocksData(FlooderData):
     volume: float
 
 
+@dataclass
+class BenchmarkData:
+    x: torch.Tensor
+    name: str
+    description: str
+
+    def __repr__(self) -> str:
+        return self.name+'\n'+self.description
+
+
 class BaseDataset(torch.utils.data.Dataset):  # Follows torch_geometric.data.dataset
     """Base class for Flooder datasets with download/process/load lifecycle.
 
@@ -1302,3 +1312,108 @@ class RocksDataset(FlooderDataset):
             volume=ydata['data'][file.name]['volume'],
             name=file.stem
         )
+
+
+class BenchmarkDataset(FlooderDataset):
+    """BenchmarkDataset dataset with large-scale point-clouds used in the Flooder paper.
+
+    This dataset contains two point clouds with more than 10M points each,
+    distributed as a compressed `.tar.zst` archive and hosted on Google Drive.
+    The archive is downloaded, validated via SHA256, extracted into
+    `raw_dir/<folder_name>/`, and processed into per-sample `.pt` files.
+
+    The processed sample are stored as a BenchmarkData dataclass with the following attributes:
+      - `x`: `torch.FloatTensor` of point coordinates
+      - `name`: sample identifier 
+      - `description`: brief description of the point cloud
+
+    Expected extracted raw directory structure:
+        raw/benchmark/
+            meta.yaml
+            coral.pt
+            virus.pt
+
+    See Also:
+        FlooderDataset: Implements the shared download, processing, and loading
+        pipeline.
+    """
+
+    def _load(self):
+        """Skip loading the point clouds into main memory.
+        """
+        pass
+
+    def process(self) -> None:
+        """Extract the raw dataset.
+        """
+
+        if os.path.exists(os.path.join(self.raw_dir, self.folder_name)):
+            return
+        extract_path = os.path.join(self.raw_dir, self.folder_name)
+        if not os.path.isdir(extract_path):
+            self.unzip_file()
+
+    @property
+    def file_id(self) -> str:
+        """Google Drive file id for the benchmark dataset archive.
+
+        Returns:
+            str: Google Drive file id used to construct the download URL.
+        """
+        return '1UqyakZgtbqs5PhvW_PQCeSrwkcBMtDSH'
+
+    @property
+    def checksum(self) -> str:
+        """Expected SHA256 checksum of the downloaded archive.
+
+        Returns:
+            str: Lowercase hex-encoded SHA256 digest for `benchmark.tar.zst`.
+        """
+        return '84aaad86ae0a2bcec74230cf1bd9a530f331a34780d3d04d61f06f9183277120'
+
+    @property
+    def folder_name(self) -> str:
+        """Name of the extracted raw folder under `raw_dir`.
+
+        Returns:
+            str: Folder name containing the extracted benchmark dataset files.
+        """
+        return 'benchmark'
+
+    @property
+    def raw_file_names(self) -> list[str]:
+        """Raw archive file name(s) expected in `raw_dir`.
+
+        Returns:
+            list[str]: List containing the dataset archive file name.
+        """
+        return ['benchmark.tar.zst']
+
+    @property
+    def uncompressed_file_names(self) -> list[str]:
+        """Uncompressed file name(s) expected in `raw_dir`.
+
+        Returns:
+            list[str]: List containing the uncompressed file names.
+        """
+        return ["virus.pt", "coral.pt"]
+
+    def len(self) -> int:
+        """Return the number of items in the full dataset.
+        """
+        return 2
+
+    def get(self, idx) -> BenchmarkData:
+        """Return the data object at a given index (either 0 or 1).
+
+        Args:
+            idx (int): Index to access.
+
+        Returns:
+            BenchmarkData: The data object at the given index.
+        """
+        with open(os.path.join(self.raw_dir, self.folder_name, "meta.yaml"), "r") as f:
+            meta = yaml.safe_load(f)
+        meta = meta['data'][idx]
+        x = torch.load(os.path.join(self.raw_dir, self.folder_name, self.uncompressed_file_names[idx]), weights_only=False)
+        return BenchmarkData(x=x, name=meta['name'], description=meta['description'])
