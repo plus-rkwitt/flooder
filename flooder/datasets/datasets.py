@@ -45,12 +45,12 @@ class FlooderRocksData(FlooderData):
 
 
 @dataclass
-class BenchmarkData:
+class LargePointCloudData:
     x: torch.Tensor
     name: str
     description: str
 
-    def __repr__(self) -> str:
+    def __str__(self) -> str:
         return self.name+'\n'+self.description
 
 
@@ -1314,21 +1314,21 @@ class RocksDataset(FlooderDataset):
         )
 
 
-class BenchmarkDataset(FlooderDataset):
-    """BenchmarkDataset dataset with large-scale point-clouds used in the Flooder paper.
+class LargePointCloudDataset(FlooderDataset):
+    """LargePointCloudDataset dataset with large-scale point-clouds used in the Flooder paper.
 
     This dataset contains two point clouds with more than 10M points each,
     distributed as a compressed `.tar.zst` archive and hosted on Google Drive.
     The archive is downloaded, validated via SHA256, extracted into
     `raw_dir/<folder_name>/`, and processed into per-sample `.pt` files.
 
-    The processed sample are stored as a BenchmarkData dataclass with the following attributes:
+    The processed sample are stored as a LargePointCloudData dataclass with the following attributes:
       - `x`: `torch.FloatTensor` of point coordinates
       - `name`: sample identifier 
       - `description`: brief description of the point cloud
 
     Expected extracted raw directory structure:
-        raw/benchmark/
+        raw/large/
             meta.yaml
             coral.pt
             virus.pt
@@ -1355,30 +1355,30 @@ class BenchmarkDataset(FlooderDataset):
 
     @property
     def file_id(self) -> str:
-        """Google Drive file id for the benchmark dataset archive.
+        """Google Drive file id for the LargePointCloudDataset dataset archive.
 
         Returns:
             str: Google Drive file id used to construct the download URL.
         """
-        return '1UqyakZgtbqs5PhvW_PQCeSrwkcBMtDSH'
+        return '1WmX_JN1c-l1U27k1kOWf3z5cUPF8GR6x'
 
     @property
     def checksum(self) -> str:
         """Expected SHA256 checksum of the downloaded archive.
 
         Returns:
-            str: Lowercase hex-encoded SHA256 digest for `benchmark.tar.zst`.
+            str: Lowercase hex-encoded SHA256 digest for `large.tar.zst`.
         """
-        return '84aaad86ae0a2bcec74230cf1bd9a530f331a34780d3d04d61f06f9183277120'
+        return '6de156a23ba837f034f29af1614c9f7d3aa0ea9026dab94b363f4d4942eb5cab'
 
     @property
     def folder_name(self) -> str:
         """Name of the extracted raw folder under `raw_dir`.
 
         Returns:
-            str: Folder name containing the extracted benchmark dataset files.
+            str: Folder name containing the extracted large dataset files.
         """
-        return 'benchmark'
+        return 'large'
 
     @property
     def raw_file_names(self) -> list[str]:
@@ -1387,7 +1387,7 @@ class BenchmarkDataset(FlooderDataset):
         Returns:
             list[str]: List containing the dataset archive file name.
         """
-        return ['benchmark.tar.zst']
+        return ['large.tar.zst']
 
     @property
     def uncompressed_file_names(self) -> list[str]:
@@ -1403,17 +1403,17 @@ class BenchmarkDataset(FlooderDataset):
         """
         return 2
 
-    def get(self, idx) -> BenchmarkData:
+    def get(self, idx) -> LargePointCloudData:
         """Return the data object at a given index (either 0 or 1).
 
         Args:
             idx (int): Index to access.
 
         Returns:
-            BenchmarkData: The data object at the given index.
+            LargePointCloudData: The data object at the given index.
         """
         with open(os.path.join(self.raw_dir, self.folder_name, "meta.yaml"), "r") as f:
             meta = yaml.safe_load(f)
         meta = meta['data'][idx]
         x = torch.load(os.path.join(self.raw_dir, self.folder_name, self.uncompressed_file_names[idx]), weights_only=False)
-        return BenchmarkData(x=x, name=meta['name'], description=meta['description'])
+        return LargePointCloudData(x=x, name=meta['name'], description=meta['description'])
