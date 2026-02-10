@@ -210,6 +210,7 @@ def test_filtration_condition(num_witnesses, num_landmarks, mode, return_simplex
             ), f"Simplex {simplex} has filtr. value {filtration:.5f} \
                 and its face {face} has {face_filtration:.5f}"
 
+
 @pytest.mark.parametrize("pointcloud", ["torus", "cheese"])
 @pytest.mark.parametrize("device", [torch.device("cpu"), torch.device("cuda")])
 def test_float64(pointcloud, device):
@@ -241,6 +242,5 @@ def test_float64(pointcloud, device):
         assert simplex in flood64
         filt32 = flood32[simplex]
         filt64 = flood64[simplex]
-        diff = abs(filt32-filt64)
+        diff = abs(filt32 - filt64)
         assert diff < 3e-6, f"Simplex {simplex}: f32 {filt32} and f64 {filt64}, difference is {diff}"
-
