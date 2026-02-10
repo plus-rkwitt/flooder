@@ -51,7 +51,7 @@ class LargePointCloudData:
     description: str
 
     def __str__(self) -> str:
-        return self.name+'\n'+self.description
+        return self.name + '\n' + self.description
 
 
 class BaseDataset(torch.utils.data.Dataset):  # Follows torch_geometric.data.dataset
@@ -1324,7 +1324,7 @@ class LargePointCloudDataset(FlooderDataset):
 
     The processed sample are stored as a LargePointCloudData dataclass with the following attributes:
       - `x`: `torch.FloatTensor` of point coordinates
-      - `name`: sample identifier 
+      - `name`: sample identifier
       - `description`: brief description of the point cloud
 
     Expected extracted raw directory structure:
