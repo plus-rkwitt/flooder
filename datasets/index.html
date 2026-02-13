@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://mydomain.org/mysite/examples/">
+        <link rel="canonical" href="https://mydomain.org/mysite/datasets/">
       
       
-        <link rel="prev" href="../install/">
+        <link rel="prev" href="../examples/">
       
       
-        <link rel="next" href="../datasets/">
+        <link rel="next" href="../visualizations/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -22,7 +22,7 @@
     
     
       
-        <title>Examples - flooder - Lightspeed Persistent Homology</title>
+        <title>Datasets - flooder - Lightspeed Persistent Homology</title>
       
     
     
@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#examples" class="md-skip">
+        <a href="#datasets" class="md-skip">
           Skip to content
         </a>
       
@@ -112,7 +112,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Examples
+              Datasets
             
           </span>
         </div>
@@ -253,11 +253,9 @@
   
   
   
-    
   
-  
-    <li class="md-tabs__item md-tabs__item--active">
-      <a href="./" class="md-tabs__link">
+    <li class="md-tabs__item">
+      <a href="../examples/" class="md-tabs__link">
         
   
   
@@ -274,9 +272,11 @@
   
   
   
+    
   
-    <li class="md-tabs__item">
-      <a href="../datasets/" class="md-tabs__link">
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
         
   
   
@@ -448,6 +448,28 @@
       
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Examples
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
     
   
   
@@ -460,80 +482,7 @@
         
       
       
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    Examples
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
       <a href="./" class="md-nav__link md-nav__link--active">
-        
-  
-  
-  <span class="md-ellipsis">
-    Examples
-    
-  </span>
-  
-
-      </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#flood-ph-of-noisy-torus-points" class="md-nav__link">
-    <span class="md-ellipsis">
-      Flood PH of noisy torus points
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#flooder-cli" class="md-nav__link">
-    <span class="md-ellipsis">
-      Flooder CLI
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../datasets/" class="md-nav__link">
         
   
   
@@ -544,6 +493,7 @@
   
 
       </a>
+      
     </li>
   
 
@@ -754,32 +704,6 @@
     
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#flood-ph-of-noisy-torus-points" class="md-nav__link">
-    <span class="md-ellipsis">
-      Flood PH of noisy torus points
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#flooder-cli" class="md-nav__link">
-    <span class="md-ellipsis">
-      Flooder CLI
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
 </nav>
                   </div>
                 </div>
@@ -799,90 +723,68 @@
   
 
 
-<h1 id="examples">Examples</h1>
-<h2 id="flood-ph-of-noisy-torus-points">Flood PH of noisy torus points</h2>
-<p>In the following example, we sample <code>n_pts=1000000</code> points from a noisy torus in 3D, then
-construct the Flood complex on top of <code>n_lms=1000</code> landmarks (see <a href="../#illustration">Illustration</a>
-) and compute persistent
-homology (up to dimension 3) using <code>gudhi</code> based on the constructed filtered Flood simplicial complex.</p>
-<div class="language-py highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-1"> 1</a></span>
-<span class="normal"><a href="#__codelineno-0-2"> 2</a></span>
-<span class="normal"><a href="#__codelineno-0-3"> 3</a></span>
-<span class="normal"><a href="#__codelineno-0-4"> 4</a></span>
-<span class="normal"><a href="#__codelineno-0-5"> 5</a></span>
-<span class="normal"><a href="#__codelineno-0-6"> 6</a></span>
-<span class="normal"><a href="#__codelineno-0-7"> 7</a></span>
-<span class="normal"><a href="#__codelineno-0-8"> 8</a></span>
-<span class="normal"><a href="#__codelineno-0-9"> 9</a></span>
-<span class="normal"><a href="#__codelineno-0-10">10</a></span>
-<span class="normal"><a href="#__codelineno-0-11">11</a></span>
-<span class="normal"><a href="#__codelineno-0-12">12</a></span>
-<span class="normal"><a href="#__codelineno-0-13">13</a></span>
-<span class="normal"><a href="#__codelineno-0-14">14</a></span>
-<span class="normal"><a href="#__codelineno-0-15">15</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">flooder</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2"></a>    <span class="n">generate_noisy_torus_points_3d</span><span class="p">,</span> 
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3"></a>    <span class="n">flood_complex</span><span class="p">,</span> 
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4"></a>    <span class="n">generate_landmarks</span><span class="p">)</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5"></a>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6"></a><span class="n">DEVICE</span> <span class="o">=</span> <span class="s2">&quot;cuda&quot;</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7"></a><span class="n">n_pts</span> <span class="o">=</span> <span class="mi">1_000_000</span>  <span class="c1"># Number of points to sample from torus</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8"></a><span class="n">n_lms</span> <span class="o">=</span> <span class="mi">1_000</span>      <span class="c1"># Number of landmarks for Flood complex</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9"></a>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10"></a><span class="n">pts</span> <span class="o">=</span> <span class="n">generate_noisy_torus_points_3d</span><span class="p">(</span><span class="n">n_pts</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11"></a><span class="n">lms</span> <span class="o">=</span> <span class="n">generate_landmarks</span><span class="p">(</span><span class="n">pts</span><span class="p">,</span> <span class="n">n_lms</span><span class="p">)</span>
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12"></a>
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13"></a><span class="n">stree</span> <span class="o">=</span> <span class="n">flood_complex</span><span class="p">(</span><span class="n">pts</span><span class="p">,</span> <span class="n">lms</span><span class="p">,</span> <span class="n">return_simplex_tree</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14"></a><span class="n">stree</span><span class="o">.</span><span class="n">compute_persistence</span><span class="p">()</span>
-</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15"></a><span class="n">ph_diags</span> <span class="o">=</span> <span class="p">[</span><span class="n">stree</span><span class="o">.</span><span class="n">persistence_intervals_in_dimension</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)]</span>
-</span></code></pre></div></td></tr></table></div>
-<p>Importantly, one can either call <code>flood_complex</code> with the already pre-selected
-(here via FPS) landmarks, or one can just specify the number of desired landmarks, e.g.,
-via</p>
-<div class="language-py highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-1-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1"></a><span class="n">stree</span> <span class="o">=</span> <span class="n">flood_complex</span><span class="p">(</span><span class="n">pts</span><span class="p">,</span> <span class="n">n_lms</span><span class="p">,</span> <span class="n">return_simplex_tree</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span></code></pre></div></td></tr></table></div>
-<p>in which case FPS is called internally.</p>
-<h2 id="flooder-cli">Flooder CLI</h2>
-<p>If you installed flooder via <code>pip install flooder</code>, you not only have the API 
-available but also a command-line interface (CLI), which you can execute as 
-follows: for demonstration, we will download a PLY file of the <em>Lucy</em> angel (&gt;14M points, available 
-from the <em>Stanford 3D Scanning Repository</em>) </p>
-<div class="language-bash highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-2-1">1</a></span>
-<span class="normal"><a href="#__codelineno-2-2">2</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1"></a>wget<span class="w"> </span>https://graphics.stanford.edu/data/3Dscanrep/lucy.tar.gz
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2"></a>tar<span class="w"> </span>xvfz<span class="w"> </span>lucy.tar.gz
-</span></code></pre></div></td></tr></table></div>
-<p>and first convert it (using the Open3D library; install via <code>pip install open3d</code>) to a 
-<code>(N,3)</code> numpy array:</p>
-<div class="language-py highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-3-1">1</a></span>
-<span class="normal"><a href="#__codelineno-3-2">2</a></span>
-<span class="normal"><a href="#__codelineno-3-3">3</a></span>
-<span class="normal"><a href="#__codelineno-3-4">4</a></span>
-<span class="normal"><a href="#__codelineno-3-5">5</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">open3d</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">o3d</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3"></a><span class="n">X_ply</span> <span class="o">=</span> <span class="n">o3d</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">read_point_cloud</span><span class="p">(</span><span class="s2">&quot;lucy.ply&quot;</span><span class="p">)</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4"></a><span class="n">X_np</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X_ply</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5"></a><span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;lucy.npy&quot;</span><span class="p">,</span> <span class="n">X_np</span><span class="p">)</span>
-</span></code></pre></div></td></tr></table></div>
-<p>Finally, we execute the Flooder CLI, using 5k landmarks, 30 points per edge and a batch size of 64:</p>
-<div class="language-bash highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-4-1"> 1</a></span>
-<span class="normal"><a href="#__codelineno-4-2"> 2</a></span>
-<span class="normal"><a href="#__codelineno-4-3"> 3</a></span>
-<span class="normal"><a href="#__codelineno-4-4"> 4</a></span>
-<span class="normal"><a href="#__codelineno-4-5"> 5</a></span>
-<span class="normal"><a href="#__codelineno-4-6"> 6</a></span>
-<span class="normal"><a href="#__codelineno-4-7"> 7</a></span>
-<span class="normal"><a href="#__codelineno-4-8"> 8</a></span>
-<span class="normal"><a href="#__codelineno-4-9"> 9</a></span>
-<span class="normal"><a href="#__codelineno-4-10">10</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1"></a>flooder<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2"></a><span class="w">  </span>--input-file<span class="w"> </span>lucy.npy<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3"></a><span class="w">  </span>--output-file<span class="w"> </span>lucy-diagrams.pkl<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4"></a><span class="w">  </span>--num-landmarks<span class="w"> </span><span class="m">5000</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5"></a><span class="w">  </span>--batch-size<span class="w"> </span><span class="m">64</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6"></a><span class="w">  </span>--max-dimension<span class="w"> </span><span class="m">3</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7"></a><span class="w">  </span>--points-per-edge<span class="w"> </span><span class="m">30</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8"></a><span class="w">   </span>--device<span class="w"> </span>cuda:0<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9"></a><span class="w">  </span>--cuda-events<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10"></a><span class="w">  </span>--stats-json<span class="w"> </span>lucy.json
-</span></code></pre></div></td></tr></table></div>
+<h1 id="datasets">Datasets</h1>
+<div align="center">
+
+<img src="../visualization/pointclouds.png" width=70% height=70%>
+
+</div>
+
+<p><br></p>
+<p>The <code>flooder</code> package includes a curated collection of point cloud datasets, including variations of classical ones
+as well as new ones, designed to be geometrically challinging and to test topological ML methods. 
+The package allows to import and use the datasets with only few lines of code:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">flooder.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">CoralDataset</span><span class="p">,</span> <span class="n">MCBDataset</span><span class="p">,</span> <span class="n">RocksDataset</span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">ModelNet10Dataset</span><span class="p">,</span> <span class="n">SwisscheeseDataset</span><span class="p">,</span> <span class="n">LargePointCloudDataset</span><span class="p">,</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="p">)</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">dataset</span> <span class="o">=</span> <span class="n">CoralDataset</span><span class="p">(</span><span class="s1">&#39;./coral_dataset/&#39;</span><span class="p">)</span> 
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">:</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+</span></code></pre></div>
+<p>In particular, we provide the following datasets:</p>
+<ul>
+<li><strong>CoralDataset</strong>: 
+    this dataset consists of 81 point clouds, each comprising 1 million points
+    uniformly sampled from surface meshes of coral specimens provided by the
+    Smithsonian 3D Digitization program (https://3d.si.edu/corals). Labels
+    correspond to the coral's genus, with 31 Acroporidae samples (label 0) and
+    52 Poritidae samples (label 1). Due to its small size, it is challenging for 
+    geometric neural networks, while topology-based methods are often at an advantage. </li>
+<li><strong>RocksDataset</strong>: 
+    this synthetic dataset consists of 1000 point clouds representing symulated
+    rock samples from two classes. The voxel grids are produced by the PoreSpy
+    library (https://porespy.org/) with classes corresponding to the generation
+    method, fractal noise and blobs, each with 500 samples. It offers also a regression
+    task for the estimation of the surface of the material. </li>
+<li><strong>ModelNet10Dataset</strong>:
+    this dataset consists of 4899 point clouds, each comprising 250k points
+    uniformly sampled from surface meshes from the ModelNet10 dataset
+    (Wu et al., 3D ShapeNets: A Deep Representation for Volumetric Shapes,
+    CVPR 2015). This dataset contains topologically simple objects, and since it 
+    is a high-resolution version of a well-studied dataset, it is useful to compare 
+    methods with the existing literature. </li>
+<li><strong>MCBDataset</strong>:
+    this dataset consists of 1745 point clouds, each comprising 1 million
+    points uniformly sampled from surface meshes from a <em>subset</em> of the MCB
+    dataset (Kim et al., A large-scale annotated mechanical components benchmark for
+    classification and retrieval tasks with deep neural networks, ECCV, 2020), where we 
+    only retain geometrically complex objects. Therefore, it is useful to probe the 
+    capabilities of topological ML methods. </li>
+<li><strong>SwisscheeseDataset</strong>:
+    this dataset class allows to procedurally generate a dataset of point clouds with multiple
+    spherical voids. In particular, each sample consists
+    of points uniformly sampled from a 3D axis-aligned box with multiple
+    spherical voids removed ("Swiss cheese"). The number of voids defines the
+    class label. </li>
+<li><strong>LargePointCloudDataset</strong>:
+    this dataset contains two point clouds (a virus and a coral) with more than 10M points each.
+    It can be used to benchmark the speed and memory usage of geometric algorithms 
+    (e.g. simplicial complex constructions) on real-world data. 
+    The <em>EMD-50844</em> point cloud is obtained from the protein structure of the RV-A89 virus, available at <a href="https://www.ebi.ac.uk/emdb/EMD-50844">www.ebi.ac.uk/emdb/EMD-50844</a>. 
+    The <em>Leptoseris paschalensis</em> point cloud comprises the vertices of the mesh of the USNM 53156 coral obtained from the <a href="https://3d.si.edu/">Smithsonian 3D Digitization</a> initiative.</li>
+</ul>
 
 
 

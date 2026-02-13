@@ -274,6 +274,25 @@
   
   
     <li class="md-tabs__item">
+      <a href="datasets/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Datasets
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
       <a href="visualizations/" class="md-tabs__link">
         
   
@@ -512,6 +531,28 @@
   
   
     <li class="md-nav__item">
+      <a href="datasets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Datasets
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="visualizations/" class="md-nav__link">
         
   
@@ -567,10 +608,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
         
           
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
             
   
   
@@ -583,8 +624,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_6">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             API Reference
           </label>
@@ -758,6 +799,7 @@
 
 <h1 id="overview">Overview</h1>
 <p>This is the project page of <strong>flooder</strong>, an easy-to-use Python package for constructing a lightweight simplicial complex (i.e., the FLood complex) on top of (low-dimensional) Euclidean point cloud data and subsequent persistent homology<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup> (PH) computation. Algorithmically, <strong>flooder</strong> is designed to take full advantage of state-of-the-art GPU computing frameworks (via PyTorch) to enable computation of a filtered simplicial complex on millions of points in seconds. Based on the Flood complex, we use the awesome <a href="https://gudhi.inria.fr/">gudhi</a> library for PH computation.</p>
+<p>Moreover, the <code>flooder</code> package includes a curated collection of point cloud datasets designed to be geometrically challinging and to test topological ML methods. See the <a href="datasets/">Datasets</a> page for more information.  </p>
 <h2 id="illustration">Illustration</h2>
 <p>Below is an illustrative animation on how the (filtered) <em>Flood complex</em> is built (on a noisy sample of a figure-eight shape in 2D), starting from a collection of points and a Delaunay triangulation of a small subset of <em>landmarks</em> (in yellow). In short, a simplex of the Delaunay triangulation is added to the Flood complex at time <span class="arithmatex">\(t\geq 0\)</span>, if it is fully covered by balls of radius <span class="arithmatex">\(t\)</span>, centered at <em>all</em> data points.</p>
 <style>
