@@ -98,6 +98,25 @@ n_lms = 1_000
 stree = flood_complex(pts, n_lms, return_simplex_tree=True)
 ```
 
+## Datasets 
+
+The `flooder` package includes a curated collection of point cloud datasets, including variations of classical ones
+as well as new ones, designed to be geometrically challinging and to test topological ML methods. 
+The package allows to import and use the datasets with only few lines of code:
+
+
+```python
+from flooder.datasets import (
+    CoralDataset, MCBDataset, RocksDataset,
+    ModelNet10Dataset, SwisscheeseDataset, LargePointCloudDataset,
+)
+
+dataset = CoralDataset('./coral_dataset/') 
+for data in dataset:
+    print(data.x.shape, data.y)
+```
+
+
 ## Related Projects
 
 If you are looking for fast implementations of (Vietoris-)Rips PH, see 

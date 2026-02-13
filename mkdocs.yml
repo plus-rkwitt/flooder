@@ -4,6 +4,7 @@ nav:
   - Home: index.md
   - Installation: install.md
   - Examples: examples.md
+  - Datasets: datasets.md
   - Visualizations: visualizations.md
   - Contributing: contributing.md
   - API Reference:
@@ -68,16 +69,6 @@ markdown_extensions:
 plugins:
   - search
   - charts
-  - mkdocstrings:
-      handlers:
-        python:
-          options:
-            show_source: false
-            show_root_heading: true
-            show_signature_annotations: true
-            separate_signature: true
-            merge_init_into_class: true
-            line_length: 60  # wrap long signatures
 extra_javascript:
   - javascripts/mathjax.js
   # - javascripts/p5.min.js

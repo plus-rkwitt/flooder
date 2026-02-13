@@ -7,6 +7,8 @@ hide:
 
 This is the project page of **flooder**, an easy-to-use Python package for constructing a lightweight simplicial complex (i.e., the FLood complex) on top of (low-dimensional) Euclidean point cloud data and subsequent persistent homology[^1] (PH) computation. Algorithmically, **flooder** is designed to take full advantage of state-of-the-art GPU computing frameworks (via PyTorch) to enable computation of a filtered simplicial complex on millions of points in seconds. Based on the Flood complex, we use the awesome [gudhi](https://gudhi.inria.fr/) library for PH computation.
 
+Moreover, the `flooder` package includes a curated collection of point cloud datasets designed to be geometrically challinging and to test topological ML methods. See the [Datasets](datasets.md) page for more information.  
+
 [^1]: Edelsbrunner, Letscher & Zomorodian. Topological Persistence and Simplification. Discrete Comput Geom 28, 511–533 (2002). [DOI](https://doi.org/10.1007/s00454-002-2885-2)
 
 ## Illustration
