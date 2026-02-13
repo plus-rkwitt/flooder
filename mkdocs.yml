@@ -4,6 +4,7 @@ nav:
   - Home: index.md
   - Installation: install.md
   - Examples: examples.md
+  - Datasets: datasets.md
   - Visualizations: visualizations.md
   - Contributing: contributing.md
   - API Reference:
