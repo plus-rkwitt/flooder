@@ -70,4 +70,4 @@ In particular, we provide the following datasets:
     It can be used to benchmark the speed and memory usage of geometric algorithms 
     (e.g. simplicial complex constructions) on real-world data. 
     The *EMD-50844* point cloud is obtained from the protein structure of the RV-A89 virus, available at [www.ebi.ac.uk/emdb/EMD-50844](https://www.ebi.ac.uk/emdb/EMD-50844). 
-    The *Leptoseris paschalensis* point cloud comprises the vertices of the mesh of the USNM 53156 coral obtained from the Smithsonian 3D Digitization initiative.
+    The *Leptoseris paschalensis* point cloud comprises the vertices of the mesh of the USNM 53156 coral obtained from the [Smithsonian 3D Digitization](https://3d.si.edu/) initiative.
