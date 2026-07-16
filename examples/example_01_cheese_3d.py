@@ -49,9 +49,13 @@ def main():  # pylint: disable=missing-function-docstring
             )
 
             startt = time.perf_counter()
-            alpha = AlphaComplex(points).create_simplex_tree(
-                output_squared_values=False
-            )
+            alpha = AlphaComplex(
+                points.detach()
+                .to(device="cpu", dtype=torch.float64)
+                .contiguous()
+                .numpy()
+            ).create_simplex_tree(output_squared_values=False)
+
             t1 = time.perf_counter() - startt
 
             alpha.compute_persistence()

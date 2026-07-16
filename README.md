@@ -54,7 +54,7 @@ pip install -r requirements.txt
 The previous commands will install all dependencies, such as `torch`, `gudhi`, `numpy`, `fpsample` and `scipy`. Once installed, you can run our examples from within the top-level `flooder` folder (i.e., the directory created when doing `git clone`) via 
 
 ```bash
-PYTHONPATH=. python examples/example_01_cheese_3D.py
+PYTHONPATH=. python examples/example_01_cheese_3d.py
 ```
 
 Alternatively, you can also do a `pip install -e .` for a local [editable](https://setuptools.pypa.io/en/latest/userguide/development_mode.html) build. Note that the latter command will already install all required dependencies (so, there is no need to do a `pip install -r requirements.txt`).
@@ -73,7 +73,7 @@ In the following example, we compute **Flood PH** on 2M points from a standard m
 
 ```python
 from flooder import (
-    generate_noisy_torus_points, 
+    generate_noisy_torus_points_3d, 
     flood_complex, 
     generate_landmarks)
 
@@ -81,7 +81,7 @@ DEVICE = "cuda"
 n_pts = 1_000_000  # Number of points to sample from torus
 n_lms = 1_000      # Number of landmarks for Flood complex
 
-pts = generate_noisy_torus_points(n_pts).to(DEVICE)
+pts = generate_noisy_torus_points_3d(n_pts).to(DEVICE)
 lms = generate_landmarks(pts, n_lms)
 
 stree = flood_complex(pts, lms, return_simplex_tree=True)
@@ -120,7 +120,7 @@ for data in dataset:
 ## Related Projects
 
 If you are looking for fast implementations of (Vietoris-)Rips PH, see 
-[ripser](https://github.com/ripser/ripser), or the GPU-accelerated [ripser++](https://github.com/simonzhang00/ripser-plusplus), respectively. In addition [gudhi](https://pypi.org/project/gudhi/) supports, e.g., computing Alpha PH also on fairly large point clouds (see the `examples/example_01_cheese_3D.py` for a runtime comparison).
+[ripser](https://github.com/ripser/ripser), or the GPU-accelerated [ripser++](https://github.com/simonzhang00/ripser-plusplus), respectively. In addition [gudhi](https://pypi.org/project/gudhi/) supports, e.g., computing Alpha PH also on fairly large point clouds (see the `examples/example_01_cheese_3d.py` for a runtime comparison).
 
 ## License
 
